@@ -23,6 +23,7 @@ class GalaxyRotation(object):
         self.plotDisk = 0
         self.haloVelocity = zeros_like(velocity)
         self.plotHalo = 0
+        self.sumVelocity = zeros_like(velocity)
         self.mainGraph = mainGraph
         self.canvas = canvas
         self.incl = 0
@@ -62,6 +63,8 @@ class GalaxyRotation(object):
             a.plot(self.distanceKpc, self.diskVelocity, color="r", linestyle="--")
         if self.plotHalo:
             a.plot(self.distanceKpc, self.haloVelocity, color="b", linestyle="--")
+        if self.plotDisk + self.plotHalo+self.plotBulge > 1:
+            a.plot(self.distanceKpc, self.sumVelocity, color="c", linestyle="--")
         self.canvas.show()
         self.canvas.get_tk_widget().pack(side=Tk.LEFT, fill=Tk.BOTH, expand=1)
         
@@ -71,8 +74,9 @@ class GalaxyRotation(object):
         self.plotHalo = float(hParams["include"])
         scale = float(gParams["scale"])
         Msun = float(gParams["Msun"])
+        self.sumVelocity = zeros_like(self.velocity)
         if dParams["include"]:
-            # compute disk rotation velosity
+            # compute disk rotation velocity
             diskCenSurfBri = float(dParams["cenSurfBri"])
             diskExpScale = float(dParams["expScale"])
             diskThickness = float(dParams["thickness"])
@@ -86,6 +90,16 @@ class GalaxyRotation(object):
                                                 diskMLratio,
                                                 self.distanceKpc)
             self.diskVelocity = 0.001 * diskVelSquared ** 0.5
+            self.sumVelocity += diskVelSquared
+        if hParams["include"]:
+            # compute halo rotation velocity
+            if hParams["model"] == "isoterm": # isotermal falo
+                Rc = float(hParams["firstParam"])
+                Vinf = float(hParams["secondParam"])
+                haloVelsquared = isoHaloRotVel(Rc, Vinf, self.distanceKpc)
+                self.haloVelocity = 0.001 * haloVelsquared ** 0.5
+                self.sumVelocity += haloVelsquared
+        self.sumVelocity = 0.001 * self.sumVelocity ** 0.5
         self.plot()
 
 

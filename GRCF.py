@@ -51,6 +51,7 @@ def runComputation():
     hParams["include"] = includeHalo.get()
     hParams["firstParam"] = haloFirstParamValue.get()
     hParams["secondParam"] = haloSecondParamValue.get()
+    hParams["model"] = haloModelValue.get()
     # Are values of all parameters correct?
     resOfCheck, failParam, reasonOfResult = checAllValues(gParams, bParams, dParams, hParams)
     # If at least one parameter is incorrect, show popup window and stop computation
