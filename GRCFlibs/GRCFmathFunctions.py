@@ -5,6 +5,7 @@ from math import radians, sin
 import Tkinter as Tk
 from scipy.interpolate import interp1d
 from numpy import arange, linspace, abs, array, zeros_like
+from numpy import sum as npsum
 
 from GRCFveloFunctions import *
 
@@ -56,15 +57,16 @@ class GalaxyRotation(object):
         a.clear()
         a.set_xlabel("Distance [kpc]")
         a.set_ylabel("Velocity [km/sec]")
-        a.errorbar(self.distanceKpc, self.velocity, self.velocity_sigma, color="k", linestyle="-")
+        a.errorbar(self.distanceKpc, self.velocity, self.velocity_sigma, color="k", linestyle="-", label="Observation")
         if self.plotBulge:
-            a.plot(self.distanceKpc, self.bulgeVelocity, color="y", linestyle="--")
+            a.plot(self.distanceKpc, self.bulgeVelocity, color="y", linestyle="--", label="Bulge")
         if self.plotDisk:
-            a.plot(self.distanceKpc, self.diskVelocity, color="r", linestyle="--")
+            a.plot(self.distanceKpc, self.diskVelocity, color="r", linestyle="--", label="Disk")
         if self.plotHalo:
-            a.plot(self.distanceKpc, self.haloVelocity, color="b", linestyle="--")
+            a.plot(self.distanceKpc, self.haloVelocity, color="b", linestyle="--", label="Halo")
         if self.plotDisk + self.plotHalo+self.plotBulge > 1:
-            a.plot(self.distanceKpc, self.sumVelocity, color="c", linestyle="--")
+            a.plot(self.distanceKpc, self.sumVelocity, color="c", linestyle="--", label="Sum")
+        a.legend(loc="best", fancybox=True, ncol=2, prop={'size':10})
         self.canvas.show()
         self.canvas.get_tk_widget().pack(side=Tk.LEFT, fill=Tk.BOTH, expand=1)
         
@@ -238,3 +240,7 @@ def checAllValues(gParams, bParams, dParams, hParams):
         except ValueError:
             return False, "Halo 2nd param", "not a number"
     return True, "", ""
+
+
+def getChiSquared(data, model, sigma):
+    return npsum(((data-model)/sigma)**2 )

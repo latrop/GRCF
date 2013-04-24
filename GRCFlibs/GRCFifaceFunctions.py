@@ -22,9 +22,9 @@ def mouse_wheel_down(event):
 def onoffPanel(panel, newstate):
     if newstate:
         for c in panel.winfo_children():
-            if (c.winfo_class() == "Entry") or (c.winfo_class() == "Radiobutton"):
+            if c.winfo_class() in ("Entry", "Radiobutton", "Spinbox"):
                 c.config(state="normal")
     else:
         for c in panel.winfo_children():
-            if (c.winfo_class() == "Entry") or (c.winfo_class() == "Radiobutton"):
+            if c.winfo_class() in ("Entry", "Radiobutton", "Spinbox"):
                 c.config(state="disabled")
