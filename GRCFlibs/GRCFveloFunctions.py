@@ -7,6 +7,8 @@ from scipy.special import i0, k0, i1, k1
 
 
 def flatDiskRotVel(diskCenSurfBri, diskExpScale, scale, Msun, MLratio, distancesKpc):
+    if distancesKpc[0] == 0.0:
+        distancesKpc[0] = 1e-10
     angSizeDistance = 206.2648 * scale # MPc
     msun = Msun - 5 + 5 * log10(angSizeDistance*1e6)
     surfDens0Light = 2.512 ** (msun - diskCenSurfBri) / (scale ** 2)  # L sun per square kpc
@@ -19,6 +21,8 @@ def flatDiskRotVel(diskCenSurfBri, diskExpScale, scale, Msun, MLratio, distances
     return vel_squared
 
 def isoHaloRotVel(Rc, V_inf, distancesKpc):
+    if distancesKpc[0] == 0.0:
+        distancesKpc[0] = 1e-10
     G = 6.67e-11 # grav const
     RcMeters = Rc * 3.08567e19
     distancesMeter = distancesKpc * 3.08567e19

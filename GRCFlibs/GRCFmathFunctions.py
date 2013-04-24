@@ -66,6 +66,11 @@ class GalaxyRotation(object):
             a.plot(self.distanceKpc, self.haloVelocity, color="b", linestyle="--", label="Halo")
         if self.plotDisk + self.plotHalo+self.plotBulge > 1:
             a.plot(self.distanceKpc, self.sumVelocity, color="c", linestyle="--", label="Sum")
+        if self.plotDisk + self.plotHalo+self.plotBulge >= 1:
+            # chi squared value to the plot
+            print self.sumVelocity
+            chisq = npsum(((self.velocity-self.sumVelocity)/self.velocity_sigma)**2)
+            a.annotate('$\chi^2 = %1.3f$' % (chisq)  , xy=(0.85, -0.09), xycoords='axes fraction')
         a.legend(loc="best", fancybox=True, ncol=2, prop={'size':10})
         self.canvas.show()
         self.canvas.get_tk_widget().pack(side=Tk.LEFT, fill=Tk.BOTH, expand=1)
@@ -243,4 +248,4 @@ def checAllValues(gParams, bParams, dParams, hParams):
 
 
 def getChiSquared(data, model, sigma):
-    return npsum(((data-model)/sigma)**2 )
+    return 
