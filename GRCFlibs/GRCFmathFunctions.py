@@ -106,6 +106,24 @@ class GalaxyRotation(object):
                 haloVelsquared = isoHaloRotVel(Rc, Vinf, self.distanceKpc)
                 self.haloVelocity = 0.001 * haloVelsquared ** 0.5
                 self.sumVelocity += haloVelsquared
+        if bParams["include"]:
+            # compude bulge rotation velocity
+                bulgeEffSurfBri = float(bParams["effSurfBri"])
+                bulgeSersicIndex = float(bParams["sersicIndex"])
+                bulgeEffRadius = float(bParams["effRadius"])
+                bulgeOblateness = float(bParams["oblateness"])
+                bulgeMLratio = float(bParams["MLratio"])
+                if bulgeOblateness == 1.0: # spherically symmetric bulge
+                    bulgeVelSquared = spSymmBulgeRotVel(bulgeEffSurfBri, 
+                                                        bulgeSersicIndex, 
+                                                        bulgeEffRadius, 
+                                                        bulgeMLratio, 
+                                                        Msun,
+                                                        scale,
+                                                        self.distanceKpc)
+                    self.bulgeVelocity = 0.001 * bulgeVelSquared ** 0.5
+                    self.sumVelocity += bulgeVelSquared
+
         self.sumVelocity = 0.001 * self.sumVelocity ** 0.5
         self.plot()
 
