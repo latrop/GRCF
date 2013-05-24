@@ -68,7 +68,6 @@ class GalaxyRotation(object):
             a.plot(self.distanceKpc, self.sumVelocity, color="c", linestyle="--", label="Sum")
         if self.plotDisk + self.plotHalo+self.plotBulge >= 1:
             # chi squared value to the plot
-            print self.sumVelocity
             chisq = npsum(((self.velocity-self.sumVelocity)/self.velocity_sigma)**2)
             a.annotate('$\chi^2 = %1.3f$' % (chisq)  , xy=(0.85, -0.09), xycoords='axes fraction')
         a.legend(loc="best", fancybox=True, ncol=2, prop={'size':10})
@@ -88,14 +87,21 @@ class GalaxyRotation(object):
             diskExpScale = float(dParams["expScale"])
             diskThickness = float(dParams["thickness"])
             diskMLratio = float(dParams["MLratio"])
-            # if z is 0 then use simple thin disk model
-            if diskThickness == 0.0:
+            if diskThickness == 0.0: # if z is 0 then use simple thin disk model
                 diskVelSquared = flatDiskRotVel(diskCenSurfBri,
                                                 diskExpScale,
                                                 scale,
                                                 Msun,
                                                 diskMLratio,
                                                 self.distanceKpc)
+            else: # Thick disc model
+                diskVelSquared = thickDiskRotVel(diskCenSurfBri,
+                                                 diskExpScale,
+                                                 scale,
+                                                 Msun,
+                                                 diskMLratio,
+                                                 diskThickness,
+                                                 self.distanceKpc)
             self.diskVelocity = 0.001 * diskVelSquared ** 0.5
             self.sumVelocity += diskVelSquared
         if hParams["include"]:
