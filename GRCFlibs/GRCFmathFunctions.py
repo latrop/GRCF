@@ -28,6 +28,7 @@ class GalaxyRotation(object):
         self.mainGraph = mainGraph
         self.canvas = canvas
         self.incl = 0
+        self.diskChanged = True
 
     def reScale(self, newscale):
         try:
@@ -102,13 +103,25 @@ class GalaxyRotation(object):
                                                 diskMLratio,
                                                 self.distanceKpc)
             else: # Thick disc model
-                diskVelSquared = thickDiskRotVel(diskCenSurfBri,
-                                                 diskExpScale,
-                                                 scale,
-                                                 Msun,
-                                                 diskMLratio,
-                                                 diskThickness,
-                                                 self.distanceKpc)
+                if self.diskChanged: 
+                    # if one or more parameters of disk were changed (except M/L ratio)
+                    # we have to recompute the whole integral
+                    diskVelSquared = thickDiskRotVel(diskCenSurfBri,
+                                                     diskExpScale,
+                                                     scale,
+                                                     Msun,
+                                                     diskMLratio,
+                                                     diskThickness,
+                                                     self.distanceKpc)
+                    # store last value of M/L ratio for future fast velocity recomputation
+                    self.previousDiskMLratio = diskMLratio
+                    self.diskChanged = False
+                else:
+                    # if only M/L ratio was changed one can compute the new values
+                    # of velocity just by rescaling the old values, without
+                    # a computation of that big integral
+                    diskVelSquared = (diskMLratio / self.previousDiskMLratio) * self.diskVelocity**2 * 1000000
+                    self.previousDiskMLratio = diskMLratio
             self.diskVelocity = 0.001 * diskVelSquared ** 0.5
             self.sumVelocity += diskVelSquared
         if hParams["include"]:

@@ -62,6 +62,11 @@ def runComputation():
     rotCurve.makeComputation(gParams, bParams, dParams, hParams)
     runButton.config(state="normal")
 
+def disk_parameters_changed(*args):
+    """ This function calls every time when parameters of
+    disk are changed."""
+    rotCurve.diskChanged = True
+
 
 # Creating the main window
 master = Tk.Tk()
@@ -117,7 +122,6 @@ generalSunMagValue.set(5.11)
 generalSunMagEntry = Tk.Entry(generalPanel, textvariable=generalSunMagValue, width=5, state="disabled")
 generalSunMagEntry.grid(column=1, row=2, sticky=Tk.W)
 Tk.Label(generalPanel, text="mag            ").grid(column=2, row=2)
-
 
 
 def band_selected(*args):
@@ -180,18 +184,21 @@ diskCenSurfBriValue = Tk.StringVar()
 diskCenSurfBriValue.set("99.99")
 diskCenSurfBriEntry = Tk.Entry(diskPanel, textvariable=diskCenSurfBriValue, width=5, state="disabled")
 diskCenSurfBriEntry.grid(column=1, row=1, sticky=Tk.W)
+diskCenSurfBriValue.trace("w", disk_parameters_changed)
 Tk.Label(diskPanel, text="mag/sq.arcsec").grid(column=2, row=1)
 Tk.Label(diskPanel, text="Exp. scale").grid(column=0, row=2)
 diskExpScaleValue = Tk.StringVar()
 diskExpScaleValue.set("0.00")
 diskExpScaleEntry = Tk.Entry(diskPanel, textvariable=diskExpScaleValue, width=5, state="disabled")
 diskExpScaleEntry.grid(column=1, row=2, sticky=Tk.W)
+diskExpScaleValue.trace("w", disk_parameters_changed)
 Tk.Label(diskPanel, text="arcsec            ").grid(column=2, row=2)
 Tk.Label(diskPanel, text="z0").grid(column=0, row=3)
 diskThicknessValue = Tk.StringVar()
 diskThicknessValue.set("0.00")
 diskThicknessEntry = Tk.Entry(diskPanel, textvariable=diskThicknessValue, width=5, state="disabled")
 diskThicknessEntry.grid(column=1, row=3, sticky=Tk.W)
+diskThicknessValue.trace("w", disk_parameters_changed)
 Tk.Label(diskPanel, text="* h                  ").grid(column=2, row=3)
 Tk.Label(diskPanel, text="M/L").grid(column=0, row=4)
 diskMLratioValue = Tk.StringVar()
