@@ -119,14 +119,14 @@ generalSunMagEntry.grid(column=1, row=2, sticky=Tk.W)
 Tk.Label(generalPanel, text="mag            ").grid(column=2, row=2)
 
 
-#rrr = {"one": 1, "two": 2, "three": 3}
-#def callback(*args):
-#    global rrr
-#    generalSunMagValue.set(rrr[generalSunMagValue1.get()])
-#generalSunMagValue1 = Tk.StringVar()
-#generalSunMagCBox = Tk.OptionMenu(generalPanel, generalSunMagValue1, *rrr.keys())
-#generalSunMagCBox.grid(column=1, row=3, sticky=Tk.W)
-#generalSunMagValue1.trace("w", callback)
+
+def band_selected(*args):
+    global mSunBands
+    generalSunMagValue.set(mSunBands[generalBandValue.get()])
+generalBandValue = Tk.StringVar()
+generalBandCBox = Tk.OptionMenu(generalPanel, generalBandValue, *mSunBandsList)
+generalBandCBox.grid(column=0, row=3, sticky=Tk.W, columnspan=3)
+generalBandValue.trace("w", band_selected)
 
 # Parameters of bulge
 bulgePanel = Tk.Frame(rightPanel, pady=5)

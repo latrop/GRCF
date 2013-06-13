@@ -55,22 +55,29 @@ class GalaxyRotation(object):
     def plot(self):
         a = self.mainGraph.add_subplot(111)
         a.clear()
-        a.set_xlabel("Distance [kpc]")
+        a.set_xlabel("Distance [arcsec]")
         a.set_ylabel("Velocity [km/sec]")
-        a.errorbar(self.distanceKpc, self.velocity, self.velocity_sigma, color="k", linestyle="-", label="Observation")
+        a.errorbar(self.distanceArcSec, self.velocity, self.velocity_sigma, color="k", linestyle="-", label="Observation")
         if self.plotBulge:
-            a.plot(self.distanceKpc, self.bulgeVelocity, color="y", linestyle="--", label="Bulge")
+            a.plot(self.distanceArcSec, self.bulgeVelocity, color="y", linestyle="--", label="Bulge")
         if self.plotDisk:
-            a.plot(self.distanceKpc, self.diskVelocity, color="r", linestyle="--", label="Disk")
+            a.plot(self.distanceArcSec, self.diskVelocity, color="r", linestyle="--", label="Disk")
         if self.plotHalo:
-            a.plot(self.distanceKpc, self.haloVelocity, color="b", linestyle="--", label="Halo")
+            a.plot(self.distanceArcSec, self.haloVelocity, color="b", linestyle="--", label="Halo")
         if self.plotDisk + self.plotHalo+self.plotBulge > 1:
-            a.plot(self.distanceKpc, self.sumVelocity, color="c", linestyle="--", label="Sum")
+            a.plot(self.distanceArcSec, self.sumVelocity, color="c", linestyle="--", label="Sum")
         if self.plotDisk + self.plotHalo+self.plotBulge >= 1:
             # chi squared value to the plot
             chisq = npsum(((self.velocity-self.sumVelocity)/self.velocity_sigma)**2)
             a.annotate('$\chi^2 = %1.3f$' % (chisq)  , xy=(0.85, -0.09), xycoords='axes fraction')
+        maxVelocityAxes = max(max(self.velocity), max(self.sumVelocity)) * 1.1
         a.legend(loc="best", fancybox=True, ncol=2, prop={'size':10})
+        a.axis([0, max(self.distanceArcSec)*1.1, 0, maxVelocityAxes])
+        a2 = a.twiny()
+        a2.clear()
+        a2.set_xlabel("Distance [kpc]")
+        a2.errorbar(self.distanceKpc, self.velocity, self.velocity_sigma, color="k", linestyle="-", label="Observation")
+        a2.axis([0, max(self.distanceKpc)*1.1, 0, maxVelocityAxes])
         self.canvas.show()
         self.canvas.get_tk_widget().pack(side=Tk.LEFT, fill=Tk.BOTH, expand=1)
         
