@@ -3,6 +3,7 @@
 from math import radians, sin
 
 import Tkinter as Tk
+import tkFileDialog
 from scipy.interpolate import interp1d
 from numpy import arange, linspace, abs, array, zeros_like
 from numpy import sum as npsum
@@ -83,6 +84,13 @@ class GalaxyRotation(object):
         self.canvas.get_tk_widget().pack(side=Tk.LEFT, fill=Tk.BOTH, expand=1)
         
     def makeComputation(self, gParams, bParams, dParams, hParams):
+        """Compute rotation velocities according to specifued parameters"""
+        # Before start store all parameters as object attributes
+        self.gParams = gParams
+        self.bParams = bParams
+        self.dParams = dParams
+        self.hParams = hParams
+        # check what curves is needed to be plotted
         self.plotBulge = float(bParams["include"])
         self.plotDisk = float(dParams["include"])
         self.plotHalo = float(hParams["include"])
@@ -137,9 +145,9 @@ class GalaxyRotation(object):
                 bulgeEffSurfBri = float(bParams["effSurfBri"])
                 bulgeSersicIndex = float(bParams["sersicIndex"])
                 bulgeEffRadius = float(bParams["effRadius"])
-                bulgeOblateness = float(bParams["oblateness"])
+                #bulgeOblateness = float(bParams["oblateness"])
                 bulgeMLratio = float(bParams["MLratio"])
-                if bulgeOblateness == 1.0: # spherically symmetric bulge
+                if True:# There is no non-spheric bulges yet bulgeOblateness == 1.0: # spherically symmetric bulge
                     bulgeVelSquared = spSymmBulgeRotVel(bulgeEffSurfBri, 
                                                         bulgeSersicIndex, 
                                                         bulgeEffRadius, 
@@ -153,6 +161,8 @@ class GalaxyRotation(object):
         self.sumVelocity = 0.001 * self.sumVelocity ** 0.5
         self.plot()
 
+    def saveParams(self):
+        pass
 
 
 def getRotationCurve(fname):
@@ -242,12 +252,12 @@ def checAllValues(gParams, bParams, dParams, hParams):
                 return False, "Bulge eff. radius", "must be positive"
         except ValueError:
             return False, "Bulge eff. radius", "not a number"
-        try:
-            val = float(bParams["oblateness"])
-            if (val<0) or (val>1.0):
-                return False, "Bulge q", "must be between 0 and 1"
-        except ValueError:
-            return False, "Bulge q", "not a number"
+#        try:
+#            val = float(bParams["oblateness"])
+#            if (val<0) or (val>1.0):
+#                return False, "Bulge q", "must be between 0 and 1"
+#        except ValueError:
+#            return False, "Bulge q", "not a number"
         try:
             val = float(bParams["MLratio"])
             if val <= 0.0:

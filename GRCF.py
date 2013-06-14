@@ -27,8 +27,10 @@ def loadVelocityData():
     includeBulgeCButton.config(state="normal")
     includeHaloCButton.config(state="normal")
     runButton.config(state="normal")
+    fileMenu.entryconfig("Save parameters", state="normal")
+    fileMenu.entryconfig("Load parameters", state="normal")
 
-def runComputation():
+def getValuesFromAllFields():
     gParams = {}
     gParams["incl"] = generalInclinationValue.get()
     gParams["scale"] = generalScaleValue.get()
@@ -38,7 +40,7 @@ def runComputation():
     bParams["effSurfBri"] = bulgeEffSurfBriValue.get()
     bParams["sersicIndex"] = bulgeSersicIndexValue.get()
     bParams["effRadius"] = bulgeEffRadiusValue.get()
-    bParams["oblateness"] = bulgeOblatenessValue.get()
+#    bParams["oblateness"] = bulgeOblatenessValue.get()
     bParams["MLratio"] = bulgeMLratioValue.get()
     dParams = {}
     dParams["include"] = includeDisk.get()
@@ -51,6 +53,35 @@ def runComputation():
     hParams["firstParam"] = haloFirstParamValue.get()
     hParams["secondParam"] = haloSecondParamValue.get()
     hParams["model"] = haloModelValue.get()
+    return gParams, bParams, dParams, hParams
+
+
+def setValuesToAllFields(params):
+    gParams = params[0]
+    bParams = params[1]
+    dParams = params[2]
+    hParams = params[3]
+    generalInclinationValue.set(gParams["incl"])
+    generalScaleValue.set(gParams["scale"])
+    generalSunMagValue.set(gParams["Msun"])
+    includeBulge.set(bParams["include"])
+    bulgeEffSurfBriValue.set(bParams["effSurfBri"])
+    bulgeSersicIndexValue.set(bParams["sersicIndex"])
+    bulgeEffRadiusValue.set(bParams["effRadius"])
+#    bulgeOblatenessValue.set(bParams["oblateness"])
+    bulgeMLratioValue.set(bParams["MLratio"])
+    includeDisk.set(dParams["include"])
+    diskCenSurfBriValue.set(dParams["cenSurfBri"])
+    diskExpScaleValue.set(dParams["expScale"])
+    diskThicknessValue.set(dParams["thickness"])
+    diskMLratioValue.set(dParams["MLratio"])
+    includeHalo.set(hParams["include"])
+    haloFirstParamValue.set(hParams["firstParam"])
+    haloSecondParamValue.set(hParams["secondParam"])
+    haloModelValue.set(hParams["model"])
+
+def runComputation():
+    gParams, bParams, dParams, hParams = getValuesFromAllFields()
     # Are values of all parameters correct?
     resOfCheck, failParam, reasonOfResult = checAllValues(gParams, bParams, dParams, hParams)
     # If at least one parameter is incorrect, show popup window and stop computation
@@ -79,7 +110,15 @@ master.geometry(("950x550"))
 ############################################################
 
 menubar = Tk.Menu(master)
-menubar.add_command(label="Load file", command=loadVelocityData)
+fileMenu = Tk.Menu(menubar, tearoff=0)
+fileMenu.add_command(label="Load velocity", command=loadVelocityData)
+fileMenu.add_command(label="Save parameters",
+                     command=lambda: saveParams(master, getValuesFromAllFields()),
+                     state="disabled")
+fileMenu.add_command(label="Load parameters", 
+                     command=lambda: setValuesToAllFields(loadParams(master)), 
+                     state="disabled")
+menubar.add_cascade(label="File", menu=fileMenu)
 menubar.add_command(label="Quit", command=master.quit)
 master.config(menu=menubar)
 
@@ -157,11 +196,11 @@ bulgeEffRadiusValue.set("0.00")
 bulgeEffRadiusEntry = Tk.Entry(bulgePanel, textvariable=bulgeEffRadiusValue, width=5, state="disabled")
 bulgeEffRadiusEntry.grid(column=1, row=3, sticky=Tk.W)
 Tk.Label(bulgePanel, text="arcsec            ").grid(column=2, row=3)
-Tk.Label(bulgePanel, text="q").grid(column=0, row=4)
-bulgeOblatenessValue = Tk.StringVar()
-bulgeOblatenessValue.set("1.00")
-bulgeOblatenessEntry = Tk.Entry(bulgePanel, textvariable=bulgeOblatenessValue, width=5, state="disabled")
-bulgeOblatenessEntry.grid(column=1, row=4, sticky=Tk.W)
+#Tk.Label(bulgePanel, text="q").grid(column=0, row=4)
+#bulgeOblatenessValue = Tk.StringVar()
+#bulgeOblatenessValue.set("1.00")
+#bulgeOblatenessEntry = Tk.Entry(bulgePanel, textvariable=bulgeOblatenessValue, width=5, state="disabled")
+#bulgeOblatenessEntry.grid(column=1, row=4, sticky=Tk.W)
 Tk.Label(bulgePanel, text="M/L").grid(column=0, row=5)
 bulgeMLratioValue = Tk.StringVar()
 bulgeMLratioValue.set("4.00")

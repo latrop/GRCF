@@ -1,6 +1,9 @@
 #! /usr/bin/env python
 
+import os
 import Tkinter as Tk
+import tkFileDialog
+import shelve
 
 def mouse_wheel_up(event):
     try:
@@ -144,3 +147,36 @@ mSunBands = {"Buser U (= Johnson) Vega": 5.59,
 # 76 	NIRI J 	3.64 	4.57
 # 77 	NIRI H 	3.33 	4.71
 # 78 	NIRI K 	3.29 	5.18
+
+def saveParams(master, params):
+    """Store all parameters of galaxy in a file"""
+    fileName = tkFileDialog.asksaveasfilename(parent=master,
+                                              filetypes=[("Data Base files", "*.db")],
+                                              title="Open file to save parameters")
+    try:
+        os.remove(fileName)
+    except OSError:
+        pass
+    gParams = params[0]
+    bParams = params[1]
+    dParams = params[2]
+    hParams = params[3]
+    dataBase = shelve.open(fileName)
+    dataBase["gParams"] = gParams
+    dataBase["bParams"] = bParams
+    dataBase["dParams"] = dParams
+    dataBase["hParams"] = hParams
+    dataBase.close()
+
+def loadParams(master):
+    fileName = tkFileDialog.askopenfilename(parent=master,
+                                            filetypes=[("Data Base files", "*.db")],
+                                            title="Open file to load parameters")
+    dataBase = shelve.open(fileName)
+    gParams = dataBase["gParams"]
+    bParams = dataBase["bParams"]
+    dParams = dataBase["dParams"]
+    hParams = dataBase["hParams"]
+    dataBase.close()
+    return gParams, bParams, dParams, hParams
+
