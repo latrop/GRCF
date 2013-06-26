@@ -11,6 +11,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from GRCFlibs.GRCFmathFunctions import *
 from GRCFlibs.GRCFifaceFunctions import *
 
+def pppp():
+    print "pppp"
 
 def loadVelocityData():
     fileName = tkFileDialog.askopenfilename(parent=master,
@@ -18,7 +20,13 @@ def loadVelocityData():
                                  title="Open data file")
     distance, velocity, sigma = getRotationCurve(fileName)
     global rotCurve 
-    rotCurve = GalaxyRotation(distance, velocity, sigma, float(generalScaleValue.get()), mainGraph, canvas)
+    rotCurve = GalaxyRotation(distance, 
+                              velocity, 
+                              sigma, 
+                              float(generalScaleValue.get()), 
+                              mainGraph, 
+                              canvas,
+                              fileName)
     rotCurve.plot()
     generalInclinationEntry.config(state="normal")
     generalSunMagEntry.config(state="normal")
@@ -29,6 +37,10 @@ def loadVelocityData():
     runButton.config(state="normal")
     fileMenu.entryconfig("Save parameters", state="normal")
     fileMenu.entryconfig("Load parameters", state="normal")
+    fileMenu.entryconfig("Save velocity", state="normal")
+    viewMenu.entryconfig("Show legend", state="normal")
+    viewMenu.entryconfig("Coloured", state="normal")
+    viewMenu.entryconfig("Chi squared", state="normal")
 
 def getValuesFromAllFields():
     gParams = {}
@@ -57,6 +69,8 @@ def getValuesFromAllFields():
 
 
 def setValuesToAllFields(params):
+    if params[0] is None:
+        return
     gParams = params[0]
     bParams = params[1]
     dParams = params[2]
@@ -91,19 +105,52 @@ def runComputation():
     # If all is Ok
     runButton.config(state="disabled")
     rotCurve.makeComputation(gParams, bParams, dParams, hParams)
+    master.title("Galaxy Rotation Curve Fit")
+    # Fitting has sence only after initial computation
+    fitMenu.entryconfig("Best chi squared", state="normal")
     runButton.config(state="normal")
 
-def disk_parameters_changed(*args):
-    """ This function calls every time when parameters of
-    disk are changed."""
-    rotCurve.diskChanged = True
+def some_parameter_changed(parameter, newValue):
+    """ This function calls every time when any parameter
+    of galaxy, bulge, disk or halo is changes """
+    if parameter == "viewLegend":
+        rotCurve.viewLegend = newValue
+        rotCurve.plot()
+        return 0
+    if parameter == "colouredPaint":
+        rotCurve.colouredPaint = newValue
+        rotCurve.plot()
+        return 0
+    if parameter == "showChiSquared":
+        rotCurve.showChiSquared = newValue
+        rotCurve.plot()
+        return 0
+    master.title("Galaxy Rotation Curve Fit (*)")
+    fitMenu.entryconfig("Best chi squared", state="disabled") # fitting is not allowed when parameters are changes
+    rotCurve.parametersChanged = True
+    if parameter == "incl":
+        rotCurve.deproject(newValue)
+    if parameter == "scale":
+        rotCurve.reScale(newValue)
+    if parameter == "bInclude":
+        onoffPanel(bulgePanel, newValue)
+    if parameter == "dInclude":
+        onoffPanel(diskPanel, newValue)
+    if parameter == "Msun":
+        for item, value in mSunBands.iteritems():
+            if value == float(newValue):
+                generalBandValue.set(item)
+                return 0
+        generalBandValue.set("---")
+
+def get_fitted_params():
+    bulgeMLratioValue.set(str(rotCurve.fittedBulgeML))
 
 
 # Creating the main window
 master = Tk.Tk()
 master.title("Galaxy Rotation Curve Fit")
 master.geometry(("950x550"))
-
 
 ############################################################
 #                Creating menu                             #
@@ -118,7 +165,39 @@ fileMenu.add_command(label="Save parameters",
 fileMenu.add_command(label="Load parameters", 
                      command=lambda: setValuesToAllFields(loadParams(master)), 
                      state="disabled")
+fileMenu.add_command(label="Save velocity",
+                     command=lambda: saveVelocity(master, rotCurve),
+                     state="disabled")
 menubar.add_cascade(label="File", menu=fileMenu)
+
+viewMenu = Tk.Menu(menubar, tearoff=0)
+showLegend = Tk.IntVar()
+showLegend.set(1)
+viewMenu.add_checkbutton(label="Show legend", 
+                         variable=showLegend, 
+                         state="disabled")
+showLegend.trace("w", lambda n, i, m, v=showLegend: some_parameter_changed("viewLegend", v.get()))
+colouredPaint = Tk.IntVar()
+colouredPaint.set(1)
+viewMenu.add_checkbutton(label="Coloured",
+                         variable=colouredPaint,
+                         state="disabled")
+colouredPaint.trace("w", lambda n, i, m, v=colouredPaint:some_parameter_changed("colouredPaint", v.get()))
+showChiSquared = Tk.IntVar()
+showChiSquared.set(1)
+viewMenu.add_checkbutton(label="Chi squared",
+                         variable=showChiSquared,
+                         state="disabled")
+showChiSquared.trace("w", lambda n, i, m, v=showChiSquared:some_parameter_changed("showChiSquared", v.get()))
+menubar.add_cascade(label="View", menu=viewMenu)
+
+fitMenu = Tk.Menu(menubar, tearoff=0)
+fitMenu.add_command(label="Best chi squared", command=lambda: BruteForceWindow(master, rotCurve), state="normal")
+fitMenu.add_separator()
+fitMenu.add_command(label="Get fitted params", command=get_fitted_params, state="normal")
+menubar.add_cascade(label="Fit", menu=fitMenu)
+
+
 menubar.add_command(label="Quit", command=master.quit)
 master.config(menu=menubar)
 
@@ -142,31 +221,43 @@ generalPanel.grid(column=0, row=1)
 Tk.Label(generalPanel, text="inclination").grid(column=0, row=0)
 generalInclinationValue = Tk.StringVar()
 generalInclinationValue.set("90.0")
-generalInclinationEntry = Tk.Spinbox(generalPanel, textvariable=generalInclinationValue, width=5, state="disabled", from_=1, to=90, increment=0.1)
+generalInclinationEntry = Tk.Spinbox(generalPanel, 
+                                     textvariable=generalInclinationValue, 
+                                     width=5, 
+                                     state="disabled", 
+                                     from_=1, 
+                                     to=90, 
+                                     increment=0.1,
+                                     bg="white")
 generalInclinationEntry.grid(column=1, row=0, sticky=Tk.W)
 generalInclinationEntry.bind("<Button-4>", mouse_wheel_up)
 generalInclinationEntry.bind("<Button-5>", mouse_wheel_down)
-generalInclinationValue.trace("w", lambda n, i, m, v=generalInclinationValue: rotCurve.deproject(v.get()))
+generalInclinationValue.trace("w", 
+                              lambda n, i, m, v=generalInclinationValue: some_parameter_changed("incl", v.get()))
 Tk.Label(generalPanel, text=" deg             ").grid(column=2, row=0)
 Tk.Label(generalPanel, text="scale").grid(column=0, row=1)
 generalScaleValue = Tk.StringVar()
 generalScaleValue.set("1.00")
-generalScaleValue.trace("w", lambda n, i, m, v=generalScaleValue: rotCurve.reScale(v.get()))
-generalScaleEntry = Tk.Entry(generalPanel, textvariable=generalScaleValue, width=5, state="disabled")
+generalScaleValue.trace("w", 
+                        lambda n, i, m, v=generalScaleValue: some_parameter_changed("scale", v.get()))
+generalScaleEntry = Tk.Entry(generalPanel, textvariable=generalScaleValue, width=5, state="disabled", bg="white")
 generalScaleEntry.grid(column=1, row=1, sticky=Tk.W)
 Tk.Label(generalPanel, text="kpc/arcsec").grid(column=2, row=1)
 Tk.Label(generalPanel, text="M_sun").grid(column=0, row=2)
 generalSunMagValue = Tk.StringVar()
-generalSunMagValue.set(5.11)
-generalSunMagEntry = Tk.Entry(generalPanel, textvariable=generalSunMagValue, width=5, state="disabled")
+generalSunMagValue.set(5.45)
+generalSunMagValue.trace("w", lambda n, i, m, v=generalSunMagValue: some_parameter_changed("Msun", v.get()))
+generalSunMagEntry = Tk.Entry(generalPanel, textvariable=generalSunMagValue, width=5, state="disabled", bg="white")
 generalSunMagEntry.grid(column=1, row=2, sticky=Tk.W)
 Tk.Label(generalPanel, text="mag            ").grid(column=2, row=2)
 
 
 def band_selected(*args):
     global mSunBands
-    generalSunMagValue.set(mSunBands[generalBandValue.get()])
+    if generalBandValue.get() != "---":
+        generalSunMagValue.set(mSunBands[generalBandValue.get()])
 generalBandValue = Tk.StringVar()
+generalBandValue.set("Straizys B (= Johnson) Vega")
 generalBandCBox = Tk.OptionMenu(generalPanel, generalBandValue, *mSunBandsList)
 generalBandCBox.grid(column=0, row=3, sticky=Tk.W, columnspan=3)
 generalBandValue.trace("w", band_selected)
@@ -176,35 +267,51 @@ bulgePanel = Tk.Frame(rightPanel, pady=5)
 bulgePanel.grid(column=0, row=2)
 includeBulge = Tk.IntVar()
 includeBulge.set(0)
-includeBulge.trace("w", lambda n, i, m, v=includeBulge: onoffPanel(bulgePanel, v.get()))
+includeBulge.trace("w", lambda n, i, m, v=includeBulge: some_parameter_changed("bInclude", v.get()))
 includeBulgeCButton = Tk.Checkbutton(bulgePanel, text="Bulge", variable=includeBulge, state="disabled")
 includeBulgeCButton.grid(column=0, row=0, columnspan=2)
+
 Tk.Label(bulgePanel, text="Eff.Surf.bri").grid(column=0, row=1)
 bulgeEffSurfBriValue = Tk.StringVar()
 bulgeEffSurfBriValue.set("99.99")
-bulgeEffSurfBriEntry = Tk.Entry(bulgePanel, textvariable=bulgeEffSurfBriValue, width=5, state="disabled")
+bulgeEffSurfBriValue.trace("w", lambda n, i, m, v=bulgeEffSurfBriValue: some_parameter_changed("bSurfBri", v.get()))
+bulgeEffSurfBriEntry = Tk.Entry(bulgePanel, textvariable=bulgeEffSurfBriValue, width=5, state="disabled", bg="white")
 bulgeEffSurfBriEntry.grid(column=1, row=1, sticky=Tk.W)
 Tk.Label(bulgePanel, text="mag/sq.arcsec").grid(column=2, row=1)
+
 Tk.Label(bulgePanel, text="Sersic index").grid(column=0, row=2)
 bulgeSersicIndexValue = Tk.StringVar()
-bulgeSersicIndexEntry = Tk.Entry(bulgePanel, textvariable=bulgeSersicIndexValue, width=5, state="disabled")
+bulgeSersicIndexEntry = Tk.Entry(bulgePanel, textvariable=bulgeSersicIndexValue, width=5, state="disabled", bg="white")
 bulgeSersicIndexEntry.grid(column=1, row=2, sticky=Tk.W)
 bulgeSersicIndexValue.set("4.0")
+bulgeSersicIndexValue.trace("w", lambda n, i, m, v=bulgeSersicIndexValue: some_parameter_changed("bSersic", v.get()))
+
 Tk.Label(bulgePanel, text="R_eff").grid(column=0, row=3)
 bulgeEffRadiusValue = Tk.StringVar()
 bulgeEffRadiusValue.set("0.00")
-bulgeEffRadiusEntry = Tk.Entry(bulgePanel, textvariable=bulgeEffRadiusValue, width=5, state="disabled")
+bulgeEffRadiusValue.trace("w", lambda n, i, m, v=bulgeEffRadiusValue: some_parameter_changed("bEffRad", v.get()))
+bulgeEffRadiusEntry = Tk.Entry(bulgePanel, textvariable=bulgeEffRadiusValue, width=5, state="disabled", bg="white")
 bulgeEffRadiusEntry.grid(column=1, row=3, sticky=Tk.W)
 Tk.Label(bulgePanel, text="arcsec            ").grid(column=2, row=3)
+
 #Tk.Label(bulgePanel, text="q").grid(column=0, row=4)
 #bulgeOblatenessValue = Tk.StringVar()
 #bulgeOblatenessValue.set("1.00")
-#bulgeOblatenessEntry = Tk.Entry(bulgePanel, textvariable=bulgeOblatenessValue, width=5, state="disabled")
+#bulgeOblatenessEntry = Tk.Entry(bulgePanel, textvariable=bulgeOblatenessValue, width=5, state="disabled", bg="white")
 #bulgeOblatenessEntry.grid(column=1, row=4, sticky=Tk.W)
+
 Tk.Label(bulgePanel, text="M/L").grid(column=0, row=5)
 bulgeMLratioValue = Tk.StringVar()
 bulgeMLratioValue.set("4.00")
-bulgeMLratioEntry = Tk.Spinbox(bulgePanel, textvariable=bulgeMLratioValue, width=5, state="disabled", from_=1, to=10, increment=0.1)
+bulgeMLratioEntry = Tk.Spinbox(bulgePanel,
+                               textvariable=bulgeMLratioValue,
+                               width=5,
+                               state="disabled",
+                               from_=1,
+                               to=10,
+                               increment=0.1,
+                               bg="white")
+bulgeMLratioValue.trace("w", lambda n, i, m, v=bulgeMLratioValue: some_parameter_changed("bulgeML", v.get()))
 bulgeMLratioEntry.grid(column=1, row=5, sticky=Tk.W)
 bulgeMLratioEntry.bind("<Button-4>", mouse_wheel_up)
 bulgeMLratioEntry.bind("<Button-5>", mouse_wheel_down)
@@ -213,36 +320,49 @@ bulgeMLratioEntry.bind("<Button-5>", mouse_wheel_down)
 # Parameters of disk
 diskPanel = Tk.Frame(rightPanel, pady=5)
 diskPanel.grid(column=0, row=3)
+
 includeDisk = Tk.IntVar()
 includeDisk.set(0)
-includeDisk.trace("w", lambda n, i, m, v=includeDisk: onoffPanel(diskPanel, v.get()))
+includeDisk.trace("w", lambda n, i, m, v=includeDisk: some_parameter_changed("dInclude", v.get()))
 includeDiskCButton = Tk.Checkbutton(diskPanel, text="Disk", variable=includeDisk, state="disabled")
 includeDiskCButton.grid(column=0, row=0, columnspan=2)
+
 Tk.Label(diskPanel, text="    Surf.Bri   ").grid(column=0, row=1)
 diskCenSurfBriValue = Tk.StringVar()
 diskCenSurfBriValue.set("99.99")
-diskCenSurfBriEntry = Tk.Entry(diskPanel, textvariable=diskCenSurfBriValue, width=5, state="disabled")
+diskCenSurfBriEntry = Tk.Entry(diskPanel, textvariable=diskCenSurfBriValue, width=5, state="disabled", bg="white")
 diskCenSurfBriEntry.grid(column=1, row=1, sticky=Tk.W)
-diskCenSurfBriValue.trace("w", disk_parameters_changed)
+diskCenSurfBriValue.trace("w", lambda n, i, m, v=diskCenSurfBriValue: some_parameter_changed("dSurfBri", v.get()))
 Tk.Label(diskPanel, text="mag/sq.arcsec").grid(column=2, row=1)
+
 Tk.Label(diskPanel, text="Exp. scale").grid(column=0, row=2)
 diskExpScaleValue = Tk.StringVar()
 diskExpScaleValue.set("0.00")
-diskExpScaleEntry = Tk.Entry(diskPanel, textvariable=diskExpScaleValue, width=5, state="disabled")
+diskExpScaleEntry = Tk.Entry(diskPanel, textvariable=diskExpScaleValue, width=5, state="disabled", bg="white")
 diskExpScaleEntry.grid(column=1, row=2, sticky=Tk.W)
-diskExpScaleValue.trace("w", disk_parameters_changed)
+diskExpScaleValue.trace("w", lambda n, i, m, v=diskExpScaleValue: some_parameter_changed("dExpScale", v.get()))
 Tk.Label(diskPanel, text="arcsec            ").grid(column=2, row=2)
+
 Tk.Label(diskPanel, text="z0").grid(column=0, row=3)
 diskThicknessValue = Tk.StringVar()
 diskThicknessValue.set("0.00")
-diskThicknessEntry = Tk.Entry(diskPanel, textvariable=diskThicknessValue, width=5, state="disabled")
+diskThicknessEntry = Tk.Entry(diskPanel, textvariable=diskThicknessValue, width=5, state="disabled", bg="white")
 diskThicknessEntry.grid(column=1, row=3, sticky=Tk.W)
-diskThicknessValue.trace("w", disk_parameters_changed)
+diskThicknessValue.trace("w", lambda n, i, m, v=diskThicknessValue: some_parameter_changed("dThickness", v.get()))
 Tk.Label(diskPanel, text="* h                  ").grid(column=2, row=3)
+
 Tk.Label(diskPanel, text="M/L").grid(column=0, row=4)
 diskMLratioValue = Tk.StringVar()
 diskMLratioValue.set("3.00")
-diskMLratioEntry = Tk.Spinbox(diskPanel, textvariable=diskMLratioValue, width=5, state="disabled", from_=1, to=10, increment=0.1)
+diskMLratioEntry = Tk.Spinbox(diskPanel,
+                              textvariable=diskMLratioValue,
+                              width=5,
+                              state="disabled",
+                              from_=1,
+                              to=10,
+                              increment=0.1,
+                              bg="white")
+diskMLratioValue.trace("w", lambda n, i, m, v=diskMLratioValue: some_parameter_changed("diskML", v.get()))
 diskMLratioEntry.grid(column=1, row=4, sticky=Tk.W)
 diskMLratioEntry.bind("<Button-4>", mouse_wheel_up)
 diskMLratioEntry.bind("<Button-5>", mouse_wheel_down)
@@ -258,6 +378,7 @@ includeHaloCButton = Tk.Checkbutton(haloPanel, text="Halo", variable=includeHalo
 includeHaloCButton.grid(column=0, row=0, columnspan=1)
 haloModelValue = Tk.StringVar()
 haloModelValue.set("isoterm")
+haloModelValue.trace("w", lambda n, i, m, v=haloModelValue: some_parameter_changed("haloModel", v.get()))
 haloFirstParamLabel = Tk.Label(haloPanel, text='Rc')
 isotermHaloRadiobutton = Tk.Radiobutton(haloPanel, 
                                         text="isoterm", 
@@ -273,13 +394,17 @@ NFWHaloRadiobutton = Tk.Radiobutton(haloPanel,
                                     state="disabled",
                                     command=lambda : haloFirstParamLabel.config(text="C"))
 NFWHaloRadiobutton.grid(column=2, row=0)
+
 haloFirstParamLabel.grid(column=0, row=1)
 haloFirstParamValue = Tk.StringVar()
-haloFirstParamEntry = Tk.Entry(haloPanel, textvariable=haloFirstParamValue, width=5, state="disabled")
+haloFirstParamValue.trace("w", lambda n, i, m, v=haloFirstParamValue: some_parameter_changed("haloFirst", v.get()))
+haloFirstParamEntry = Tk.Entry(haloPanel, textvariable=haloFirstParamValue, width=5, state="disabled", bg="white")
 haloFirstParamEntry.grid(column=1, row=1)
 Tk.Label(haloPanel, text="V(inf)").grid(column=0, row=2)
+
 haloSecondParamValue = Tk.StringVar()
-haloSecondParamEntry = Tk.Entry(haloPanel, textvariable=haloSecondParamValue, width=5, state="disabled")
+haloSecondParamValue.trace("w", lambda n, i, m, v=haloSecondParamValue: some_parameter_changed("haloSecond", v.get()))
+haloSecondParamEntry = Tk.Entry(haloPanel, textvariable=haloSecondParamValue, width=5, state="disabled", bg="white")
 haloSecondParamEntry.grid(column=1, row=2)
 Tk.Label(haloPanel, text="Km/sec     ").grid(column=2, row=2)
 
