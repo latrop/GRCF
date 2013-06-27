@@ -11,8 +11,6 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from GRCFlibs.GRCFmathFunctions import *
 from GRCFlibs.GRCFifaceFunctions import *
 
-def pppp():
-    print "pppp"
 
 def loadVelocityData():
     fileName = tkFileDialog.askopenfilename(parent=master,
@@ -108,7 +106,9 @@ def runComputation():
     master.title("Galaxy Rotation Curve Fit")
     # Fitting has sence only after initial computation
     fitMenu.entryconfig("Best chi squared", state="normal")
+    fitMenu.entryconfig("Get fitted params", state="normal")
     runButton.config(state="normal")
+
 
 def some_parameter_changed(parameter, newValue):
     """ This function calls every time when any parameter
@@ -136,6 +136,8 @@ def some_parameter_changed(parameter, newValue):
         onoffPanel(bulgePanel, newValue)
     if parameter == "dInclude":
         onoffPanel(diskPanel, newValue)
+    if parameter == "hInclude":
+        onoffPanel(haloPanel, newValue)
     if parameter == "Msun":
         for item, value in mSunBands.iteritems():
             if value == float(newValue):
@@ -145,7 +147,12 @@ def some_parameter_changed(parameter, newValue):
 
 def get_fitted_params():
     bulgeMLratioValue.set(str(rotCurve.fittedBulgeML))
-
+    diskMLratioValue.set(str(rotCurve.fittedDiskML))
+    haloFirstParamValue.set(str(rotCurve.fittedHaloFirst))
+    haloSecondParamValue.set(str(rotCurve.fittedHaloSecond))
+    runComputation()
+#    fitMenu.entryconfig("Best chi squared", state="normal")
+#    master.title("Galaxy Rotation Curve Fit")
 
 # Creating the main window
 master = Tk.Tk()
@@ -192,9 +199,11 @@ showChiSquared.trace("w", lambda n, i, m, v=showChiSquared:some_parameter_change
 menubar.add_cascade(label="View", menu=viewMenu)
 
 fitMenu = Tk.Menu(menubar, tearoff=0)
-fitMenu.add_command(label="Best chi squared", command=lambda: BruteForceWindow(master, rotCurve), state="normal")
+fitMenu.add_command(label="Best chi squared",
+                    command=lambda: BruteForceWindow(master, rotCurve, includeBulge.get(), includeDisk.get(), includeHalo.get()),
+                    state="disabled")
 fitMenu.add_separator()
-fitMenu.add_command(label="Get fitted params", command=get_fitted_params, state="normal")
+fitMenu.add_command(label="Get fitted params", command=get_fitted_params, state="disabled")
 menubar.add_cascade(label="Fit", menu=fitMenu)
 
 
@@ -373,7 +382,7 @@ haloPanel = Tk.Frame(rightPanel, pady=5)
 haloPanel.grid(column=0, row=4)
 includeHalo = Tk.IntVar()
 includeHalo.set(0)
-includeHalo.trace("w", lambda n, i, m, v=includeHalo: onoffPanel(haloPanel, v.get()))
+includeHalo.trace("w", lambda n, i, m, v=includeHalo: some_parameter_changed("hInclude", v.get()))
 includeHaloCButton = Tk.Checkbutton(haloPanel, text="Halo", variable=includeHalo, state="disabled")
 includeHaloCButton.grid(column=0, row=0, columnspan=1)
 haloModelValue = Tk.StringVar()

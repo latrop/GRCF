@@ -260,18 +260,22 @@ def saveVelocity(master, rotCurve):
 
 
 class BruteForceWindow(object):
-    def __init__(self, master, rotCurve):
+    def __init__(self, master, rotCurve, includeBulge, includeDisk, includeHalo):
         self.rotCurve = rotCurve
         self.bruteForceFrame = Tk.Toplevel(takefocus=True)
+        self.bruteForceFrame.wm_attributes("-topmost", 1)
         self.bruteForceFrame.grab_set()
         xScreenSize = master.winfo_screenwidth()
         yScreenSize = master.winfo_screenheight()
         self.bruteForceFrame.geometry("+%i+%i" % (xScreenSize/2-250, yScreenSize/2-100))
         Tk.Label(self.bruteForceFrame, text="Chose models and ranges to variate:").grid(column=0, row=0, columnspan=5)
+        self.bulgeState = "normal" if includeBulge else "disabled"
+        self.diskState = "normal" if includeDisk else "disabled"
+        self.haloState = "normal" if includeHalo else "disabled"
 
         # Bulge parameters
         self.variateBulge = Tk.IntVar()
-        self.variateBulgeCButton = Tk.Checkbutton(self.bruteForceFrame, variable=self.variateBulge, text="Bulge:")
+        self.variateBulgeCButton = Tk.Checkbutton(self.bruteForceFrame, variable=self.variateBulge, text="Bulge:", state=self.bulgeState)
         self.variateBulgeCButton.grid(column=0, row=1)
         Tk.Label(self.bruteForceFrame, text="M-to-L  from").grid(column=1, row=1)
         self.bulgeMLlowerValue = Tk.StringVar()
@@ -282,10 +286,12 @@ class BruteForceWindow(object):
                                             bg="white",
                                             from_=0.0,
                                             to=100,
-                                            increment=0.1)
+                                            increment=0.1,
+                                            state=self.bulgeState)
         self.bulgeMLlowerEntry.grid(column=2, row=1)
-        self.bulgeMLlowerEntry.bind("<Button-4>", mouse_wheel_up)
-        self.bulgeMLlowerEntry.bind("<Button-5>", mouse_wheel_down)
+        if self.diskState == "normal":
+            self.bulgeMLlowerEntry.bind("<Button-4>", mouse_wheel_up)
+            self.bulgeMLlowerEntry.bind("<Button-5>", mouse_wheel_down)
         Tk.Label(self.bruteForceFrame, text=" to ").grid(column=3, row=1)
         self.bulgeMLupperValue = Tk.StringVar()
         self.bulgeMLupperValue.set(self.rotCurve.bParams["MLratio"])
@@ -295,14 +301,16 @@ class BruteForceWindow(object):
                                             bg="white",
                                             from_=0.0,
                                             to=100,
-                                            increment=0.1)
+                                            increment=0.1, 
+                                            state=self.bulgeState)
         self.bulgeMLupperEntry.grid(column=4, row=1)
-        self.bulgeMLupperEntry.bind("<Button-4>", mouse_wheel_up)
-        self.bulgeMLupperEntry.bind("<Button-5>", mouse_wheel_down)
+        if self.bulgeState == "normal":
+            self.bulgeMLupperEntry.bind("<Button-4>", mouse_wheel_up)
+            self.bulgeMLupperEntry.bind("<Button-5>", mouse_wheel_down)
 
         # Disk parameters
         self.variateDisk = Tk.IntVar()
-        self.variateDiskCButton = Tk.Checkbutton(self.bruteForceFrame, variable=self.variateDisk, text=" Disk: ")
+        self.variateDiskCButton = Tk.Checkbutton(self.bruteForceFrame, variable=self.variateDisk, text=" Disk: ", state=self.diskState)
         self.variateDiskCButton.grid(column=0, row=2)
 
         Tk.Label(self.bruteForceFrame, text="M-to-L  from").grid(column=1, row=2)
@@ -314,10 +322,12 @@ class BruteForceWindow(object):
                                            bg="white",
                                            from_=0.0,
                                            to=100,
-                                           increment=0.1)
+                                           increment=0.1, 
+                                           state=self.diskState)
         self.diskMLlowerEntry.grid(column=2, row=2)
-        self.diskMLlowerEntry.bind("<Button-4>", mouse_wheel_up)
-        self.diskMLlowerEntry.bind("<Button-5>", mouse_wheel_down)
+        if self.diskState == "normal":
+            self.diskMLlowerEntry.bind("<Button-4>", mouse_wheel_up)
+            self.diskMLlowerEntry.bind("<Button-5>", mouse_wheel_down)
         Tk.Label(self.bruteForceFrame, text=" to ").grid(column=3, row=2)
         self.diskMLupperValue = Tk.StringVar()
         self.diskMLupperValue.set(self.rotCurve.dParams["MLratio"])
@@ -327,14 +337,16 @@ class BruteForceWindow(object):
                                            bg="white", 
                                            from_=0.0,
                                            to=100,
-                                           increment=0.1)
+                                           increment=0.1,
+                                           state=self.diskState)
         self.diskMLupperEntry.grid(column=4, row=2)
-        self.diskMLupperEntry.bind("<Button-4>", mouse_wheel_up)
-        self.diskMLupperEntry.bind("<Button-5>", mouse_wheel_down)
+        if self.diskState == "normal":
+            self.diskMLupperEntry.bind("<Button-4>", mouse_wheel_up)
+            self.diskMLupperEntry.bind("<Button-5>", mouse_wheel_down)
 
         # Halo
         self.variateHalo = Tk.IntVar()
-        self.variateHaloCButton = Tk.Checkbutton(self.bruteForceFrame, variable=self.variateHalo, text=" Halo: ")
+        self.variateHaloCButton = Tk.Checkbutton(self.bruteForceFrame, variable=self.variateHalo, text=" Halo: ", state=self.haloState)
         self.variateHaloCButton.grid(column=0, row=3, rowspan=2)
 
         Tk.Label(self.bruteForceFrame, text="First  from").grid(column=1, row=3)
@@ -346,10 +358,12 @@ class BruteForceWindow(object):
                                               bg="white",
                                               from_=0.0,
                                               to=100,
-                                              increment=0.1)
+                                              increment=0.1,
+                                              state=self.haloState)
         self.haloFirstlowerEntry.grid(column=2, row=3)
-        self.haloFirstlowerEntry.bind("<Button-4>", mouse_wheel_up)
-        self.haloFirstlowerEntry.bind("<Button-5>", mouse_wheel_down)
+        if self.haloState == "normal":
+            self.haloFirstlowerEntry.bind("<Button-4>", mouse_wheel_up)
+            self.haloFirstlowerEntry.bind("<Button-5>", mouse_wheel_down)
         Tk.Label(self.bruteForceFrame, text=" to ").grid(column=3, row=3)
         self.haloFirstupperValue = Tk.StringVar()
         self.haloFirstupperValue.set(self.rotCurve.hParams["firstParam"])
@@ -359,10 +373,12 @@ class BruteForceWindow(object):
                                               bg="white", 
                                               from_=0.0,
                                               to=100,
-                                              increment=0.1)
+                                              increment=0.1,
+                                              state=self.haloState)
         self.haloFirstupperEntry.grid(column=4, row=3)
-        self.haloFirstupperEntry.bind("<Button-4>", mouse_wheel_up)
-        self.haloFirstupperEntry.bind("<Button-5>", mouse_wheel_down)
+        if self.haloState == "normal":
+            self.haloFirstupperEntry.bind("<Button-4>", mouse_wheel_up)
+            self.haloFirstupperEntry.bind("<Button-5>", mouse_wheel_down)
 
         Tk.Label(self.bruteForceFrame, text="Second  from").grid(column=1, row=4)
         self.haloSecondlowerValue = Tk.StringVar()
@@ -373,10 +389,12 @@ class BruteForceWindow(object):
                                                bg="white",
                                                from_=0.0,
                                                to=1000,
-                                               increment=1.0)
+                                               increment=1.0,
+                                               state=self.haloState)
         self.haloSecondlowerEntry.grid(column=2, row=4)
-        self.haloSecondlowerEntry.bind("<Button-4>", mouse_wheel_up)
-        self.haloSecondlowerEntry.bind("<Button-5>", mouse_wheel_down)
+        if self.haloState == "normal":
+            self.haloSecondlowerEntry.bind("<Button-4>", mouse_wheel_up)
+            self.haloSecondlowerEntry.bind("<Button-5>", mouse_wheel_down)
         Tk.Label(self.bruteForceFrame, text=" to ").grid(column=3, row=4)
         self.haloSecondupperValue = Tk.StringVar()
         self.haloSecondupperValue.set(self.rotCurve.hParams["secondParam"])
@@ -386,10 +404,12 @@ class BruteForceWindow(object):
                                                bg="white", 
                                                from_=0.0,
                                                to=1000,
-                                               increment=1.0)
+                                               increment=1.0,
+                                               state=self.haloState)
         self.haloSecondupperEntry.grid(column=4, row=4)
-        self.haloSecondupperEntry.bind("<Button-4>", mouse_wheel_up)
-        self.haloSecondupperEntry.bind("<Button-5>", mouse_wheel_down)
+        if self.haloState == "normal":
+            self.haloSecondupperEntry.bind("<Button-4>", mouse_wheel_up)
+            self.haloSecondupperEntry.bind("<Button-5>", mouse_wheel_down)
 
         # Buttons
         self.runButton = Tk.Button(self.bruteForceFrame, text="Run", state="normal", command=self.run)
@@ -401,6 +421,22 @@ class BruteForceWindow(object):
         self.cancelButton.grid(column=4, row=5)
 
     def run(self):
+        runLabelValue = Tk.StringVar()
+        Tk.Label(self.bruteForceFrame, textvariable=runLabelValue).grid(column=1, row=5, columnspan=3)
+        if self.variateBulge.get() and ((float(self.bulgeMLlowerValue.get()) > float(self.bulgeMLupperValue.get()))
+                                        or (float(self.bulgeMLlowerValue.get())<=0)):
+            runLabelValue.set("Error in bulge parameters")
+            return 1
+        if self.variateDisk.get() and ((float(self.diskMLlowerValue.get()) > float(self.diskMLupperValue.get()))
+                                        or (float(self.diskMLlowerValue.get())<=0)):
+            runLabelValue.set(" Error in disk parameters ")
+            return 1
+        if self.variateHalo.get() and ((float(self.haloFirstlowerValue.get()) > float(self.haloFirstupperValue.get()))
+                                       or (float(self.haloFirstlowerValue.get())<=0)
+                                       or (float(self.haloSecondlowerValue.get()) > float(self.haloSecondupperValue.get()))
+                                       or (float(self.haloSecondlowerValue.get())<=0)):
+            runLabelValue.set(" Error in halo parameters ")
+            return 1
         fitParams = {}
         fitParams["bulgeVariate"] = self.variateBulge.get()
         fitParams["bulgeMLlower"] = float(self.bulgeMLlowerValue.get())
@@ -413,12 +449,10 @@ class BruteForceWindow(object):
         fitParams["haloFirstupper"] = float(self.haloFirstupperValue.get())
         fitParams["haloSecondlower"] = float(self.haloSecondlowerValue.get())
         fitParams["haloSecondupper"] = float(self.haloSecondupperValue.get())
-        runLabelValue = Tk.StringVar()
-        Tk.Label(self.bruteForceFrame, textvariable=runLabelValue).grid(column=2, row=5, columnspan=2)
         t1 = time.time()
-        runLabelValue.set("   In process...     ")
+        runLabelValue.set("         In process...         ")
         self.rotCurve.fitBruteForce(fitParams)
-        runLabelValue.set("  Done in %1.2f sec  " % (time.time()-t1))
+        runLabelValue.set("       Done in %1.2f sec      " % (time.time()-t1))
 
 
 
