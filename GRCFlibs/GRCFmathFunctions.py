@@ -5,7 +5,7 @@ from math import radians, sin
 import Tkinter as Tk
 import tkFileDialog
 from scipy.interpolate import interp1d, InterpolatedUnivariateSpline
-from numpy import arange, linspace, abs, array, zeros_like
+from numpy import arange, linspace, abs, array, zeros_like, concatenate
 from numpy import sum as npsum
 
 from GRCFveloFunctions import *
@@ -20,13 +20,6 @@ class GalaxyRotation(object):
         self.velocity_obs_sigma = velocity_sigma
         self.scale = scale
         self.distanceKpc = scale * distanceArcSec
-        self.bulgeVelocity = zeros_like(velocity)
-        self.plotBulge = 0
-        self.diskVelocity = zeros_like(velocity)
-        self.plotDisk = 0
-        self.haloVelocity = zeros_like(velocity)
-        self.plotHalo = 0
-        self.sumVelocity = zeros_like(velocity)
         self.mainGraph = mainGraph
         self.canvas = canvas
         self.incl = 0
@@ -50,6 +43,22 @@ class GalaxyRotation(object):
         self.oldGeneralParams = {"incl": 0.0,
                                  "scale": 0.0,
                                  "Msun" : 0.0}
+        mainStep = (self.distanceArcSec[-1]-self.distanceArcSec[0])/len(distanceArcSec)
+        if self.distanceArcSec[0] > self.scale:
+            additinal = arange(1, self.distanceArcSec[0], self.scale)
+        else:
+            additinal = []
+        self.distancesToComputeArcSec = concatenate((additinal, self.distanceArcSec))
+        print self.distancesToComputeArcSec
+        self.distancesToComputeKpc = self.distancesToComputeArcSec * scale
+        self.bulgeVelocity = zeros_like(self.distancesToComputeArcSec)
+        self.plotBulge = 0
+        self.diskVelocity = zeros_like(self.distancesToComputeArcSec)
+        self.plotDisk = 0
+        self.haloVelocity = zeros_like(self.distancesToComputeArcSec)
+        self.plotHalo = 0
+        self.sumVelocity = zeros_like(self.distancesToComputeArcSec)
+
 
     def reScale(self, newscale):
         try:
@@ -59,6 +68,7 @@ class GalaxyRotation(object):
         if newscale <= 0:
             return False
         self.distanceKpc = self.distanceArcSec * newscale
+        self.distancesToComputeKpc = self.distancesToComputeArcSec * newscale
         self.scale = newscale
         self.plot()
 
@@ -80,34 +90,34 @@ class GalaxyRotation(object):
         a.set_xlabel("Distance [arcsec]")
         a.set_ylabel("Velocity [km/sec]")
         if self.colouredPaint:
-            a.errorbar(self.distanceArcSec, self.velocity, self.velocity_sigma, color="k", linestyle="-", label="Observation")
+            a.errorbar(self.distanceArcSec, self.velocity, self.velocity_sigma, color="k", linestyle="-", label="Data")
             if self.plotBulge:
-                a.plot(self.distanceArcSec, self.bulgeVelocity, color="m", linestyle=":", label="Bulge")
+                a.plot(self.distancesToComputeArcSec, self.bulgeVelocity, color="m", linestyle=":", label="Bulge")
             if self.plotDisk:
-                a.plot(self.distanceArcSec, self.diskVelocity, color="g", linestyle="--", label="Disk")
+                a.plot(self.distancesToComputeArcSec, self.diskVelocity, color="g", linestyle="--", label="Disk")
             if self.plotHalo:
-                a.plot(self.distanceArcSec, self.haloVelocity, color="b", linestyle="-.", label="Halo")
+                a.plot(self.distancesToComputeArcSec, self.haloVelocity, color="b", linestyle="-.", label="Halo")
             if self.plotDisk + self.plotHalo+self.plotBulge > 1:
-                a.plot(self.distanceArcSec, self.sumVelocity, color="r", linestyle="-", label="Sum")
+                a.plot(self.distancesToComputeArcSec, self.sumVelocity, color="r", linestyle="-", label="Sum")
         else:
-            a.errorbar(self.distanceArcSec, self.velocity, self.velocity_sigma, color="k", linestyle="-", label="Observation", linewidth=2)
+            a.errorbar(self.distanceArcSec, self.velocity, self.velocity_sigma, color="k", linestyle="-", label="Data", linewidth=2)
             if self.plotBulge:
-                a.plot(self.distanceArcSec, self.bulgeVelocity, color="k", linestyle=":", label="Bulge")
+                a.plot(self.distancesToComputeArcSec, self.bulgeVelocity, color="k", linestyle=":", label="Bulge")
             if self.plotDisk:
-                a.plot(self.distanceArcSec, self.diskVelocity, color="k", linestyle="--", label="Disk")
+                a.plot(self.distancesToComputeArcSec, self.diskVelocity, color="k", linestyle="--", label="Disk")
             if self.plotHalo:
-                a.plot(self.distanceArcSec, self.haloVelocity, color="k", linestyle="-.", label="Halo")
+                a.plot(self.distancesToComputeArcSec, self.haloVelocity, color="k", linestyle="-.", label="Halo")
             if self.plotDisk + self.plotHalo+self.plotBulge > 1:
-                a.plot(self.distanceArcSec, self.sumVelocity, color="k", linestyle="-", label="Sum")
+                a.plot(self.distancesToComputeArcSec, self.sumVelocity, color="k", linestyle="-", label="Sum")
         if (self.showChiSquared > 0) and (self.plotDisk + self.plotHalo+self.plotBulge >= 1):
             # chi squared value to the plot
-            chisq = npsum(((self.velocity-self.sumVelocity)/self.velocity_sigma)**2)
+            chisq = self.compute_chi_sq()
             # if this iteration gives a better chi square value, then choose the green color for
             # plot it, if nothing changed -- black, if worse -- red.
             if self.colouredPaint:
-                if chisq < self.previousChiSq:
+                if chisq - self.previousChiSq < -0.0001:
                     chisq_color = "green"
-                elif chisq > self.previousChiSq:
+                elif chisq - self.previousChiSq > 0.0001:
                     chisq_color = "red"
                 else:
                     chisq_color = "black"
@@ -122,7 +132,7 @@ class GalaxyRotation(object):
         a2 = a.twiny()
         a2.clear()
         a2.set_xlabel("Distance [kpc]")
-        a2.errorbar(self.distanceKpc, self.velocity, self.velocity_sigma, color="k", linestyle="-", label="Observation")
+        a2.errorbar(self.distanceKpc, self.velocity, self.velocity_sigma, color="k", linestyle="-", label="Data")
         a2.axis([0, max(self.distanceKpc)*1.1, 0, maxVelocityAxes])
         self.canvas.show()
         self.canvas.get_tk_widget().pack(side=Tk.LEFT, fill=Tk.BOTH, expand=1)
@@ -144,7 +154,7 @@ class GalaxyRotation(object):
         scale_old = self.oldGeneralParams["scale"]
         Msun_old = self.oldGeneralParams["Msun"]
         incl_old = self.oldGeneralParams["incl"]
-        self.sumVelocity = zeros_like(self.velocity)
+        self.sumVelocity = zeros_like(self.distancesToComputeArcSec)
 
         if dParams["include"]:
             # compute disk rotation velocity
@@ -169,7 +179,7 @@ class GalaxyRotation(object):
                                                     scale,
                                                     Msun,
                                                     diskMLratio,
-                                                    self.distanceKpc)
+                                                    self.distancesToComputeKpc)
                 else: # Thick disc model
                     diskVelSquared = thickDiskRotVel(diskCenSurfBri,
                                                      diskExpScale,
@@ -177,7 +187,7 @@ class GalaxyRotation(object):
                                                      Msun,
                                                      diskMLratio,
                                                      diskThickness,
-                                                     self.distanceKpc)
+                                                     self.distancesToComputeKpc)
             elif (diskMLratio != diskMLratio_old):
                 # if only M/L ratio was changed one can compute the new values
                 # of velocity just by rescaling the old values, without
@@ -199,7 +209,7 @@ class GalaxyRotation(object):
             if hParams["model"] == "isoterm": # isotermal falo
                 Rc = float(hParams["firstParam"])
                 Vinf = float(hParams["secondParam"])
-                haloVelsquared = isoHaloRotVel(Rc, Vinf, self.distanceKpc)
+                haloVelsquared = isoHaloRotVel(Rc, Vinf, self.distancesToComputeKpc)
                 self.haloVelocity = 0.001 * haloVelsquared ** 0.5
                 self.sumVelocity += haloVelsquared
 
@@ -226,7 +236,7 @@ class GalaxyRotation(object):
                                                         bulgeMLratio, 
                                                         Msun,
                                                         scale,
-                                                        self.distanceKpc)
+                                                        self.distancesToComputeKpc)
                 # if only ML ratio was changes we can just rescale old velocity
                 elif (bulgeMLratio != bulgeMLratio_old):
                     bulgeVelSquared = (bulgeMLratio / self.previousBulgeMLratio) * self.bulgeVelocity**2 * 1000000
@@ -283,11 +293,11 @@ class GalaxyRotation(object):
                     for secondParam in arange(hLower2, hUpper2+0.01, 1):
                         hParams["secondParam"] = secondParam
                         self.makeComputation(gParams, bParams, dParams, hParams, makePlot=False)
-                        chisq = npsum(((self.velocity-self.sumVelocity)/self.velocity_sigma)**2)
+                        chisq = self.compute_chi_sq()
     #                    if prevChiSq < chisq:
     #                        break
     #                    prevChiSq = chisq
-                        if chisq < bestChiSq:
+                        if (chisq < bestChiSq) and (chisq < self.previousChiSq):
                             bestChiSq = chisq
                             print bestChiSq
                             self.plot()
@@ -296,6 +306,9 @@ class GalaxyRotation(object):
                             self.fittedHaloFirst = firstParam
                             self.fittedHaloSecond = secondParam
         print time.time() - t1
+
+    def compute_chi_sq(self):
+        return npsum(((self.velocity-self.sumVelocity[-len(self.velocity):])/self.velocity_sigma)**2)
 
 
 def getRotationCurve(fname):

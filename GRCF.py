@@ -106,7 +106,6 @@ def runComputation():
     master.title("Galaxy Rotation Curve Fit")
     # Fitting has sence only after initial computation
     fitMenu.entryconfig("Best chi squared", state="normal")
-    fitMenu.entryconfig("Get fitted params", state="normal")
     runButton.config(state="normal")
 
 
@@ -145,12 +144,6 @@ def some_parameter_changed(parameter, newValue):
                 return 0
         generalBandValue.set("---")
 
-def get_fitted_params():
-    bulgeMLratioValue.set(str(rotCurve.fittedBulgeML))
-    diskMLratioValue.set(str(rotCurve.fittedDiskML))
-    haloFirstParamValue.set(str(rotCurve.fittedHaloFirst))
-    haloSecondParamValue.set(str(rotCurve.fittedHaloSecond))
-    runComputation()
 #    fitMenu.entryconfig("Best chi squared", state="normal")
 #    master.title("Galaxy Rotation Curve Fit")
 
@@ -200,10 +193,16 @@ menubar.add_cascade(label="View", menu=viewMenu)
 
 fitMenu = Tk.Menu(menubar, tearoff=0)
 fitMenu.add_command(label="Best chi squared",
-                    command=lambda: BruteForceWindow(master, rotCurve, includeBulge.get(), includeDisk.get(), includeHalo.get()),
+                    command=lambda: BruteForceWindow(master,
+                                                     rotCurve,
+                                                     includeBulge.get(),
+                                                     includeDisk.get(),
+                                                     includeHalo.get(),
+                                                     bulgeMLratioValue,
+                                                     diskMLratioValue,
+                                                     haloFirstParamValue,
+                                                     haloSecondParamValue),
                     state="disabled")
-fitMenu.add_separator()
-fitMenu.add_command(label="Get fitted params", command=get_fitted_params, state="disabled")
 menubar.add_cascade(label="Fit", menu=fitMenu)
 
 

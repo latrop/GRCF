@@ -260,7 +260,20 @@ def saveVelocity(master, rotCurve):
 
 
 class BruteForceWindow(object):
-    def __init__(self, master, rotCurve, includeBulge, includeDisk, includeHalo):
+    def __init__(self,
+                 master,
+                 rotCurve,
+                 includeBulge,
+                 includeDisk,
+                 includeHalo,
+                 bulgeMLratioValue,
+                 diskMLratioValue,
+                 haloFirstParamValue,
+                 haloSecondParamValue):
+        self.bulgeMLratioValue = bulgeMLratioValue
+        self.diskMLratioValue = diskMLratioValue
+        self.haloFirstParamValue = haloFirstParamValue
+        self.haloSecondParamValue = haloSecondParamValue
         self.rotCurve = rotCurve
         self.bruteForceFrame = Tk.Toplevel(takefocus=True)
         self.bruteForceFrame.wm_attributes("-topmost", 1)
@@ -413,29 +426,31 @@ class BruteForceWindow(object):
 
         # Buttons
         self.runButton = Tk.Button(self.bruteForceFrame, text="Run", state="normal", command=self.run)
-        self.runButton.grid(column=0, row=5)
+        self.runButton.grid(column=0, row=6)
+        self.saveButton = Tk.Button(self.bruteForceFrame, text="Save", state="disabled", command=self.save_fitted)
+        self.saveButton.grid(column=1, row=6)
         self.cancelButton = Tk.Button(self.bruteForceFrame,
                                       text="Close",
                                       state="normal",
                                       command=lambda: self.bruteForceFrame.destroy())
-        self.cancelButton.grid(column=4, row=5)
+        self.cancelButton.grid(column=4, row=6)
+        self.runLabelValue = Tk.StringVar()
+        Tk.Label(self.bruteForceFrame, textvariable=self.runLabelValue).grid(column=1, row=5, columnspan=3)
 
     def run(self):
-        runLabelValue = Tk.StringVar()
-        Tk.Label(self.bruteForceFrame, textvariable=runLabelValue).grid(column=1, row=5, columnspan=3)
         if self.variateBulge.get() and ((float(self.bulgeMLlowerValue.get()) > float(self.bulgeMLupperValue.get()))
                                         or (float(self.bulgeMLlowerValue.get())<=0)):
-            runLabelValue.set("Error in bulge parameters")
+            self.runLabelValue.set("Error in bulge parameters")
             return 1
         if self.variateDisk.get() and ((float(self.diskMLlowerValue.get()) > float(self.diskMLupperValue.get()))
                                         or (float(self.diskMLlowerValue.get())<=0)):
-            runLabelValue.set(" Error in disk parameters ")
+            self.runLabelValue.set(" Error in disk parameters ")
             return 1
         if self.variateHalo.get() and ((float(self.haloFirstlowerValue.get()) > float(self.haloFirstupperValue.get()))
                                        or (float(self.haloFirstlowerValue.get())<=0)
                                        or (float(self.haloSecondlowerValue.get()) > float(self.haloSecondupperValue.get()))
                                        or (float(self.haloSecondlowerValue.get())<=0)):
-            runLabelValue.set(" Error in halo parameters ")
+            self.runLabelValue.set(" Error in halo parameters ")
             return 1
         fitParams = {}
         fitParams["bulgeVariate"] = self.variateBulge.get()
@@ -450,11 +465,17 @@ class BruteForceWindow(object):
         fitParams["haloSecondlower"] = float(self.haloSecondlowerValue.get())
         fitParams["haloSecondupper"] = float(self.haloSecondupperValue.get())
         t1 = time.time()
-        runLabelValue.set("         In process...         ")
+        self.runLabelValue.set("         In process...         ")
         self.rotCurve.fitBruteForce(fitParams)
-        runLabelValue.set("       Done in %1.2f sec      " % (time.time()-t1))
+        self.runLabelValue.set("       Done in %1.2f sec      " % (time.time()-t1))
+        self.saveButton.config(state="normal")
 
-
+    def save_fitted(self):
+        self.bulgeMLratioValue.set(str(self.rotCurve.fittedBulgeML))
+        self.diskMLratioValue.set(str(self.rotCurve.fittedDiskML))
+        self.haloFirstParamValue.set(str(self.rotCurve.fittedHaloFirst))
+        self.haloSecondParamValue.set(str(self.rotCurve.fittedHaloSecond))
+        
 
 
     
