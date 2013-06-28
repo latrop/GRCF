@@ -106,13 +106,15 @@ def runComputation():
     master.title("Galaxy Rotation Curve Fit")
     # Fitting has sence only after initial computation
     fitMenu.entryconfig("Best chi squared", state="normal")
+    if (includeBulge.get() > 0) and (includeDisk.get() > 0):
+        fitMenu.entryconfig("Constant M/L", state="normal")
     runButton.config(state="normal")
 
 
 def some_parameter_changed(parameter, newValue):
     """ This function calls every time when any parameter
     of galaxy, bulge, disk or halo is changes """
-    if parameter == "viewLegend":
+    if parameter == "viewLegend": 
         rotCurve.viewLegend = newValue
         rotCurve.plot()
         return 0
@@ -125,7 +127,8 @@ def some_parameter_changed(parameter, newValue):
         rotCurve.plot()
         return 0
     master.title("Galaxy Rotation Curve Fit (*)")
-    fitMenu.entryconfig("Best chi squared", state="disabled") # fitting is not allowed when parameters are changes
+    fitMenu.entryconfig("Best chi squared", state="disabled") # fitting is not allowed when parameters are changed
+    fitMenu.entryconfig("Constant M/L", state="disabled")       #
     rotCurve.parametersChanged = True
     if parameter == "incl":
         rotCurve.deproject(newValue)
@@ -197,6 +200,15 @@ fitMenu.add_command(label="Best chi squared",
                                                      rotCurve,
                                                      includeBulge.get(),
                                                      includeDisk.get(),
+                                                     includeHalo.get(),
+                                                     bulgeMLratioValue,
+                                                     diskMLratioValue,
+                                                     haloFirstParamValue,
+                                                     haloSecondParamValue),
+                    state="disabled")
+fitMenu.add_command(label="Constant M/L",
+                    command=lambda: ConstantMLWindow(master,
+                                                     rotCurve,
                                                      includeHalo.get(),
                                                      bulgeMLratioValue,
                                                      diskMLratioValue,

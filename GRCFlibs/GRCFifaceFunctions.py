@@ -475,6 +475,169 @@ class BruteForceWindow(object):
         self.diskMLratioValue.set(str(self.rotCurve.fittedDiskML))
         self.haloFirstParamValue.set(str(self.rotCurve.fittedHaloFirst))
         self.haloSecondParamValue.set(str(self.rotCurve.fittedHaloSecond))
+
+
+class ConstantMLWindow(object):
+    def __init__(self,
+                 master,
+                 rotCurve,
+                 includeHalo,
+                 bulgeMLratioValue,
+                 diskMLratioValue,
+                 haloFirstParamValue,
+                 haloSecondParamValue):
+        self.bulgeMLratioValue = bulgeMLratioValue
+        self.diskMLratioValue = diskMLratioValue
+        self.haloFirstParamValue = haloFirstParamValue
+        self.haloSecondParamValue = haloSecondParamValue
+        self.rotCurve = rotCurve
+        self.bruteForceFrame = Tk.Toplevel(takefocus=True)
+        self.bruteForceFrame.wm_attributes("-topmost", 1)
+        self.bruteForceFrame.grab_set()
+        xScreenSize = master.winfo_screenwidth()
+        yScreenSize = master.winfo_screenheight()
+        self.bruteForceFrame.geometry("+%i+%i" % (xScreenSize/2-250, yScreenSize/2-100))
+        Tk.Label(self.bruteForceFrame, text="Chose models and ranges to variate:").grid(column=0, row=0, columnspan=5)
+        self.haloState = "normal" if includeHalo else "disabled"
+
+        # Bulge parameters
+        Tk.Label(self.bruteForceFrame, text="Bulge and disk M-to-L  from").grid(column=0, row=1, columnspan=2)
+        self.bothMLlowerValue = Tk.StringVar()
+        self.bothMLlowerValue.set(self.rotCurve.bParams["MLratio"])
+        self.bothMLlowerEntry = Tk.Spinbox(self.bruteForceFrame,
+                                            textvariable=self.bothMLlowerValue, 
+                                            width=5, 
+                                            bg="white",
+                                            from_=0.0,
+                                            to=100,
+                                            increment=0.1)
+        self.bothMLlowerEntry.grid(column=2, row=1)
+        self.bothMLlowerEntry.bind("<Button-4>", mouse_wheel_up)
+        self.bothMLlowerEntry.bind("<Button-5>", mouse_wheel_down)
+        Tk.Label(self.bruteForceFrame, text=" to ").grid(column=3, row=1)
+        self.bothMLupperValue = Tk.StringVar()
+        self.bothMLupperValue.set(self.rotCurve.bParams["MLratio"])
+        self.bothMLupperEntry = Tk.Spinbox(self.bruteForceFrame,
+                                            textvariable=self.bothMLupperValue,
+                                            width=5,
+                                            bg="white",
+                                            from_=0.0,
+                                            to=100,
+                                            increment=0.1)
+        self.bothMLupperEntry.grid(column=4, row=1)
+        self.bothMLupperEntry.bind("<Button-4>", mouse_wheel_up)
+        self.bothMLupperEntry.bind("<Button-5>", mouse_wheel_down)
+
+        # Halo
+        self.variateHalo = Tk.IntVar()
+        self.variateHaloCButton = Tk.Checkbutton(self.bruteForceFrame, variable=self.variateHalo, text=" Halo: ", state=self.haloState)
+        self.variateHaloCButton.grid(column=0, row=3, rowspan=2)
+
+        Tk.Label(self.bruteForceFrame, text="First  from").grid(column=1, row=3)
+        self.haloFirstlowerValue = Tk.StringVar()
+        self.haloFirstlowerValue.set(self.rotCurve.hParams["firstParam"])
+        self.haloFirstlowerEntry = Tk.Spinbox(self.bruteForceFrame,
+                                              textvariable=self.haloFirstlowerValue,
+                                              width=5,
+                                              bg="white",
+                                              from_=0.0,
+                                              to=100,
+                                              increment=0.1,
+                                              state=self.haloState)
+        self.haloFirstlowerEntry.grid(column=2, row=3)
+        if self.haloState == "normal":
+            self.haloFirstlowerEntry.bind("<Button-4>", mouse_wheel_up)
+            self.haloFirstlowerEntry.bind("<Button-5>", mouse_wheel_down)
+        Tk.Label(self.bruteForceFrame, text=" to ").grid(column=3, row=3)
+        self.haloFirstupperValue = Tk.StringVar()
+        self.haloFirstupperValue.set(self.rotCurve.hParams["firstParam"])
+        self.haloFirstupperEntry = Tk.Spinbox(self.bruteForceFrame,
+                                              textvariable=self.haloFirstupperValue,
+                                              width=5, 
+                                              bg="white", 
+                                              from_=0.0,
+                                              to=100,
+                                              increment=0.1,
+                                              state=self.haloState)
+        self.haloFirstupperEntry.grid(column=4, row=3)
+        if self.haloState == "normal":
+            self.haloFirstupperEntry.bind("<Button-4>", mouse_wheel_up)
+            self.haloFirstupperEntry.bind("<Button-5>", mouse_wheel_down)
+
+        Tk.Label(self.bruteForceFrame, text="Second  from").grid(column=1, row=4)
+        self.haloSecondlowerValue = Tk.StringVar()
+        self.haloSecondlowerValue.set(self.rotCurve.hParams["secondParam"])
+        self.haloSecondlowerEntry = Tk.Spinbox(self.bruteForceFrame,
+                                               textvariable=self.haloSecondlowerValue,
+                                               width=5,
+                                               bg="white",
+                                               from_=0.0,
+                                               to=1000,
+                                               increment=1.0,
+                                               state=self.haloState)
+        self.haloSecondlowerEntry.grid(column=2, row=4)
+        if self.haloState == "normal":
+            self.haloSecondlowerEntry.bind("<Button-4>", mouse_wheel_up)
+            self.haloSecondlowerEntry.bind("<Button-5>", mouse_wheel_down)
+        Tk.Label(self.bruteForceFrame, text=" to ").grid(column=3, row=4)
+        self.haloSecondupperValue = Tk.StringVar()
+        self.haloSecondupperValue.set(self.rotCurve.hParams["secondParam"])
+        self.haloSecondupperEntry = Tk.Spinbox(self.bruteForceFrame,
+                                               textvariable=self.haloSecondupperValue,
+                                               width=5, 
+                                               bg="white", 
+                                               from_=0.0,
+                                               to=1000,
+                                               increment=1.0,
+                                               state=self.haloState)
+        self.haloSecondupperEntry.grid(column=4, row=4)
+        if self.haloState == "normal":
+            self.haloSecondupperEntry.bind("<Button-4>", mouse_wheel_up)
+            self.haloSecondupperEntry.bind("<Button-5>", mouse_wheel_down)
+
+        # Buttons
+        self.runButton = Tk.Button(self.bruteForceFrame, text="Run", state="normal", command=self.run)
+        self.runButton.grid(column=0, row=6)
+        self.saveButton = Tk.Button(self.bruteForceFrame, text="Save", state="disabled", command=self.save_fitted)
+        self.saveButton.grid(column=1, row=6)
+        self.cancelButton = Tk.Button(self.bruteForceFrame,
+                                      text="Close",
+                                      state="normal",
+                                      command=lambda: self.bruteForceFrame.destroy())
+        self.cancelButton.grid(column=4, row=6)
+        self.runLabelValue = Tk.StringVar()
+        Tk.Label(self.bruteForceFrame, textvariable=self.runLabelValue).grid(column=1, row=5, columnspan=3)
+
+    def run(self):
+        if ((float(self.bothMLlowerValue.get()) > float(self.bothMLupperValue.get()))
+            or (float(self.bothMLlowerValue.get())<=0)):
+            self.runLabelValue.set("Error in M/L parameters")
+            return 1
+        if self.variateHalo.get() and ((float(self.haloFirstlowerValue.get()) > float(self.haloFirstupperValue.get()))
+                                       or (float(self.haloFirstlowerValue.get())<=0)
+                                       or (float(self.haloSecondlowerValue.get()) > float(self.haloSecondupperValue.get()))
+                                       or (float(self.haloSecondlowerValue.get())<=0)):
+            self.runLabelValue.set(" Error in halo parameters ")
+            return 1
+        fitParams = {}
+        fitParams["bothMLlower"] = float(self.bothMLlowerValue.get())
+        fitParams["bothMLupper"] = float(self.bothMLupperValue.get())
+        fitParams["haloVariate"] = self.variateHalo.get()
+        fitParams["haloFirstlower"] = float(self.haloFirstlowerValue.get())
+        fitParams["haloFirstupper"] = float(self.haloFirstupperValue.get())
+        fitParams["haloSecondlower"] = float(self.haloSecondlowerValue.get())
+        fitParams["haloSecondupper"] = float(self.haloSecondupperValue.get())
+        t1 = time.time()
+        self.runLabelValue.set("         In process...         ")
+        self.rotCurve.fitConstantML(fitParams)
+        self.runLabelValue.set("       Done in %1.2f sec      " % (time.time()-t1))
+        self.saveButton.config(state="normal")
+
+    def save_fitted(self):
+        self.bulgeMLratioValue.set(str(self.rotCurve.fittedBulgeML))
+        self.diskMLratioValue.set(str(self.rotCurve.fittedDiskML))
+        self.haloFirstParamValue.set(str(self.rotCurve.fittedHaloFirst))
+        self.haloSecondParamValue.set(str(self.rotCurve.fittedHaloSecond))
         
 
 

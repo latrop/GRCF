@@ -268,7 +268,7 @@ class GalaxyRotation(object):
         hParams = self.hParams
         if fitParams["bulgeVariate"] > 0:
             bLower = fitParams["bulgeMLlower"]
-            bUper = fitParams["bulgeMLupper"]
+            bUpper = fitParams["bulgeMLupper"]
         else:
             bLower = bUper = float(bParams["MLratio"])
         if fitParams["diskVariate"] > 0:
@@ -286,7 +286,7 @@ class GalaxyRotation(object):
             hLower2 = hUpper2 = float(hParams["secondParam"])
         for diskML in arange(dLower, dUpper+0.01, 0.1):
             dParams["MLratio"] = diskML
-            for bulgeML in arange(bLower, bUper+0.01, 0.1):
+            for bulgeML in arange(bLower, bUpper+0.01, 0.1):
                 bParams["MLratio"] = bulgeML
                 for firstParam in arange(hLower1, hUpper1+0.01, 0.1):
                     hParams["firstParam"] = firstParam
@@ -305,6 +305,45 @@ class GalaxyRotation(object):
                             self.fittedDiskML = diskML
                             self.fittedHaloFirst = firstParam
                             self.fittedHaloSecond = secondParam
+        print time.time() - t1
+
+    def fitConstantML(self, fitParams):
+        t1 = time.time()
+        bestChiSq = 1e20
+        gParams = self.gParams
+        bParams = self.bParams
+        dParams = self.dParams
+        hParams = self.hParams
+        bothLower = fitParams["bothMLlower"]
+        bothUpper = fitParams["bothMLupper"]
+        if fitParams["haloVariate"] > 0:
+            hLower1 = fitParams["haloFirstlower"]
+            hUpper1 = fitParams["haloFirstupper"]
+            hLower2 = fitParams["haloSecondlower"]
+            hUpper2 = fitParams["haloSecondupper"]
+        else:
+            hLower1 = hUpper1 = float(hParams["firstParam"])
+            hLower2 = hUpper2 = float(hParams["secondParam"])
+        for bothML in arange(bothLower, bothUpper+0.01, 0.1):
+            dParams["MLratio"] = bothML
+            bParams["MLratio"] = bothML
+            for firstParam in arange(hLower1, hUpper1+0.01, 0.1):
+                hParams["firstParam"] = firstParam
+                for secondParam in arange(hLower2, hUpper2+0.01, 1):
+                    hParams["secondParam"] = secondParam
+                    self.makeComputation(gParams, bParams, dParams, hParams, makePlot=False)
+                    chisq = self.compute_chi_sq()
+#                    if prevChiSq < chisq:
+#                        break
+#                    prevChiSq = chisq
+                    if (chisq < bestChiSq) and (chisq < self.previousChiSq):
+                        bestChiSq = chisq
+                        print bestChiSq
+                        self.plot()
+                        self.fittedBulgeML = bothML
+                        self.fittedDiskML = bothML
+                        self.fittedHaloFirst = firstParam
+                        self.fittedHaloSecond = secondParam
         print time.time() - t1
 
     def compute_chi_sq(self):
