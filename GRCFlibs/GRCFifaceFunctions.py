@@ -6,6 +6,8 @@ import tkFileDialog, tkMessageBox
 import shelve
 import time
 
+from pylab import *
+
 def mouse_wheel_up(event):
     try:
         oldvalue = float(event.widget.get())
@@ -434,6 +436,8 @@ class BruteForceWindow(object):
                                       state="normal",
                                       command=lambda: self.bruteForceFrame.destroy())
         self.cancelButton.grid(column=4, row=6)
+        self.mapButton = Tk.Button(self.bruteForceFrame, text="Map", state="disabled", command=self.show_map)
+        self.mapButton.grid(column=2, row=6)
         self.runLabelValue = Tk.StringVar()
         Tk.Label(self.bruteForceFrame, textvariable=self.runLabelValue).grid(column=1, row=5, columnspan=3)
 
@@ -466,15 +470,27 @@ class BruteForceWindow(object):
         fitParams["haloSecondupper"] = float(self.haloSecondupperValue.get())
         t1 = time.time()
         self.runLabelValue.set("         In process...         ")
-        self.rotCurve.fitBruteForce(fitParams)
+        self.chi_map = self.rotCurve.fitBruteForce(fitParams)
         self.runLabelValue.set("       Done in %1.2f sec      " % (time.time()-t1))
         self.saveButton.config(state="normal")
+        self.mapButton.config(state="normal")
 
     def save_fitted(self):
         self.bulgeMLratioValue.set(str(self.rotCurve.fittedBulgeML))
         self.diskMLratioValue.set(str(self.rotCurve.fittedDiskML))
         self.haloFirstParamValue.set(str(self.rotCurve.fittedHaloFirst))
         self.haloSecondParamValue.set(str(self.rotCurve.fittedHaloSecond))
+
+    def show_map(self):
+        x = arange(float(self.bulgeMLlowerValue.get()), float(self.bulgeMLupperValue.get()), 0.1)
+        y = arange(float(self.diskMLlowerValue.get()), float(self.diskMLupperValue.get()), 0.1)
+        X, Y = meshgrid(x, y)
+        pcolor(X, Y, self.chi_map)
+        xlabel("Bulge M/L")
+        ylabel("Disk M/L")
+        colorbar()
+        plot([self.rotCurve.fittedBulgeML], [self.rotCurve.fittedDiskML], "ro")
+        show()
 
 
 class ConstantMLWindow(object):

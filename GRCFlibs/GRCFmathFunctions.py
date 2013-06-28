@@ -266,6 +266,7 @@ class GalaxyRotation(object):
         bParams = self.bParams
         dParams = self.dParams
         hParams = self.hParams
+        chi_map = []
         if fitParams["bulgeVariate"] > 0:
             bLower = fitParams["bulgeMLlower"]
             bUpper = fitParams["bulgeMLupper"]
@@ -285,15 +286,18 @@ class GalaxyRotation(object):
             hLower1 = hUpper1 = float(hParams["firstParam"])
             hLower2 = hUpper2 = float(hParams["secondParam"])
         for diskML in arange(dLower, dUpper+0.01, 0.1):
+            chi_map.append([])
             dParams["MLratio"] = diskML
             for bulgeML in arange(bLower, bUpper+0.01, 0.1):
                 bParams["MLratio"] = bulgeML
+                chi_map[-1].append([])
                 for firstParam in arange(hLower1, hUpper1+0.01, 0.1):
                     hParams["firstParam"] = firstParam
                     for secondParam in arange(hLower2, hUpper2+0.01, 1):
                         hParams["secondParam"] = secondParam
                         self.makeComputation(gParams, bParams, dParams, hParams, makePlot=False)
                         chisq = self.compute_chi_sq()
+                        chi_map[-1][-1] = chisq
     #                    if prevChiSq < chisq:
     #                        break
     #                    prevChiSq = chisq
@@ -306,6 +310,7 @@ class GalaxyRotation(object):
                             self.fittedHaloFirst = firstParam
                             self.fittedHaloSecond = secondParam
         print time.time() - t1
+        return chi_map
 
     def fitConstantML(self, fitParams):
         t1 = time.time()
