@@ -6,7 +6,22 @@ import tkFileDialog, tkMessageBox
 import shelve
 import time
 
+from scipy.odr.odrpack import *
+from scipy.ndimage import minimum_position
+
 from pylab import *
+
+def fitByLine(xxx, yyy):
+    f = lambda B, x: B[0]*x + B[1]
+    fitting = ODR(RealData(xxx, yyy), 
+                  Model(f), 
+                  [-1.0, 0])
+    fitting.set_job()
+    result = fitting.run()
+    return result.beta[0], result.beta[1]
+
+def geomLine(B, x):
+    return B[0]*x +B[1]
 
 def mouse_wheel_up(event):
     try:
@@ -213,6 +228,7 @@ def saveVelocity(master, rotCurve):
     fout.write("# Parameters are:\n")
     fout.write("#               inclination = %s\n" % (rotCurve.gParams["incl"]))
     fout.write("#               scale = %s\n" % (rotCurve.gParams["scale"]))
+    fout.write("#               H0 = %s\n" % (rotCurve.gParams["hubble"]))
     fout.write("#               Msun = %s\n" % (rotCurve.gParams["Msun"]))
     fout.write("#\n")
     fout.write("# Parameters of bulge:\n")
@@ -241,10 +257,18 @@ def saveVelocity(master, rotCurve):
     else:
         fout.write("#               halo is not included\n")
     fout.write("#\n")
-    fout.write("#R[kpc]   R[arcsec]  vBulge    vDisk      vHalo      vSum\n")
-    for i in xrange(len(rotCurve.distanceKpc)):
-        fout.write("%7.3f   " % (rotCurve.distanceKpc[i]))
-        fout.write("%6.1f    " % (rotCurve.distanceArcSec[i]))
+    fout.write("#R[arcsec]   R[kpc]   vObs       +/-     vBulge    vDisk      vHalo      vSum\n")
+    obs_counter = 0
+    for i in xrange(len(rotCurve.distancesToComputeKpc)):
+        fout.write("%6.1f    " % (rotCurve.distancesToComputeArcSec[i]))
+        fout.write("%7.3f   " % (rotCurve.distancesToComputeKpc[i]))
+        if rotCurve.distancesToComputeKpc[i] > rotCurve.distanceKpc[0]:
+            fout.write("%7.2f   " % (rotCurve.velocity[obs_counter]))
+            fout.write("%7.2f   " % (rotCurve.velocity_sigma[obs_counter]))
+            obs_counter += 1
+        else:
+            fout.write(" ------   ")
+            fout.write(" ------   ")
         if includeBulge:
             fout.write("%7.2f   " % (rotCurve.bulgeVelocity[i]))
         else:
@@ -469,11 +493,13 @@ class BruteForceWindow(object):
         fitParams["haloSecondlower"] = float(self.haloSecondlowerValue.get())
         fitParams["haloSecondupper"] = float(self.haloSecondupperValue.get())
         t1 = time.time()
+        self.mapButton.config(state="disabled")
         self.runLabelValue.set("         In process...         ")
         self.chi_map = self.rotCurve.fitBruteForce(fitParams)
         self.runLabelValue.set("       Done in %1.2f sec      " % (time.time()-t1))
         self.saveButton.config(state="normal")
-        self.mapButton.config(state="normal")
+        if self.variateDisk.get() and self.variateBulge.get():
+            self.mapButton.config(state="normal")
 
     def save_fitted(self):
         self.bulgeMLratioValue.set(str(self.rotCurve.fittedBulgeML))
@@ -482,14 +508,14 @@ class BruteForceWindow(object):
         self.haloSecondParamValue.set(str(self.rotCurve.fittedHaloSecond))
 
     def show_map(self):
-        x = arange(float(self.bulgeMLlowerValue.get()), float(self.bulgeMLupperValue.get()), 0.1)
-        y = arange(float(self.diskMLlowerValue.get()), float(self.diskMLupperValue.get()), 0.1)
+        x = arange(float(self.bulgeMLlowerValue.get()), float(self.bulgeMLupperValue.get())+0.01, 0.1)
+        y = arange(float(self.diskMLlowerValue.get()), float(self.diskMLupperValue.get())+0.01, 0.1)
         X, Y = meshgrid(x, y)
         pcolor(X, Y, self.chi_map)
         xlabel("Bulge M/L")
         ylabel("Disk M/L")
         colorbar()
-        plot([self.rotCurve.fittedBulgeML], [self.rotCurve.fittedDiskML], "ro")
+        plot([self.rotCurve.fittedBulgeML+0.05], [self.rotCurve.fittedDiskML+0.05], "ro")
         show()
 
 

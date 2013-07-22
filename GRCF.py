@@ -29,6 +29,7 @@ def loadVelocityData():
     generalInclinationEntry.config(state="normal")
     generalSunMagEntry.config(state="normal")
     generalScaleEntry.config(state="normal")
+    generalHubbleEntry.config(state="normal")
     includeDiskCButton.config(state="normal")
     includeBulgeCButton.config(state="normal")
     includeHaloCButton.config(state="normal")
@@ -44,6 +45,7 @@ def getValuesFromAllFields():
     gParams = {}
     gParams["incl"] = generalInclinationValue.get()
     gParams["scale"] = generalScaleValue.get()
+    gParams["hubble"] = generalHubbleValue.get()
     gParams["Msun"] = generalSunMagValue.get()
     bParams = {}
     bParams["include"] = includeBulge.get()
@@ -76,6 +78,7 @@ def setValuesToAllFields(params):
     generalInclinationValue.set(gParams["incl"])
     generalScaleValue.set(gParams["scale"])
     generalSunMagValue.set(gParams["Msun"])
+    generalHubbleValue.set(gParams["hubble"])
     includeBulge.set(bParams["include"])
     bulgeEffSurfBriValue.set(bParams["effSurfBri"])
     bulgeSersicIndexValue.set(bParams["sersicIndex"])
@@ -255,6 +258,7 @@ generalInclinationEntry.bind("<Button-5>", mouse_wheel_down)
 generalInclinationValue.trace("w", 
                               lambda n, i, m, v=generalInclinationValue: some_parameter_changed("incl", v.get()))
 Tk.Label(generalPanel, text=" deg             ").grid(column=2, row=0)
+
 Tk.Label(generalPanel, text="scale").grid(column=0, row=1)
 generalScaleValue = Tk.StringVar()
 generalScaleValue.set("1.00")
@@ -263,13 +267,25 @@ generalScaleValue.trace("w",
 generalScaleEntry = Tk.Entry(generalPanel, textvariable=generalScaleValue, width=5, state="disabled", bg="white")
 generalScaleEntry.grid(column=1, row=1, sticky=Tk.W)
 Tk.Label(generalPanel, text="kpc/arcsec").grid(column=2, row=1)
-Tk.Label(generalPanel, text="M_sun").grid(column=0, row=2)
+
+# Hubble parameter value
+Tk.Label(generalPanel, text="H0").grid(column=0, row=2)
+generalHubbleValue = Tk.StringVar()
+generalHubbleValue.set("67.0")
+generalHubbleValue.trace("w", 
+                        lambda n, i, m, v=generalHubbleValue: some_parameter_changed("hubble", v.get()))
+generalHubbleEntry = Tk.Entry(generalPanel, textvariable=generalHubbleValue, width=5, state="disabled", bg="white")
+generalHubbleEntry.grid(column=1, row=2, sticky=Tk.W)
+Tk.Label(generalPanel, text="km/sec/Mpc").grid(column=2, row=2)
+
+# Solar absolute magnitude
+Tk.Label(generalPanel, text="M_sun").grid(column=0, row=3)
 generalSunMagValue = Tk.StringVar()
 generalSunMagValue.set(5.45)
 generalSunMagValue.trace("w", lambda n, i, m, v=generalSunMagValue: some_parameter_changed("Msun", v.get()))
 generalSunMagEntry = Tk.Entry(generalPanel, textvariable=generalSunMagValue, width=5, state="disabled", bg="white")
-generalSunMagEntry.grid(column=1, row=2, sticky=Tk.W)
-Tk.Label(generalPanel, text="mag            ").grid(column=2, row=2)
+generalSunMagEntry.grid(column=1, row=3, sticky=Tk.W)
+Tk.Label(generalPanel, text="mag            ").grid(column=2, row=3)
 
 
 def band_selected(*args):
@@ -279,7 +295,7 @@ def band_selected(*args):
 generalBandValue = Tk.StringVar()
 generalBandValue.set("Straizys B (= Johnson) Vega")
 generalBandCBox = Tk.OptionMenu(generalPanel, generalBandValue, *mSunBandsList)
-generalBandCBox.grid(column=0, row=3, sticky=Tk.W, columnspan=3)
+generalBandCBox.grid(column=0, row=4, sticky=Tk.W, columnspan=3)
 generalBandValue.trace("w", band_selected)
 
 # Parameters of bulge
@@ -327,8 +343,8 @@ bulgeMLratioEntry = Tk.Spinbox(bulgePanel,
                                textvariable=bulgeMLratioValue,
                                width=5,
                                state="disabled",
-                               from_=1,
-                               to=10,
+                               from_=0.1,
+                               to=50,
                                increment=0.1,
                                bg="white")
 bulgeMLratioValue.trace("w", lambda n, i, m, v=bulgeMLratioValue: some_parameter_changed("bulgeML", v.get()))
@@ -378,8 +394,8 @@ diskMLratioEntry = Tk.Spinbox(diskPanel,
                               textvariable=diskMLratioValue,
                               width=5,
                               state="disabled",
-                              from_=1,
-                              to=10,
+                              from_=0.1,
+                              to=50,
                               increment=0.1,
                               bg="white")
 diskMLratioValue.trace("w", lambda n, i, m, v=diskMLratioValue: some_parameter_changed("diskML", v.get()))

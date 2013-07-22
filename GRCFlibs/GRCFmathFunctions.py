@@ -115,9 +115,9 @@ class GalaxyRotation(object):
             # if this iteration gives a better chi square value, then choose the green color for
             # plot it, if nothing changed -- black, if worse -- red.
             if self.colouredPaint:
-                if chisq - self.previousChiSq < -0.0001:
+                if chisq - self.previousChiSq < -0.000000001:
                     chisq_color = "green"
-                elif chisq - self.previousChiSq > 0.0001:
+                elif chisq - self.previousChiSq > 0.000000001:
                     chisq_color = "red"
                 else:
                     chisq_color = "black"
@@ -266,12 +266,18 @@ class GalaxyRotation(object):
         bParams = self.bParams
         dParams = self.dParams
         hParams = self.hParams
+        # inital best fitting parameters
+        self.fittedBulgeML = float(bParams["MLratio"])
+        self.fittedDiskML = float(dParams["MLratio"])
+        self.fittedHaloFirst = float(hParams["firstParam"])
+        self.fittedHaloSecond = float(hParams["secondParam"])
         chi_map = []
+        print "varb", fitParams["bulgeVariate"]
         if fitParams["bulgeVariate"] > 0:
             bLower = fitParams["bulgeMLlower"]
             bUpper = fitParams["bulgeMLupper"]
         else:
-            bLower = bUper = float(bParams["MLratio"])
+            bLower = bUpper = float(bParams["MLratio"])
         if fitParams["diskVariate"] > 0:
             dLower = fitParams["diskMLlower"]
             dUpper = fitParams["diskMLupper"]
@@ -291,16 +297,17 @@ class GalaxyRotation(object):
             for bulgeML in arange(bLower, bUpper+0.01, 0.1):
                 bParams["MLratio"] = bulgeML
                 chi_map[-1].append([])
+                chi_halo_params = []
                 for firstParam in arange(hLower1, hUpper1+0.01, 0.1):
                     hParams["firstParam"] = firstParam
                     for secondParam in arange(hLower2, hUpper2+0.01, 1):
                         hParams["secondParam"] = secondParam
                         self.makeComputation(gParams, bParams, dParams, hParams, makePlot=False)
                         chisq = self.compute_chi_sq()
-                        chi_map[-1][-1] = chisq
     #                    if prevChiSq < chisq:
     #                        break
     #                    prevChiSq = chisq
+                        chi_halo_params.append(chisq)
                         if (chisq < bestChiSq) and (chisq < self.previousChiSq):
                             bestChiSq = chisq
                             print bestChiSq
@@ -309,6 +316,7 @@ class GalaxyRotation(object):
                             self.fittedDiskML = diskML
                             self.fittedHaloFirst = firstParam
                             self.fittedHaloSecond = secondParam
+                chi_map[-1][-1] = min(chi_halo_params)
         print time.time() - t1
         return chi_map
 
