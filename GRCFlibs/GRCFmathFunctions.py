@@ -5,7 +5,7 @@ from math import radians, sin
 import Tkinter as Tk
 import tkFileDialog
 from scipy.interpolate import interp1d, InterpolatedUnivariateSpline
-from numpy import arange, linspace, abs, array, zeros_like, concatenate
+from numpy import arange, linspace, abs, array, zeros_like, concatenate, log
 from numpy import sum as npsum
 
 from GRCFveloFunctions import *
@@ -212,6 +212,13 @@ class GalaxyRotation(object):
                 haloVelsquared = isoHaloRotVel(Rc, Vinf, self.distancesToComputeKpc)
                 self.haloVelocity = 0.001 * haloVelsquared ** 0.5
                 self.sumVelocity += haloVelsquared
+            elif hParams["model"] == "NFW":  # Navarro Frenk White halo
+                concentrationParameter = float(hParams["firstParam"])
+                v200 = float(hParams["secondParam"])
+                H = float(gParams["hubble"])
+                haloVelsquared = NFWRotVel(concentrationParameter, v200, H, self.distancesToComputeKpc)
+                self.haloVelocity = haloVelsquared ** 0.5
+                self.sumVelocity += 1e6*haloVelsquared
 
         if bParams["include"]:
             # compude bulge rotation velocity

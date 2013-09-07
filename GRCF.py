@@ -416,19 +416,20 @@ haloModelValue = Tk.StringVar()
 haloModelValue.set("isoterm")
 haloModelValue.trace("w", lambda n, i, m, v=haloModelValue: some_parameter_changed("haloModel", v.get()))
 haloFirstParamLabel = Tk.Label(haloPanel, text='Rc')
+haloSecondParamLabel = Tk.Label(haloPanel, text='V(inf)')
 isotermHaloRadiobutton = Tk.Radiobutton(haloPanel, 
                                         text="isoterm", 
                                         variable=haloModelValue, 
                                         value="isoterm", 
                                         state="disabled", 
-                                        command=lambda : haloFirstParamLabel.config(text="Rc"))
+                                        command=lambda : [haloFirstParamLabel.config(text="Rc"), haloSecondParamLabel.config(text="V(inf)")])
 isotermHaloRadiobutton.grid(column=1, row=0)
 NFWHaloRadiobutton = Tk.Radiobutton(haloPanel,
                                     text="NFW",
                                     variable=haloModelValue,
                                     value="NFW", 
                                     state="disabled",
-                                    command=lambda : haloFirstParamLabel.config(text="C"))
+                                    command=lambda : [haloFirstParamLabel.config(text="C"), haloSecondParamLabel.config(text="V200")])
 NFWHaloRadiobutton.grid(column=2, row=0)
 
 haloFirstParamLabel.grid(column=0, row=1)
@@ -436,7 +437,7 @@ haloFirstParamValue = Tk.StringVar()
 haloFirstParamValue.trace("w", lambda n, i, m, v=haloFirstParamValue: some_parameter_changed("haloFirst", v.get()))
 haloFirstParamEntry = Tk.Entry(haloPanel, textvariable=haloFirstParamValue, width=5, state="disabled", bg="white")
 haloFirstParamEntry.grid(column=1, row=1)
-Tk.Label(haloPanel, text="V(inf)").grid(column=0, row=2)
+haloSecondParamLabel.grid(column=0, row=2)
 
 haloSecondParamValue = Tk.StringVar()
 haloSecondParamValue.trace("w", lambda n, i, m, v=haloSecondParamValue: some_parameter_changed("haloSecond", v.get()))

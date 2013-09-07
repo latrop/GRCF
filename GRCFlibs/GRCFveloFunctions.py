@@ -3,7 +3,7 @@
 from math import log10, pi
 from ctypes import *
 
-from numpy import array, linspace, arctan, where, isnan, zeros_like
+from numpy import array, linspace, arctan, where, isnan, zeros_like, log
 from scipy.special import i0, k0, i1, k1, gamma, gammainc
 from scipy.integrate import quad
 
@@ -52,6 +52,11 @@ def isoHaloRotVel(Rc, V_inf, distancesKpc):
     vel_squared = 4*pi*G*rho0*RcMeters**2 * (1-(RcMeters/distancesMeter) * arctan(distancesMeter/RcMeters))
     return vel_squared
 
+def NFWRotVel(c, v200, H, distancesKpc):
+    r200 = v200 / (10*H/1000)
+    x = distancesKpc / r200
+    v_sq = v200**2 * ((log(1+c*x) - (c*x)/(1+c*x)) / (log(1+c) - c/(1+c))) / x
+    return v_sq # velocity is in km. per sec.
 
 def spSymmBulgeRotVel(bulgeEffSurfBri, n, bulgeRe, MLratio, Msun, scale, distancesKpc):
     #            mag/sqarcsec         sec               kpc
