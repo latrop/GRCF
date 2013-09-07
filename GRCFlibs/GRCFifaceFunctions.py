@@ -251,9 +251,15 @@ def saveVelocity(master, rotCurve):
     fout.write("#\n")
     fout.write("# Parameters of halo:\n")
     if includeHalo == 1:
+        if rotCurve.hParams["model"] == "isoterm":
+            firstParName = "Rc"
+            secondParName = "V(inf)"
+        else:
+            firstParName = "C"
+            secondParName = "V200"
         fout.write("#               model = %s\n" % (rotCurve.hParams["model"]))
-        fout.write("#               first parameter = %s\n" % (rotCurve.hParams["firstParam"]))   # FIXME: change params names when NFW added
-        fout.write("#               second parameter = %s\n" % (rotCurve.hParams["secondParam"])) #
+        fout.write("#               %s = %s\n" % (firstParName, rotCurve.hParams["firstParam"]))
+        fout.write("#               %s = %s\n" % (secondParName, rotCurve.hParams["secondParam"]))
     else:
         fout.write("#               halo is not included\n")
     fout.write("#\n")
