@@ -899,7 +899,6 @@ class MaximalDiskWindow(object):
                                      orient=Tk.HORIZONTAL,
                                      resolution=0.1,
                                      length=180,
-                                     state="disabled",
                                      variable=self.diskMLSliderValue)
         self.diskMLSliderValue.trace("w",
                                      lambda n, i, m, v=self.diskMLSliderValue: self.sliderMoved(v.get()))
@@ -927,7 +926,14 @@ class MaximalDiskWindow(object):
         Tk.Label(self.maximalDiskFrame, textvariable=self.selectedHaloFirst).grid(column=1, row=9)
         self.selectedHaloSecond = Tk.StringVar()
         Tk.Label(self.maximalDiskFrame, textvariable=self.selectedHaloSecond).grid(column=1, row=10)
-            
+        # Labels for "near to the edge" cautions
+        self.bulgeMLCautionLabel = Tk.Label(self.maximalDiskFrame)    # Bulge
+        self.bulgeMLCautionLabel.grid(column=2, row=8, columnspan=2)  #
+        self.haloFirstCautionLabel = Tk.Label(self.maximalDiskFrame)
+        self.haloFirstCautionLabel.grid(column=2, row=9, columnspan=2)
+        self.haloSecondCautionLabel = Tk.Label(self.maximalDiskFrame)
+        self.haloSecondCautionLabel.grid(column=2, row=10, columnspan=2)
+        
 
     def sliderMoved(self, value):
         index = int((value - float(self.diskMLlowerValue.get())) / 0.1)
@@ -937,6 +943,21 @@ class MaximalDiskWindow(object):
         self.selectedBulgeML.set(str(bulgeMLopt))
         self.selectedHaloFirst.set(str(haloFirstOpt))
         self.selectedHaloSecond.set(str(haloSecondOpt))
+        # if optimal value of some parameter is too near to the edge of a
+        # searching area then corresponding message is written
+        if (bulgeMLopt - 0.05 < float(self.bulgeMLlowerValue.get())) or (bulgeMLopt + 0.05 > float(self.bulgeMLupperValue.get())):
+            self.bulgeMLCautionLabel.config(text="<-near the edge", foreground="red")
+        else:
+            self.bulgeMLCautionLabel.config(text="", foreground="red")
+        if (haloFirstOpt - 0.05 < float(self.haloFirstlowerValue.get())) or (haloFirstOpt + 0.05 > float(self.haloFirstupperValue.get())):
+            self.haloFirstCautionLabel.config(text="<-near the edge", foreground="red")
+        else:
+            self.haloFirstCautionLabel.config(text="", foreground="red")
+        if (haloSecondOpt - 0.05 < float(self.haloSecondlowerValue.get())) or (haloSecondOpt + 0.05 > float(self.haloSecondupperValue.get())):
+            self.haloSecondCautionLabel.config(text="<-near the edge", foreground="red")
+        else:
+            self.haloSecondCautionLabel.config(text="", foreground="red")
+
 
 
     def run(self):
