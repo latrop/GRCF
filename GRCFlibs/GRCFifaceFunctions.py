@@ -400,7 +400,10 @@ class BruteForceWindow(object):
         self.variateHaloCButton = Tk.Checkbutton(self.bruteForceFrame, variable=self.variateHalo, text=" Halo: ", state=self.haloState)
         self.variateHaloCButton.grid(column=0, row=3, rowspan=2)
 
-        Tk.Label(self.bruteForceFrame, text="First  from").grid(column=1, row=3)
+        if self.rotCurve.hParams["model"] == "isoterm":
+            Tk.Label(self.bruteForceFrame, text="Rc  from").grid(column=1, row=3)
+        elif self.rotCurve.hParams["model"] == "NFW":
+            Tk.Label(self.bruteForceFrame, text="C  from").grid(column=1, row=3)
         self.haloFirstlowerValue = Tk.StringVar()
         self.haloFirstlowerValue.set(self.rotCurve.hParams["firstParam"])
         self.haloFirstlowerEntry = Tk.Spinbox(self.bruteForceFrame,
@@ -431,7 +434,10 @@ class BruteForceWindow(object):
             self.haloFirstupperEntry.bind("<Button-4>", mouse_wheel_up)
             self.haloFirstupperEntry.bind("<Button-5>", mouse_wheel_down)
 
-        Tk.Label(self.bruteForceFrame, text="Second  from").grid(column=1, row=4)
+        if self.rotCurve.hParams["model"] == "isoterm":
+            Tk.Label(self.bruteForceFrame, text="V(inf)  from").grid(column=1, row=4)
+        elif self.rotCurve.hParams["model"] == "NFW":
+            Tk.Label(self.bruteForceFrame, text="V200  from").grid(column=1, row=4)
         self.haloSecondlowerValue = Tk.StringVar()
         self.haloSecondlowerValue.set(self.rotCurve.hParams["secondParam"])
         self.haloSecondlowerEntry = Tk.Spinbox(self.bruteForceFrame,
@@ -587,7 +593,10 @@ class ConstantMLWindow(object):
         self.variateHaloCButton = Tk.Checkbutton(self.bruteForceFrame, variable=self.variateHalo, text=" Halo: ", state=self.haloState)
         self.variateHaloCButton.grid(column=0, row=3, rowspan=2)
 
-        Tk.Label(self.bruteForceFrame, text="First  from").grid(column=1, row=3)
+        if self.rotCurve.hParams["model"] == "isoterm":
+            Tk.Label(self.bruteForceFrame, text="Rc  from").grid(column=1, row=3)
+        elif self.rotCurve.hParams["model"] == "NFW":
+            Tk.Label(self.bruteForceFrame, text="C  from").grid(column=1, row=3)
         self.haloFirstlowerValue = Tk.StringVar()
         self.haloFirstlowerValue.set(self.rotCurve.hParams["firstParam"])
         self.haloFirstlowerEntry = Tk.Spinbox(self.bruteForceFrame,
@@ -618,7 +627,10 @@ class ConstantMLWindow(object):
             self.haloFirstupperEntry.bind("<Button-4>", mouse_wheel_up)
             self.haloFirstupperEntry.bind("<Button-5>", mouse_wheel_down)
 
-        Tk.Label(self.bruteForceFrame, text="Second  from").grid(column=1, row=4)
+        if self.rotCurve.hParams["model"] == "isoterm":
+            Tk.Label(self.bruteForceFrame, text="V(inf)  from").grid(column=1, row=4)
+        elif self.rotCurve.hParams["model"] == "NFW":
+            Tk.Label(self.bruteForceFrame, text="V200  from").grid(column=1, row=4)
         self.haloSecondlowerValue = Tk.StringVar()
         self.haloSecondlowerValue.set(self.rotCurve.hParams["secondParam"])
         self.haloSecondlowerEntry = Tk.Spinbox(self.bruteForceFrame,
