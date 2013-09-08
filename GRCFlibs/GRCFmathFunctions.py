@@ -5,11 +5,19 @@ from math import radians, sin
 import Tkinter as Tk
 import tkFileDialog
 from scipy.interpolate import interp1d, InterpolatedUnivariateSpline
+import numpy
 from numpy import arange, linspace, abs, array, zeros_like, concatenate, log
 from numpy import sum as npsum
 
 from GRCFveloFunctions import *
+from GRCFcommonFunctions import fig2img, fig2data
 import time
+
+import Image
+from PIL import ImageTk
+
+from copy import copy
+
 
 class GalaxyRotation(object):
     def __init__(self, distanceArcSec, velocity, velocity_sigma, scale, mainGraph, canvas, fileName):
@@ -134,8 +142,10 @@ class GalaxyRotation(object):
         a2.set_xlabel("Distance [kpc]")
         a2.errorbar(self.distanceKpc, self.velocity, self.velocity_sigma, color="k", linestyle="-", label="Data")
         a2.axis([0, max(self.distanceKpc)*1.1, 0, maxVelocityAxes])
+        imageWithGraph = fig2img(self.mainGraph) # store image into PIL object for future usage
         self.canvas.show()
         self.canvas.get_tk_widget().pack(side=Tk.LEFT, fill=Tk.BOTH, expand=1)
+        return ImageTk.PhotoImage(imageWithGraph)
         
     def makeComputation(self, gParams, bParams, dParams, hParams, makePlot=True):
         """Compute rotation velocities according to specifued parameters"""
@@ -267,7 +277,6 @@ class GalaxyRotation(object):
             self.plot()
 
     def fitBruteForce(self, fitParams):
-        t1 = time.time()
         bestChiSq = 1e20
         gParams = self.gParams
         bParams = self.bParams
@@ -324,11 +333,9 @@ class GalaxyRotation(object):
                             self.fittedHaloFirst = firstParam
                             self.fittedHaloSecond = secondParam
                 chi_map[-1][-1] = min(chi_halo_params)
-        print time.time() - t1
         return chi_map
 
     def fitConstantML(self, fitParams):
-        t1 = time.time()
         bestChiSq = 1e20
         gParams = self.gParams
         bParams = self.bParams
@@ -364,7 +371,66 @@ class GalaxyRotation(object):
                         self.fittedDiskML = bothML
                         self.fittedHaloFirst = firstParam
                         self.fittedHaloSecond = secondParam
-        print time.time() - t1
+
+
+    def fitMaximalDisk(self, fitParams):
+        gParams = self.gParams
+        bParams = self.bParams
+        dParams = self.dParams
+        hParams = self.hParams
+        # inital best fitting parameters
+        self.fittedBulgeML = float(bParams["MLratio"])
+        self.fittedDiskML = float(dParams["MLratio"])
+        self.fittedHaloFirst = float(hParams["firstParam"])
+        self.fittedHaloSecond = float(hParams["secondParam"])
+        if fitParams["bulgeVariate"] > 0:
+            bLower = fitParams["bulgeMLlower"]
+            bUpper = fitParams["bulgeMLupper"]
+        else:
+            bLower = bUpper = float(bParams["MLratio"])
+        if fitParams["diskVariate"] > 0:
+            dLower = fitParams["diskMLlower"]
+            dUpper = fitParams["diskMLupper"]
+        else:
+            dLower = dUpper = float(dParams["MLratio"])
+        if fitParams["haloVariate"] > 0:
+            hLower1 = fitParams["haloFirstlower"]
+            hUpper1 = fitParams["haloFirstupper"]
+            hLower2 = fitParams["haloSecondlower"]
+            hUpper2 = fitParams["haloSecondupper"]
+        else:
+            hLower1 = hUpper1 = float(hParams["firstParam"])
+            hLower2 = hUpper2 = float(hParams["secondParam"])
+        chi_sqList = []
+        bhOptimalList = [] # parameters of bulge end halo wich lead to minimum of chi sq. for given disk ML ratio
+        plotList = [] # list of graphs with optimal fitting values for given disk ML ratio
+        for diskML in arange(dLower, dUpper+0.01, 0.1):
+            bestChiSq = 1e20
+            dParams["MLratio"] = diskML
+            for bulgeML in arange(bLower, bUpper+0.01, 0.1):
+                bParams["MLratio"] = bulgeML
+                for firstParam in arange(hLower1, hUpper1+0.01, 0.1):
+                    hParams["firstParam"] = firstParam
+                    for secondParam in arange(hLower2, hUpper2+0.01, 1):
+                        hParams["secondParam"] = secondParam
+                        self.makeComputation(gParams, bParams, dParams, hParams, makePlot=False)
+                        chisq = self.compute_chi_sq()
+                        if (chisq < bestChiSq):
+                            bestChiSq = chisq
+                            fittedBulgeML = bulgeML
+                            fittedHaloFirst = firstParam
+                            fittedHaloSecond = secondParam
+            # make plot for optimal fitting parameters for given disk ML ratio
+            bParams["MLratio"] = fittedBulgeML
+            hParams["firstParam"] = fittedHaloFirst
+            hParams["secondParam"] = fittedHaloSecond
+            self.makeComputation(gParams, bParams, dParams, hParams, makePlot=False)
+            fittedGraph = self.plot()
+            # store all chi squared, optimal parameters and plots of optimal configurations
+            chi_sqList.append(bestChiSq)
+            bhOptimalList.append([fittedBulgeML, fittedHaloFirst, fittedHaloSecond])
+            plotList.append(fittedGraph)
+        return bhOptimalList, plotList
 
     def compute_chi_sq(self):
         return npsum(((self.velocity-self.sumVelocity[-len(self.velocity):])/self.velocity_sigma)**2)

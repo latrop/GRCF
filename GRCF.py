@@ -109,6 +109,10 @@ def runComputation():
     master.title("Galaxy Rotation Curve Fit")
     # Fitting has sence only after initial computation
     fitMenu.entryconfig("Best chi squared", state="normal")
+    # Maximal disk approximation works only if the disk model is on
+    if includeDisk.get() > 0:
+        fitMenu.entryconfig("Maximal disk", state="normal")
+    # Constant M/L approximation works only if the disk and the bulge models are on
     if (includeBulge.get() > 0) and (includeDisk.get() > 0):
         fitMenu.entryconfig("Constant M/L", state="normal")
     runButton.config(state="normal")
@@ -131,7 +135,8 @@ def some_parameter_changed(parameter, newValue):
         return 0
     master.title("Galaxy Rotation Curve Fit (*)")
     fitMenu.entryconfig("Best chi squared", state="disabled") # fitting is not allowed when parameters are changed
-    fitMenu.entryconfig("Constant M/L", state="disabled")       #
+    fitMenu.entryconfig("Constant M/L", state="disabled")     #
+    fitMenu.entryconfig("Maximal disk", state="disabled")     #
     rotCurve.parametersChanged = True
     if parameter == "incl":
         rotCurve.deproject(newValue)
@@ -218,6 +223,19 @@ fitMenu.add_command(label="Constant M/L",
                                                      haloFirstParamValue,
                                                      haloSecondParamValue),
                     state="disabled")
+
+fitMenu.add_command(label="Maximal disk",
+                    command=lambda: MaximalDiskWindow(master,
+                                                     rotCurve,
+                                                     includeBulge.get(),
+                                                     includeDisk.get(),
+                                                     includeHalo.get(),
+                                                     bulgeMLratioValue,
+                                                     diskMLratioValue,
+                                                     haloFirstParamValue,
+                                                     haloSecondParamValue),
+                    state="disabled")
+
 menubar.add_cascade(label="Fit", menu=fitMenu)
 
 
