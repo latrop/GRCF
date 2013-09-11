@@ -1059,3 +1059,141 @@ class optimalFitWindow(object):
         self.haloFirstParamValue.set("%1.1f"%(self.haloFirstOpt))
         self.haloSecondParamValue.set("%1.1f"%(self.haloSecondOpt))
         self.optimalFitFrame.destroy()
+
+
+class MaximalDiskOptWindow(object):
+    def __init__(self,
+                 master,
+                 rotCurve,
+                 bulgeMLratioValue,
+                 diskMLratioValue,
+                 haloFirstParamValue,
+                 haloSecondParamValue):
+        self.bulgeMLratioValue = bulgeMLratioValue
+        self.diskMLratioValue = diskMLratioValue
+        self.haloFirstParamValue = haloFirstParamValue
+        self.haloSecondParamValue = haloSecondParamValue
+        self.rotCurve = rotCurve
+        self.maximalDiskFrame = Tk.Toplevel(takefocus=True)
+        self.maximalDiskFrame.wm_attributes("-topmost", 1)
+        self.maximalDiskFrame.grab_set()
+        xScreenSize = master.winfo_screenwidth()
+        yScreenSize = master.winfo_screenheight()
+        self.maximalDiskFrame.geometry("+%i+%i" % (xScreenSize/2-250, yScreenSize/2-100))
+        Tk.Label(self.maximalDiskFrame, text="Chose models and ranges to variate:").grid(column=0, row=0, columnspan=5)
+
+        # Disk parameters
+        Tk.Label(self.maximalDiskFrame, text="M-to-L  from").grid(column=1, row=2)
+        self.diskMLlowerValue = Tk.StringVar()
+        self.diskMLlowerValue.set(self.rotCurve.dParams["MLratio"])
+        self.diskMLlowerEntry = Tk.Spinbox(self.maximalDiskFrame,
+                                           textvariable=self.diskMLlowerValue,
+                                           width=5,
+                                           bg="white",
+                                           from_=0.0,
+                                           to=100,
+                                           increment=0.1)
+        self.diskMLlowerEntry.grid(column=2, row=2)
+        self.diskMLlowerEntry.bind("<Button-4>", mouse_wheel_up)
+        self.diskMLlowerEntry.bind("<Button-5>", mouse_wheel_down)
+        Tk.Label(self.maximalDiskFrame, text=" to ").grid(column=3, row=2)
+        self.diskMLupperValue = Tk.StringVar()
+        self.diskMLupperValue.set(self.rotCurve.dParams["MLratio"])
+        self.diskMLupperEntry = Tk.Spinbox(self.maximalDiskFrame,
+                                           textvariable=self.diskMLupperValue,
+                                           width=5, 
+                                           bg="white", 
+                                           from_=0.0,
+                                           to=100,
+                                           increment=0.1)
+        self.diskMLupperEntry.grid(column=4, row=2)
+        self.diskMLupperEntry.bind("<Button-4>", mouse_wheel_up)
+        self.diskMLupperEntry.bind("<Button-5>", mouse_wheel_down)
+
+        # Buttons
+        self.runButton = Tk.Button(self.maximalDiskFrame, text="Run", state="normal", command=self.run)
+        self.runButton.grid(column=0, row=6)
+        self.saveButton = Tk.Button(self.maximalDiskFrame, text="Save", state="disabled", command=self.save_fitted)
+        self.saveButton.grid(column=1, row=6)
+        self.cancelButton = Tk.Button(self.maximalDiskFrame,
+                                      text="Close",
+                                      state="normal",
+                                      command=lambda: self.maximalDiskFrame.destroy())
+        self.cancelButton.grid(column=3, row=6)
+        self.runLabelValue = Tk.StringVar()
+        Tk.Label(self.maximalDiskFrame, textvariable=self.runLabelValue).grid(column=1, row=5, columnspan=3)
+
+        # Slider
+        self.diskMLSliderValue = Tk.DoubleVar()
+        self.diskMLSlider = Tk.Scale(self.maximalDiskFrame,
+                                     from_=float(self.diskMLlowerValue.get()),
+                                     to=float(self.diskMLupperValue.get()),
+                                     orient=Tk.HORIZONTAL,
+                                     resolution=0.1,
+                                     length=180,
+                                     variable=self.diskMLSliderValue)
+        self.diskMLSliderValue.trace("w",
+                                     lambda n, i, m, v=self.diskMLSliderValue: self.sliderMoved(v.get()))
+        self.diskMLSlider.grid(column=1, row=7, columnspan=3)
+        self.diskMLSliderLeftValue = Tk.StringVar()
+        self.diskMLSliderRightValue = Tk.StringVar()
+        Tk.Label(self.maximalDiskFrame, textvariable=self.diskMLSliderLeftValue).grid(column=0, row=7)
+        Tk.Label(self.maximalDiskFrame, textvariable=self.diskMLSliderRightValue).grid(column=4, row=7)
+
+        # Image
+        self.imgLabel = Tk.Label(self.maximalDiskFrame)
+        self.imgLabel.grid(column=5, row=0, rowspan=8)
+
+        # The text under the slider
+        Tk.Label(self.maximalDiskFrame, text="Bulge M/L").grid(column=0, row=8)
+        self.selectedBulgeML = Tk.StringVar()
+        Tk.Label(self.maximalDiskFrame, textvariable=self.selectedBulgeML).grid(column=1, row=8)
+        if self.rotCurve.hParams["model"] == "isoterm":
+            Tk.Label(self.maximalDiskFrame, text="Halo Rc").grid(column=0, row=9)
+            Tk.Label(self.maximalDiskFrame, text="Halo V(inf)").grid(column=0, row=10)
+        elif self.rotCurve.hParams["model"] == "NFW":
+            Tk.Label(self.maximalDiskFrame, text="Halo C").grid(column=0, row=9)
+            Tk.Label(self.maximalDiskFrame, text="Halo V200").grid(column=0, row=10)
+        self.selectedHaloFirst = Tk.StringVar()
+        Tk.Label(self.maximalDiskFrame, textvariable=self.selectedHaloFirst).grid(column=1, row=9)
+        self.selectedHaloSecond = Tk.StringVar()
+        Tk.Label(self.maximalDiskFrame, textvariable=self.selectedHaloSecond).grid(column=1, row=10)
+
+    def sliderMoved(self, value):
+        index = int((value - float(self.diskMLlowerValue.get())) / 0.1)
+        diskMLopt = value
+        bulgeMLopt, haloFirstOpt, haloSecondOpt = self.bhOptimalList[index]
+        self.imgLabel.config(image=self.plotList[index])
+        self.selectedBulgeML.set(str(bulgeMLopt))
+        self.selectedHaloFirst.set(str(haloFirstOpt))
+        self.selectedHaloSecond.set(str(haloSecondOpt))
+
+    def run(self):
+        if ((float(self.diskMLlowerValue.get()) > float(self.diskMLupperValue.get()))
+                                        or (float(self.diskMLlowerValue.get())<=0)):
+            self.runLabelValue.set(" Error in disk parameters ")
+            return 1
+        fitParams = {}
+        fitParams["diskMLlower"] = float(self.diskMLlowerValue.get())
+        fitParams["diskMLupper"] = float(self.diskMLupperValue.get())
+        t1 = time.time()
+        self.runLabelValue.set("         In process...         ")
+        self.bhOptimalList, self.plotList = self.rotCurve.fitMaximalDisk2(fitParams)
+        self.runLabelValue.set("       Done in %1.2f sec      " % (time.time()-t1))
+        self.saveButton.config(state="normal")
+        self.diskMLSlider.config(state="normal",
+                                 from_=float(self.diskMLlowerValue.get()),
+                                 to=float(self.diskMLupperValue.get()))
+        self.diskMLSliderLeftValue.set(self.diskMLlowerValue.get())
+        self.diskMLSliderRightValue.set(self.diskMLupperValue.get())
+        self.diskMLSliderValue.set(self.diskMLlowerValue.get())
+
+    def save_fitted(self):
+        value = self.diskMLSliderValue.get()
+        index = int((value - float(self.diskMLlowerValue.get())) / 0.1)
+        diskMLopt = value
+        bulgeMLopt, haloFirstOpt, haloSecondOpt = self.bhOptimalList[index]
+        self.bulgeMLratioValue.set(str(bulgeMLopt))
+        self.diskMLratioValue.set(str(diskMLopt))
+        self.haloFirstParamValue.set(str(haloFirstOpt))
+        self.haloSecondParamValue.set(str(haloSecondOpt))

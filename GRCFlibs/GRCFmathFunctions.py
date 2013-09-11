@@ -434,6 +434,67 @@ class GalaxyRotation(object):
             plotList.append(fittedGraph)
         return bhOptimalList, plotList
 
+
+    def fitMaximalDisk2(self, fitParams):
+        gParams = self.gParams
+        bParams = self.bParams
+        dParams = self.dParams
+        hParams = self.hParams
+        dLower = fitParams["diskMLlower"]
+        dUpper = fitParams["diskMLupper"]
+        # inital best fitting parameters
+        self.fittedBulgeML = float(bParams["MLratio"])
+        self.fittedDiskML = float(dParams["MLratio"])
+        self.fittedHaloFirst = float(hParams["firstParam"])
+        self.fittedHaloSecond = float(hParams["secondParam"])
+        chi_sqList = []
+        bhOptimalList = [] # parameters of bulge end halo wich lead to minimum of chi sq. for given disk ML ratio
+        plotList = [] # list of graphs with optimal fitting values for given disk ML ratio
+        for diskML in arange(dLower, dUpper+0.01, 0.1):
+            bestChiSq = 1e20
+            dParams["MLratio"] = diskML
+
+            def func(x): # we are going to minimize this function
+                """this function runs computation of rotation curve with given parameters
+                and returns chi squared. Variable x expands as [MLbulge, MLdisk, h1, h2]"""
+                MLbulge = x[0]
+                haloFirst = x[1]
+                haloSecond = x[2]
+                if (MLbulge < 0.1) or (haloFirst < 0.01) or (haloSecond < 0.1): # negative parameters are impossible
+                    return 1e99
+                # get all model params
+                gParams = self.gParams     #
+                bParams = self.bParams     # may be this function will work without theese lines
+                dParams = self.dParams     #
+                hParams = self.hParams     #
+                # modify fitting params
+                bParams["MLratio"] = MLbulge
+                hParams["firstParam"] = haloFirst
+                hParams["secondParam"] = haloSecond
+                # compute new curve
+                self.makeComputation(gParams, bParams, dParams, hParams, makePlot=False)
+                # return chi squared
+                return self.compute_chi_sq()
+            # guess parameters are last cumputed fitting parameters
+            MLbulge0 = self.bParams["MLratio"]
+            haloFirst0 = self.hParams["firstParam"]
+            haloSecond0 = self.hParams["secondParam"]
+            # run local minimum finding
+            print haloFirst0
+            xopt, fopt, ite, funcalls, warnflag = fmin(func, x0=[MLbulge0, haloFirst0, haloSecond0], full_output=1)
+            MLbulgeOpt, haloFirstOpt, haloSecondOpt = xopt[0], xopt[1], xopt[2]
+            # make plot for optimal fitting parameters for given disk ML ratio
+            bParams["MLratio"] = MLbulgeOpt
+            hParams["firstParam"] = haloFirstOpt
+            hParams["secondParam"] = haloSecondOpt
+            self.makeComputation(gParams, bParams, dParams, hParams, makePlot=False)
+            fittedGraph = self.plot()
+            # store all optimal parameters and plots of optimal configurations
+            bhOptimalList.append([MLbulgeOpt, haloFirstOpt, haloSecondOpt])
+            plotList.append(fittedGraph)
+        return bhOptimalList, plotList            
+
+
     def fitOptimal(self):
         def func(x): # we are going to minimize this function
             """this function runs computation of rotation curve with given parameters

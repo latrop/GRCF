@@ -113,6 +113,7 @@ def runComputation():
     # Maximal disk approximation works only if the disk model is on
     if includeDisk.get() > 0:
         fitMenu.entryconfig("Maximal disk", state="normal")
+        fitMenu.entryconfig("Maximal disk opt.", state="normal")
     # Constant M/L approximation works only if the disk and the bulge models are on
     if (includeBulge.get() > 0) and (includeDisk.get() > 0):
         fitMenu.entryconfig("Constant M/L", state="normal")
@@ -135,9 +136,11 @@ def some_parameter_changed(parameter, newValue):
         rotCurve.plot()
         return 0
     master.title("Galaxy Rotation Curve Fit (*)")
-    fitMenu.entryconfig("Best chi squared", state="disabled") # fitting is not allowed when parameters are changed
-    fitMenu.entryconfig("Constant M/L", state="disabled")     #
-    fitMenu.entryconfig("Maximal disk", state="disabled")     #
+    fitMenu.entryconfig("Best chi squared", state="disabled")   # fitting is not allowed when parameters are changed
+    fitMenu.entryconfig("Constant M/L", state="disabled")       #
+    fitMenu.entryconfig("Maximal disk", state="disabled")       #
+    fitMenu.entryconfig("Maximal disk opt.", state="disabled")  #
+    fitMenu.entryconfig("Gradient descent", state="disabled")   #
     rotCurve.parametersChanged = True
     if parameter == "incl":
         rotCurve.deproject(newValue)
@@ -235,6 +238,15 @@ fitMenu.add_command(label="Maximal disk",
                                                      diskMLratioValue,
                                                      haloFirstParamValue,
                                                      haloSecondParamValue),
+                    state="disabled")
+
+fitMenu.add_command(label="Maximal disk opt.",
+                    command=lambda: MaximalDiskOptWindow(master,
+                                                         rotCurve,
+                                                         bulgeMLratioValue,
+                                                         diskMLratioValue,
+                                                         haloFirstParamValue,
+                                                         haloSecondParamValue),
                     state="disabled")
 
 fitMenu.add_command(label="Gradient descent",
