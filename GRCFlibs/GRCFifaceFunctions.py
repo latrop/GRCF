@@ -1008,3 +1008,54 @@ class MaximalDiskWindow(object):
         self.diskMLratioValue.set(str(diskMLopt))
         self.haloFirstParamValue.set(str(haloFirstOpt))
         self.haloSecondParamValue.set(str(haloSecondOpt))
+
+
+class optimalFitWindow(object):
+    """ Fitting by gradient descent method (scipy.optimize.fmin function) """
+    def __init__(self,
+                 master,
+                 rotCurve,
+                 bulgeMLratioValue,
+                 diskMLratioValue,
+                 haloFirstParamValue,
+                 haloSecondParamValue):
+        self.bulgeMLratioValue = bulgeMLratioValue
+        self.diskMLratioValue = diskMLratioValue
+        self.haloFirstParamValue = haloFirstParamValue
+        self.haloSecondParamValue = haloSecondParamValue
+        self.rotCurve = rotCurve
+        self.optimalFitFrame = Tk.Toplevel(takefocus=True)
+        self.optimalFitFrame.wm_attributes("-topmost", 1)
+        self.optimalFitFrame.grab_set()
+        xScreenSize = master.winfo_screenwidth()
+        yScreenSize = master.winfo_screenheight()
+        self.optimalFitFrame.geometry("+%i+%i" % (xScreenSize/2-250, yScreenSize/2-100))
+        Tk.Label(self.optimalFitFrame, text="Gradient descent running... ").grid(column=0, row=0, columnspan=2)
+        # Two buttons: save results of fitting and close window without saving 
+        self.saveButton = Tk.Button(self.optimalFitFrame, text="Save", state="normal", command=self.save_fitted)       
+        self.saveButton.grid(column=0, row=6)
+        self.cancelButton = Tk.Button(self.optimalFitFrame,
+                                      text="Close",
+                                      state="normal",
+                                      command=lambda: self.optimalFitFrame.destroy())
+        self.cancelButton.grid(column=2, row=6)
+        # Running of the gradient descent optimization
+        self.MLbulgeOpt, self.MLdiskOpt, self.haloFirstOpt, self.haloSecondOpt, self.fopt, self.ite, self.funcalls = self.rotCurve.fitOptimal()
+        # Show results in the small window
+        Tk.Label(self.optimalFitFrame, text="Done").grid(column=2, row=0)
+        Tk.Label(self.optimalFitFrame, text="Optimal values").grid(column=0, row=1)
+        Tk.Label(self.optimalFitFrame, text="Bulge M/L = %1.1f" % (self.MLbulgeOpt)).grid(column=0, row=2)
+        Tk.Label(self.optimalFitFrame, text="Disk M/L = %1.1f" % (self.MLdiskOpt)).grid(column=0, row=3)
+        if self.rotCurve.hParams["model"] == "isoterm":
+            Tk.Label(self.optimalFitFrame, text="Rc = %1.1f" % (self.haloFirstOpt)).grid(column=0, row=4)
+            Tk.Label(self.optimalFitFrame, text="V(inf) = %1.1f" % (self.haloSecondOpt)).grid(column=0, row=5)
+        elif self.rotCurve.hParams["model"] == "NFW":
+            Tk.Label(self.optimalFitFrame, text="C = %1.1f" % (self.haloFirstOpt)).grid(column=0, row=4)
+            Tk.Label(self.optimalFitFrame, text="V200 = %1.1f" % (self.haloSecondOpt)).grid(column=0, row=5)
+
+    def save_fitted(self):
+        self.bulgeMLratioValue.set("%1.1f"%(self.MLbulgeOpt))
+        self.diskMLratioValue.set("%1.1f"%(self.MLdiskOpt))
+        self.haloFirstParamValue.set("%1.1f"%(self.haloFirstOpt))
+        self.haloSecondParamValue.set("%1.1f"%(self.haloSecondOpt))
+        self.optimalFitFrame.destroy()

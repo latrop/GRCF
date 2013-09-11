@@ -109,6 +109,7 @@ def runComputation():
     master.title("Galaxy Rotation Curve Fit")
     # Fitting has sence only after initial computation
     fitMenu.entryconfig("Best chi squared", state="normal")
+    fitMenu.entryconfig("Gradient descent", state="normal")
     # Maximal disk approximation works only if the disk model is on
     if includeDisk.get() > 0:
         fitMenu.entryconfig("Maximal disk", state="normal")
@@ -230,6 +231,15 @@ fitMenu.add_command(label="Maximal disk",
                                                      includeBulge.get(),
                                                      includeDisk.get(),
                                                      includeHalo.get(),
+                                                     bulgeMLratioValue,
+                                                     diskMLratioValue,
+                                                     haloFirstParamValue,
+                                                     haloSecondParamValue),
+                    state="disabled")
+
+fitMenu.add_command(label="Gradient descent",
+                    command=lambda: optimalFitWindow(master,
+                                                     rotCurve,
                                                      bulgeMLratioValue,
                                                      diskMLratioValue,
                                                      haloFirstParamValue,

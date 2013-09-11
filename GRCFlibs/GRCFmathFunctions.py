@@ -5,6 +5,7 @@ from math import radians, sin
 import Tkinter as Tk
 import tkFileDialog
 from scipy.interpolate import interp1d, InterpolatedUnivariateSpline
+from scipy.optimize import fmin
 import numpy
 from numpy import arange, linspace, abs, array, zeros_like, concatenate, log
 from numpy import sum as npsum
@@ -278,6 +279,7 @@ class GalaxyRotation(object):
 
     def fitBruteForce(self, fitParams):
         bestChiSq = 1e20
+        self.previousChiSq = 1e99
         gParams = self.gParams
         bParams = self.bParams
         dParams = self.dParams
@@ -431,6 +433,41 @@ class GalaxyRotation(object):
             bhOptimalList.append([fittedBulgeML, fittedHaloFirst, fittedHaloSecond])
             plotList.append(fittedGraph)
         return bhOptimalList, plotList
+
+    def fitOptimal(self):
+        def func(x): # we are going to minimize this function
+            """this function runs computation of rotation curve with given parameters
+            and returns chi squared. Variable x expands as [MLbulge, MLdisk, h1, h2]"""
+            MLbulge = x[0]
+            MLdisk = x[1]
+            haloFirst = x[2]
+            haloSecond = x[3]
+            # get all model params
+            gParams = self.gParams
+            bParams = self.bParams
+            dParams = self.dParams
+            hParams = self.hParams
+            # modify fitting params
+            bParams["MLratio"] = MLbulge
+            dParams["MLratio"] = MLdisk
+            hParams["firstParam"] = haloFirst
+            hParams["secondParam"] = haloSecond
+            # compute new curve
+            self.makeComputation(gParams, bParams, dParams, hParams, makePlot=False)
+            # return chi squared
+            return self.compute_chi_sq()
+        # guess parameters are last cumputed fitting parameters
+        MLbulge0 = self.bParams["MLratio"]
+        MLdisk0 = self.dParams["MLratio"]
+        haloFirst0 = self.hParams["firstParam"]
+        haloSecond0 = self.hParams["secondParam"]
+        # run local minimum finding
+        xopt, fopt, ite, funcalls, warnflag = fmin(func, x0=[MLbulge0, MLdisk0, haloFirst0, haloSecond0], full_output=1)
+        MLbulgeOpt, MLdiskOpt, haloFirstOpt, haloSecondOpt = xopt[0], xopt[1], xopt[2], xopt[3]
+        # plot resulting curve
+        self.plot()
+        return MLbulgeOpt, MLdiskOpt, haloFirstOpt, haloSecondOpt, fopt, ite, funcalls
+        
 
     def compute_chi_sq(self):
         return npsum(((self.velocity-self.sumVelocity[-len(self.velocity):])/self.velocity_sigma)**2)
