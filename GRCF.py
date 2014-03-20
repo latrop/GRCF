@@ -277,7 +277,7 @@ master.config(menu=menubar)
 rightPanel = Tk.Frame(master)
 rightPanel.pack(side=Tk.RIGHT, expand=1)
 
-
+### TODO Hubble constant is needed here
 # general parameters
 generalPanel = Tk.Frame(rightPanel, pady=5)
 generalPanel.grid(column=0, row=1)
