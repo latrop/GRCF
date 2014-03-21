@@ -77,6 +77,7 @@ def getValuesFromAllFields():
     dParams["expScale"] = diskExpScaleValue.get()
     dParams["thickness"] = diskThicknessValue.get()
     dParams["MLratio"] = diskMLratioValue.get()
+    dParams["axisRatio"] = diskAxisRatioValue.get()
     hParams = {}
     hParams["include"] = includeHalo.get()
     hParams["firstParam"] = haloFirstParamValue.get()
@@ -95,6 +96,7 @@ def setValuesToAllFields(params):
     generalScaleValue.set(gParams["scale"])
     generalSunMagValue.set(gParams["Msun"])
     generalHubbleValue.set(gParams["hubble"])
+    correctForInclination.set(gParams["iCorrect"])
     includeBulge.set(bParams["include"])
     bulgeEffSurfBriValue.set(bParams["effSurfBri"])
     bulgeSersicIndexValue.set(bParams["sersicIndex"])
@@ -106,6 +108,7 @@ def setValuesToAllFields(params):
     diskExpScaleValue.set(dParams["expScale"])
     diskThicknessValue.set(dParams["thickness"])
     diskMLratioValue.set(dParams["MLratio"])
+    diskAxisRatioValue.set(dParams["axisRatio"])
     includeHalo.set(hParams["include"])
     haloFirstParamValue.set(hParams["firstParam"])
     haloSecondParamValue.set(hParams["secondParam"])
@@ -314,7 +317,7 @@ correctForInclinationCB = Tk.Checkbutton(generalPanel,
 correctForInclinationBaloon = Balloon(generalPanel)
 correctForInclinationText = "If this option is on, observed rotation curve will be corrected\nfor inclination computed from disc's q and z0/h."
 correctForInclinationBaloon.bind(correctForInclinationCB, correctForInclinationText)
-correctForInclinationCB.grid(column=0, row=0, columnspan=2)
+correctForInclinationCB.grid(column=0, row=0, columnspan=3)
 
 # Place entry for galaxy scale
 Tk.Label(generalPanel, text="scale").grid(column=0, row=1)
