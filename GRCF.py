@@ -38,6 +38,7 @@ def loadVelocityData():
     rotCurve.plot()
     correctForInclinationCB.config(state="normal")
     generalSunMagEntry.config(state="normal")
+    generalLDEntry.config(state="normal")
     generalScaleEntry.config(state="normal")
     generalHubbleEntry.config(state="normal")
     includeDiskCButton.config(state="normal")
@@ -63,6 +64,7 @@ def getValuesFromAllFields():
     gParams["incl"] = incl
     gParams["iCorrect"] = correctForInclination.get()
     # all other values just getted from corresponding fields
+    gParams["LD"] = generalLDValue.get()
     gParams["scale"] = generalScaleValue.get()
     gParams["hubble"] = generalHubbleValue.get()
     gParams["Msun"] = generalSunMagValue.get()
@@ -98,6 +100,7 @@ def setValuesToAllFields(params):
     generalScaleValue.set(gParams["scale"])
     generalSunMagValue.set(gParams["Msun"])
     generalHubbleValue.set(gParams["hubble"])
+    generalLDValue.set(gParams["LD"])
     correctForInclination.set(gParams["iCorrect"])
     includeBulge.set(bParams["include"])
     bulgeEffSurfBriValue.set(bParams["effSurfBri"])
@@ -224,13 +227,13 @@ colouredPaint.set(1)
 viewMenu.add_checkbutton(label="Coloured",
                          variable=colouredPaint,
                          state="disabled")
-colouredPaint.trace("w", lambda n, i, m, v=colouredPaint:some_parameter_changed("colouredPaint", v.get()))
+colouredPaint.trace("w", lambda n, i, m, v=colouredPaint: some_parameter_changed("colouredPaint", v.get()))
 showChiSquared = Tk.IntVar()
 showChiSquared.set(1)
 viewMenu.add_checkbutton(label="Chi squared",
                          variable=showChiSquared,
                          state="disabled")
-showChiSquared.trace("w", lambda n, i, m, v=showChiSquared:some_parameter_changed("showChiSquared", v.get()))
+showChiSquared.trace("w", lambda n, i, m, v=showChiSquared: some_parameter_changed("showChiSquared", v.get()))
 menubar.add_cascade(label="View", menu=viewMenu)
 
 fitMenu = Tk.Menu(menubar, tearoff=0)
@@ -308,7 +311,7 @@ rightPanel.pack(side=Tk.RIGHT, expand=1)
 #   general parameters   #
 ##########################
 
-generalPanel = Tk.Frame(rightPanel, pady=5)
+generalPanel = Tk.Frame(rightPanel, pady=1)
 generalPanel.grid(column=0, row=1)
 
 # Place checkbutton for correcting for inclination question
@@ -325,36 +328,46 @@ for inclination computed from disc's q and z0/h."""
 correctForInclinationBaloon.bind(correctForInclinationCB, correctForInclinationText)
 correctForInclinationCB.grid(column=0, row=0, columnspan=3)
 
+# Luminosity distance entry
+Tk.Label(generalPanel, text="      LD    ").grid(column=0, row=1)
+generalLDValue = Tk.StringVar()
+generalLDValue.set("10.00")
+generalLDValue.trace("w", 
+                        lambda n, i, m, v=generalLDValue: some_parameter_changed("LD", v.get()))
+generalLDEntry = Tk.Entry(generalPanel, textvariable=generalLDValue, width=5, state="disabled", bg="white")
+generalLDEntry.grid(column=1, row=1, sticky=Tk.W)
+Tk.Label(generalPanel, text="Mpc").grid(column=2, row=1)
+
 # Place entry for galaxy scale
-Tk.Label(generalPanel, text="scale").grid(column=0, row=1)
+Tk.Label(generalPanel, text="scale").grid(column=0, row=2)
 generalScaleValue = Tk.StringVar()
-generalScaleValue.set("1.00")
+generalScaleValue.set("0.48")
 generalScaleValue.trace("w", 
                         lambda n, i, m, v=generalScaleValue: some_parameter_changed("scale", v.get()))
 generalScaleEntry = Tk.Entry(generalPanel, textvariable=generalScaleValue, width=5, state="disabled", bg="white")
-generalScaleEntry.grid(column=1, row=1, sticky=Tk.W)
-Tk.Label(generalPanel, text="kpc/arcsec").grid(column=2, row=1)
+generalScaleEntry.grid(column=1, row=2, sticky=Tk.W)
+Tk.Label(generalPanel, text="kpc/arcsec").grid(column=2, row=2)
 
 # Hubble parameter value
-Tk.Label(generalPanel, text="H0").grid(column=0, row=2)
+Tk.Label(generalPanel, text="H0").grid(column=0, row=3)
 generalHubbleValue = Tk.StringVar()
 generalHubbleValue.set("67.0")
 generalHubbleValue.trace("w", 
                         lambda n, i, m, v=generalHubbleValue: some_parameter_changed("hubble", v.get()))
 generalHubbleEntry = Tk.Entry(generalPanel, textvariable=generalHubbleValue, width=5, state="disabled", bg="white")
-generalHubbleEntry.grid(column=1, row=2, sticky=Tk.W)
-Tk.Label(generalPanel, text="km/sec/Mpc").grid(column=2, row=2)
+generalHubbleEntry.grid(column=1, row=3, sticky=Tk.W)
+Tk.Label(generalPanel, text="km/sec/Mpc").grid(column=2, row=3)
 
 # Solar absolute magnitude
-Tk.Label(generalPanel, text="M_sun").grid(column=0, row=3)
+Tk.Label(generalPanel, text="M_sun").grid(column=0, row=4)
 generalSunMagValue = Tk.StringVar()
 generalSunMagValue.set(5.45)
 generalSunMagValue.trace("w", lambda n, i, m, v=generalSunMagValue: some_parameter_changed("Msun", v.get()))
 generalSunMagEntry = Tk.Entry(generalPanel, textvariable=generalSunMagValue, width=5, state="disabled", bg="white")
 generalSunMagBalloon = Balloon(generalPanel)
 generalSunMagBalloon.bind(generalSunMagEntry, "Solar absolute magnitude.")
-generalSunMagEntry.grid(column=1, row=3, sticky=Tk.W)
-Tk.Label(generalPanel, text="mag            ").grid(column=2, row=3)
+generalSunMagEntry.grid(column=1, row=4, sticky=Tk.W)
+Tk.Label(generalPanel, text="mag            ").grid(column=2, row=4)
 
 
 def band_selected(*args):
@@ -364,7 +377,7 @@ def band_selected(*args):
 generalBandValue = Tk.StringVar()
 generalBandValue.set("Straizys B (= Johnson) Vega")
 generalBandCBox = Tk.OptionMenu(generalPanel, generalBandValue, *mSunBandsList)
-generalBandCBox.grid(column=0, row=4, sticky=Tk.W, columnspan=3)
+generalBandCBox.grid(column=0, row=5, sticky=Tk.W, columnspan=3)
 generalBandValue.trace("w", band_selected)
 
 #########################
