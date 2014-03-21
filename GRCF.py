@@ -18,7 +18,9 @@ from math import acos, sqrt, degrees
 def get_inclination():
     q = float(diskAxisRatioValue.get())
     q0 = float(diskThicknessValue.get())
-    return degrees(acos(sqrt((q**2 - q0**2) / (1-q0**2))))
+    if q0 < q <1.0:
+        return degrees(acos(sqrt((q**2 - q0**2) / (1-q0**2))))
+    return 90.0
 
 def loadVelocityData():
     fileName = tkFileDialog.askopenfilename(parent=master,
@@ -69,7 +71,7 @@ def getValuesFromAllFields():
     bParams["effSurfBri"] = bulgeEffSurfBriValue.get()
     bParams["sersicIndex"] = bulgeSersicIndexValue.get()
     bParams["effRadius"] = bulgeEffRadiusValue.get()
-#    bParams["oblateness"] = bulgeOblatenessValue.get()
+    bParams["axisRatio"] = bulgeAxisRatioValue.get()
     bParams["MLratio"] = bulgeMLratioValue.get()
     dParams = {}
     dParams["include"] = includeDisk.get()
@@ -101,7 +103,7 @@ def setValuesToAllFields(params):
     bulgeEffSurfBriValue.set(bParams["effSurfBri"])
     bulgeSersicIndexValue.set(bParams["sersicIndex"])
     bulgeEffRadiusValue.set(bParams["effRadius"])
-#    bulgeOblatenessValue.set(bParams["oblateness"])
+    bulgeAxisRatioValue.set(bParams["axisRatio"])
     bulgeMLratioValue.set(bParams["MLratio"])
     includeDisk.set(dParams["include"])
     diskCenSurfBriValue.set(dParams["cenSurfBri"])
@@ -302,7 +304,10 @@ master.config(menu=menubar)
 rightPanel = Tk.Frame(master)
 rightPanel.pack(side=Tk.RIGHT, expand=1)
 
-# general parameters
+##########################
+#   general parameters   #
+##########################
+
 generalPanel = Tk.Frame(rightPanel, pady=5)
 generalPanel.grid(column=0, row=1)
 
@@ -315,7 +320,8 @@ correctForInclinationCB = Tk.Checkbutton(generalPanel,
                                          variable=correctForInclination,
                                          state="disabled")
 correctForInclinationBaloon = Balloon(generalPanel)
-correctForInclinationText = "If this option is on, observed rotation curve will be corrected\nfor inclination computed from disc's q and z0/h."
+correctForInclinationText = """If this option is on, observed rotation curve will be corrected
+for inclination computed from disc's q and z0/h."""
 correctForInclinationBaloon.bind(correctForInclinationCB, correctForInclinationText)
 correctForInclinationCB.grid(column=0, row=0, columnspan=3)
 
@@ -361,7 +367,10 @@ generalBandCBox = Tk.OptionMenu(generalPanel, generalBandValue, *mSunBandsList)
 generalBandCBox.grid(column=0, row=4, sticky=Tk.W, columnspan=3)
 generalBandValue.trace("w", band_selected)
 
-# Parameters of bulge
+#########################
+#  Parameters of bulge  #
+#########################
+
 bulgePanel = Tk.Frame(rightPanel, pady=5)
 bulgePanel.grid(column=0, row=2)
 includeBulge = Tk.IntVar()
@@ -393,13 +402,15 @@ bulgeEffRadiusEntry = Tk.Entry(bulgePanel, textvariable=bulgeEffRadiusValue, wid
 bulgeEffRadiusEntry.grid(column=1, row=3, sticky=Tk.W)
 Tk.Label(bulgePanel, text="arcsec            ").grid(column=2, row=3)
 
-#Tk.Label(bulgePanel, text="q").grid(column=0, row=4)
-#bulgeOblatenessValue = Tk.StringVar()
-#bulgeOblatenessValue.set("1.00")
-#bulgeOblatenessEntry = Tk.Entry(bulgePanel, textvariable=bulgeOblatenessValue, width=5, state="disabled", bg="white")
-#bulgeOblatenessEntry.grid(column=1, row=4, sticky=Tk.W)
+# Axis ratio
+Tk.Label(bulgePanel, text="Axis ratio").grid(column=0, row=5)
+bulgeAxisRatioValue = Tk.StringVar()
+bulgeAxisRatioValue.set("1.0") # Default value for face-on disc
+bulgeAxisRatioEntry = Tk.Entry(bulgePanel, textvariable=bulgeAxisRatioValue, width=5, state="disabled", bg="white")
+bulgeAxisRatioEntry.grid(column=1, row=5, sticky=Tk.W)
+bulgeAxisRatioValue.trace("w", lambda n, i, m, v=bulgeAxisRatioValue: some_parameter_changed("dAxisRatio", v.get()))
 
-Tk.Label(bulgePanel, text="M/L").grid(column=0, row=5)
+Tk.Label(bulgePanel, text="M/L").grid(column=0, row=6)
 bulgeMLratioValue = Tk.StringVar()
 bulgeMLratioValue.set("4.00")
 bulgeMLratioEntry = Tk.Spinbox(bulgePanel,
@@ -411,7 +422,7 @@ bulgeMLratioEntry = Tk.Spinbox(bulgePanel,
                                increment=0.1,
                                bg="white")
 bulgeMLratioValue.trace("w", lambda n, i, m, v=bulgeMLratioValue: some_parameter_changed("bulgeML", v.get()))
-bulgeMLratioEntry.grid(column=1, row=5, sticky=Tk.W)
+bulgeMLratioEntry.grid(column=1, row=6, sticky=Tk.W)
 bulgeMLratioEntry.bind("<Button-4>", mouse_wheel_up)
 bulgeMLratioEntry.bind("<Button-5>", mouse_wheel_down)
 
