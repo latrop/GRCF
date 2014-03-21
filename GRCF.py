@@ -341,6 +341,8 @@ generalSunMagValue = Tk.StringVar()
 generalSunMagValue.set(5.45)
 generalSunMagValue.trace("w", lambda n, i, m, v=generalSunMagValue: some_parameter_changed("Msun", v.get()))
 generalSunMagEntry = Tk.Entry(generalPanel, textvariable=generalSunMagValue, width=5, state="disabled", bg="white")
+generalSunMagBalloon = Balloon(generalPanel)
+generalSunMagBalloon.bind(generalSunMagEntry, "Solar absolute magnitude.")
 generalSunMagEntry.grid(column=1, row=3, sticky=Tk.W)
 Tk.Label(generalPanel, text="mag            ").grid(column=2, row=3)
 
