@@ -6,11 +6,14 @@ import Tkinter as Tk
 import tkFileDialog
 import tkMessageBox
 
+from Pmw import Balloon
+
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 
 from GRCFlibs.GRCFmathFunctions import *
 from GRCFlibs.GRCFifaceFunctions import *
 
+from math import acos, sqrt, degrees
 
 def loadVelocityData():
     fileName = tkFileDialog.askopenfilename(parent=master,
@@ -26,7 +29,7 @@ def loadVelocityData():
                               canvas,
                               fileName)
     rotCurve.plot()
-    generalInclinationEntry.config(state="normal")
+    correctForInclinationCB.config(state="normal")
     generalSunMagEntry.config(state="normal")
     generalScaleEntry.config(state="normal")
     generalHubbleEntry.config(state="normal")
@@ -43,7 +46,18 @@ def loadVelocityData():
 
 def getValuesFromAllFields():
     gParams = {}
-    gParams["incl"] = generalInclinationValue.get()
+    # If correction of the data for the inclination is ON
+    # then the inclination is computed from q and z0/h values of the disc.
+    # in other case inclination is just setted to -1 deg
+    if correctForInclination.get() != 0:
+        q = 0.5#float(diskQValue.get())
+        q0 = float(diskThicknessValue.get())
+        incl = degrees(acos(sqrt((q**2 - q0**2) / (1-q0**2))))
+    else: 
+        incl = -1.0
+    gParams["incl"] = incl
+    gParams["iCorrect"] = correctForInclination.get()
+    # all other values just getted from corresponding fields
     gParams["scale"] = generalScaleValue.get()
     gParams["hubble"] = generalHubbleValue.get()
     gParams["Msun"] = generalSunMagValue.get()
@@ -75,7 +89,6 @@ def setValuesToAllFields(params):
     bParams = params[1]
     dParams = params[2]
     hParams = params[3]
-    generalInclinationValue.set(gParams["incl"])
     generalScaleValue.set(gParams["scale"])
     generalSunMagValue.set(gParams["Msun"])
     generalHubbleValue.set(gParams["hubble"])
@@ -142,8 +155,16 @@ def some_parameter_changed(parameter, newValue):
     fitMenu.entryconfig("Maximal disk opt.", state="disabled")  #
     fitMenu.entryconfig("Gradient descent", state="disabled")   #
     rotCurve.parametersChanged = True
-    if parameter == "incl":
-        rotCurve.deproject(newValue)
+    if ((parameter == "dThickness") or
+        (parameter == "diskQ") or
+        (parameter == "inclCorrect")):
+        if correctForInclination.get() == 0:
+            rotCurve.deproject(-1.0)
+        else:
+            q = 0.5#float(diskQValue.get())
+            q0 = float(diskThicknessValue.get())
+            incl = degrees(acos(sqrt((q**2 - q0**2) / (1-q0**2))))
+            rotCurve.deproject(incl)
     if parameter == "scale":
         rotCurve.reScale(newValue)
     if parameter == "bInclude":
@@ -277,28 +298,24 @@ master.config(menu=menubar)
 rightPanel = Tk.Frame(master)
 rightPanel.pack(side=Tk.RIGHT, expand=1)
 
-### TODO Hubble constant is needed here
 # general parameters
 generalPanel = Tk.Frame(rightPanel, pady=5)
 generalPanel.grid(column=0, row=1)
-Tk.Label(generalPanel, text="inclination").grid(column=0, row=0)
-generalInclinationValue = Tk.StringVar()
-generalInclinationValue.set("90.0")
-generalInclinationEntry = Tk.Spinbox(generalPanel, 
-                                     textvariable=generalInclinationValue, 
-                                     width=5, 
-                                     state="disabled", 
-                                     from_=1, 
-                                     to=90, 
-                                     increment=0.1,
-                                     bg="white")
-generalInclinationEntry.grid(column=1, row=0, sticky=Tk.W)
-generalInclinationEntry.bind("<Button-4>", mouse_wheel_up)
-generalInclinationEntry.bind("<Button-5>", mouse_wheel_down)
-generalInclinationValue.trace("w", 
-                              lambda n, i, m, v=generalInclinationValue: some_parameter_changed("incl", v.get()))
-Tk.Label(generalPanel, text=" deg             ").grid(column=2, row=0)
 
+# Place checkbutton for correcting for inclination question
+correctForInclination = Tk.IntVar()
+correctForInclination.set(1)
+correctForInclination.trace("w",lambda n, i, m, v=correctForInclination: some_parameter_changed("inclCorrect", v.get()))
+correctForInclinationCB = Tk.Checkbutton(generalPanel,
+                                         text="Correct data for inclination?",
+                                         variable=correctForInclination,
+                                         state="disabled")
+correctForInclinationBaloon = Balloon(generalPanel)
+correctForInclinationText = "If this option is on, observed rotation curve will be corrected\nfor inclination computed from disc's q and z0/h."
+correctForInclinationBaloon.bind(correctForInclinationCB, correctForInclinationText)
+correctForInclinationCB.grid(column=0, row=0, columnspan=2)
+
+# Place entry for galaxy scale
 Tk.Label(generalPanel, text="scale").grid(column=0, row=1)
 generalScaleValue = Tk.StringVar()
 generalScaleValue.set("1.00")

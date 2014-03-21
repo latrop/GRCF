@@ -86,6 +86,11 @@ class GalaxyRotation(object):
             newincl = float(newincl)
         except ValueError:
             return False
+        if newincl == -1.0: # no correction. just return observed data
+            self.velocity = self.velocity_obs
+            self.velocity_sigma = self.velocity_obs_sigma
+            self.plot()
+            return True
         if (newincl <= 0.0) or (newincl > 90.0):
             return False
         self.velocity = self.velocity_obs / sin(radians(newincl))
@@ -611,12 +616,14 @@ def getRotationCurve(fname):
 def checAllValues(gParams, bParams, dParams, hParams):
     """ Checking all values for selected components"""
     # 1) Check general parameters:
-    try:
-        val = float(gParams["incl"])
-        if (val<0.0) or (val>90.0):
-            return False, "Inclination", "must be between 0 and 90"
-    except ValueError:
-        return False, "Inclination", "not a number"
+    if int(gParams["iCorrect"]) != 0:
+        try:
+            val = float(gParams["incl"])
+            print "in test", val
+            if (val<0.0) or (val>90.0):
+                return False, "Inclination", "must be between 0 and 90"
+        except ValueError:
+            return False, "Inclination", "not a number"
     try:
         val = float(gParams["scale"])
         if val <= 0.0:
