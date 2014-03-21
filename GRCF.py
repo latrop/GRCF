@@ -15,6 +15,11 @@ from GRCFlibs.GRCFifaceFunctions import *
 
 from math import acos, sqrt, degrees
 
+def get_inclination():
+    q = float(diskAxisRatioValue.get())
+    q0 = float(diskThicknessValue.get())
+    return degrees(acos(sqrt((q**2 - q0**2) / (1-q0**2))))
+
 def loadVelocityData():
     fileName = tkFileDialog.askopenfilename(parent=master,
                                  filetypes=[("Data files", "*.dat"), ("All files", ".*")],
@@ -50,9 +55,7 @@ def getValuesFromAllFields():
     # then the inclination is computed from q and z0/h values of the disc.
     # in other case inclination is just setted to -1 deg
     if correctForInclination.get() != 0:
-        q = 0.5#float(diskQValue.get())
-        q0 = float(diskThicknessValue.get())
-        incl = degrees(acos(sqrt((q**2 - q0**2) / (1-q0**2))))
+        incl = get_inclination()
     else: 
         incl = -1.0
     gParams["incl"] = incl
@@ -156,14 +159,12 @@ def some_parameter_changed(parameter, newValue):
     fitMenu.entryconfig("Gradient descent", state="disabled")   #
     rotCurve.parametersChanged = True
     if ((parameter == "dThickness") or
-        (parameter == "diskQ") or
+        (parameter == "dAxisRatio") or
         (parameter == "inclCorrect")):
         if correctForInclination.get() == 0:
             rotCurve.deproject(-1.0)
         else:
-            q = 0.5#float(diskQValue.get())
-            q0 = float(diskThicknessValue.get())
-            incl = degrees(acos(sqrt((q**2 - q0**2) / (1-q0**2))))
+            incl = get_inclination()
             rotCurve.deproject(incl)
     if parameter == "scale":
         rotCurve.reScale(newValue)
@@ -304,7 +305,7 @@ generalPanel.grid(column=0, row=1)
 
 # Place checkbutton for correcting for inclination question
 correctForInclination = Tk.IntVar()
-correctForInclination.set(1)
+correctForInclination.set(0)
 correctForInclination.trace("w",lambda n, i, m, v=correctForInclination: some_parameter_changed("inclCorrect", v.get()))
 correctForInclinationCB = Tk.Checkbutton(generalPanel,
                                          text="Correct data for inclination?",
@@ -411,8 +412,9 @@ bulgeMLratioEntry.grid(column=1, row=5, sticky=Tk.W)
 bulgeMLratioEntry.bind("<Button-4>", mouse_wheel_up)
 bulgeMLratioEntry.bind("<Button-5>", mouse_wheel_down)
 
-
-# Parameters of disk
+##########################
+#   Parameters of disk   #
+##########################
 diskPanel = Tk.Frame(rightPanel, pady=5)
 diskPanel.grid(column=0, row=3)
 
@@ -422,6 +424,7 @@ includeDisk.trace("w", lambda n, i, m, v=includeDisk: some_parameter_changed("dI
 includeDiskCButton = Tk.Checkbutton(diskPanel, text="Disk", variable=includeDisk, state="disabled")
 includeDiskCButton.grid(column=0, row=0, columnspan=2)
 
+# Disc central surface brightness
 Tk.Label(diskPanel, text="    Surf.Bri   ").grid(column=0, row=1)
 diskCenSurfBriValue = Tk.StringVar()
 diskCenSurfBriValue.set("99.99")
@@ -430,6 +433,7 @@ diskCenSurfBriEntry.grid(column=1, row=1, sticky=Tk.W)
 diskCenSurfBriValue.trace("w", lambda n, i, m, v=diskCenSurfBriValue: some_parameter_changed("dSurfBri", v.get()))
 Tk.Label(diskPanel, text="mag/sq.arcsec").grid(column=2, row=1)
 
+# Disc exponential scale
 Tk.Label(diskPanel, text="Exp. scale").grid(column=0, row=2)
 diskExpScaleValue = Tk.StringVar()
 diskExpScaleValue.set("0.00")
@@ -438,15 +442,25 @@ diskExpScaleEntry.grid(column=1, row=2, sticky=Tk.W)
 diskExpScaleValue.trace("w", lambda n, i, m, v=diskExpScaleValue: some_parameter_changed("dExpScale", v.get()))
 Tk.Label(diskPanel, text="arcsec            ").grid(column=2, row=2)
 
-Tk.Label(diskPanel, text="z0").grid(column=0, row=3)
-diskThicknessValue = Tk.StringVar()
-diskThicknessValue.set("0.00")
-diskThicknessEntry = Tk.Entry(diskPanel, textvariable=diskThicknessValue, width=5, state="disabled", bg="white")
-diskThicknessEntry.grid(column=1, row=3, sticky=Tk.W)
-diskThicknessValue.trace("w", lambda n, i, m, v=diskThicknessValue: some_parameter_changed("dThickness", v.get()))
-Tk.Label(diskPanel, text="* h                  ").grid(column=2, row=3)
+# Disc axis ratio
+Tk.Label(diskPanel, text="Axis ratio").grid(column=0, row=3)
+diskAxisRatioValue = Tk.StringVar()
+diskAxisRatioValue.set("1.0") # Default value for face-on disc
+diskAxisRatioEntry = Tk.Entry(diskPanel, textvariable=diskAxisRatioValue, width=5, state="disabled", bg="white")
+diskAxisRatioEntry.grid(column=1, row=3, sticky=Tk.W)
+diskAxisRatioValue.trace("w", lambda n, i, m, v=diskAxisRatioValue: some_parameter_changed("dAxisRatio", v.get()))
 
-Tk.Label(diskPanel, text="M/L").grid(column=0, row=4)
+# Disc thickness
+Tk.Label(diskPanel, text="z0").grid(column=0, row=4)
+diskThicknessValue = Tk.StringVar()
+diskThicknessValue.set("0.20") 
+diskThicknessEntry = Tk.Entry(diskPanel, textvariable=diskThicknessValue, width=5, state="disabled", bg="white")
+diskThicknessEntry.grid(column=1, row=4, sticky=Tk.W)
+diskThicknessValue.trace("w", lambda n, i, m, v=diskThicknessValue: some_parameter_changed("dThickness", v.get()))
+Tk.Label(diskPanel, text="* h                  ").grid(column=2, row=4)
+
+# Disc M-to-L ratio
+Tk.Label(diskPanel, text="M/L").grid(column=0, row=5)
 diskMLratioValue = Tk.StringVar()
 diskMLratioValue.set("3.00")
 diskMLratioEntry = Tk.Spinbox(diskPanel,
@@ -458,7 +472,7 @@ diskMLratioEntry = Tk.Spinbox(diskPanel,
                               increment=0.1,
                               bg="white")
 diskMLratioValue.trace("w", lambda n, i, m, v=diskMLratioValue: some_parameter_changed("diskML", v.get()))
-diskMLratioEntry.grid(column=1, row=4, sticky=Tk.W)
+diskMLratioEntry.grid(column=1, row=5, sticky=Tk.W)
 diskMLratioEntry.bind("<Button-4>", mouse_wheel_up)
 diskMLratioEntry.bind("<Button-5>", mouse_wheel_down)
 
