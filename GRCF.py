@@ -336,7 +336,7 @@ generalLDValue.trace("w",
                         lambda n, i, m, v=generalLDValue: some_parameter_changed("LD", v.get()))
 generalLDEntry = Tk.Entry(generalPanel, textvariable=generalLDValue, width=5, state="disabled", bg="white")
 generalLDEntry.grid(column=1, row=1, sticky=Tk.W)
-Tk.Label(generalPanel, text="Mpc").grid(column=2, row=1)
+Tk.Label(generalPanel, text="Mpc").grid(column=2, row=1, sticky=Tk.W)
 
 # Place entry for galaxy scale
 Tk.Label(generalPanel, text="scale").grid(column=0, row=2)
@@ -346,7 +346,7 @@ generalScaleValue.trace("w",
                         lambda n, i, m, v=generalScaleValue: some_parameter_changed("scale", v.get()))
 generalScaleEntry = Tk.Entry(generalPanel, textvariable=generalScaleValue, width=5, state="disabled", bg="white")
 generalScaleEntry.grid(column=1, row=2, sticky=Tk.W)
-Tk.Label(generalPanel, text="kpc/arcsec").grid(column=2, row=2)
+Tk.Label(generalPanel, text="kpc/arcsec").grid(column=2, row=2, sticky=Tk.W)
 
 # Hubble parameter value
 Tk.Label(generalPanel, text="H0").grid(column=0, row=3)
@@ -356,7 +356,7 @@ generalHubbleValue.trace("w",
                         lambda n, i, m, v=generalHubbleValue: some_parameter_changed("hubble", v.get()))
 generalHubbleEntry = Tk.Entry(generalPanel, textvariable=generalHubbleValue, width=5, state="disabled", bg="white")
 generalHubbleEntry.grid(column=1, row=3, sticky=Tk.W)
-Tk.Label(generalPanel, text="km/sec/Mpc").grid(column=2, row=3)
+Tk.Label(generalPanel, text="km/sec/Mpc").grid(column=2, row=3, sticky=Tk.W)
 
 # Solar absolute magnitude
 Tk.Label(generalPanel, text="M_sun").grid(column=0, row=4)
@@ -367,7 +367,7 @@ generalSunMagEntry = Tk.Entry(generalPanel, textvariable=generalSunMagValue, wid
 generalSunMagBalloon = Balloon(generalPanel)
 generalSunMagBalloon.bind(generalSunMagEntry, "Solar absolute magnitude.")
 generalSunMagEntry.grid(column=1, row=4, sticky=Tk.W)
-Tk.Label(generalPanel, text="mag            ").grid(column=2, row=4)
+Tk.Label(generalPanel, text="mag").grid(column=2, row=4, sticky=Tk.W)
 
 
 def band_selected(*args):
@@ -398,7 +398,7 @@ bulgeEffSurfBriValue.set("99.99")
 bulgeEffSurfBriValue.trace("w", lambda n, i, m, v=bulgeEffSurfBriValue: some_parameter_changed("bSurfBri", v.get()))
 bulgeEffSurfBriEntry = Tk.Entry(bulgePanel, textvariable=bulgeEffSurfBriValue, width=5, state="disabled", bg="white")
 bulgeEffSurfBriEntry.grid(column=1, row=1, sticky=Tk.W)
-Tk.Label(bulgePanel, text="mag/sq.arcsec").grid(column=2, row=1)
+Tk.Label(bulgePanel, text="mag/sq.arcsec").grid(column=2, row=1, sticky=Tk.W)
 
 Tk.Label(bulgePanel, text="Sersic index").grid(column=0, row=2)
 bulgeSersicIndexValue = Tk.StringVar()
@@ -413,7 +413,7 @@ bulgeEffRadiusValue.set("0.00")
 bulgeEffRadiusValue.trace("w", lambda n, i, m, v=bulgeEffRadiusValue: some_parameter_changed("bEffRad", v.get()))
 bulgeEffRadiusEntry = Tk.Entry(bulgePanel, textvariable=bulgeEffRadiusValue, width=5, state="disabled", bg="white")
 bulgeEffRadiusEntry.grid(column=1, row=3, sticky=Tk.W)
-Tk.Label(bulgePanel, text="arcsec            ").grid(column=2, row=3)
+Tk.Label(bulgePanel, text="arcsec").grid(column=2, row=3, sticky=Tk.W)
 
 # Axis ratio
 Tk.Label(bulgePanel, text="Axis ratio").grid(column=0, row=5)
@@ -458,7 +458,7 @@ diskCenSurfBriValue.set("99.99")
 diskCenSurfBriEntry = Tk.Entry(diskPanel, textvariable=diskCenSurfBriValue, width=5, state="disabled", bg="white")
 diskCenSurfBriEntry.grid(column=1, row=1, sticky=Tk.W)
 diskCenSurfBriValue.trace("w", lambda n, i, m, v=diskCenSurfBriValue: some_parameter_changed("dSurfBri", v.get()))
-Tk.Label(diskPanel, text="mag/sq.arcsec").grid(column=2, row=1)
+Tk.Label(diskPanel, text="mag/sq.arcsec").grid(column=2, row=1, sticky=Tk.W)
 
 # Disc exponential scale
 Tk.Label(diskPanel, text="Exp. scale").grid(column=0, row=2)
@@ -467,7 +467,7 @@ diskExpScaleValue.set("0.00")
 diskExpScaleEntry = Tk.Entry(diskPanel, textvariable=diskExpScaleValue, width=5, state="disabled", bg="white")
 diskExpScaleEntry.grid(column=1, row=2, sticky=Tk.W)
 diskExpScaleValue.trace("w", lambda n, i, m, v=diskExpScaleValue: some_parameter_changed("dExpScale", v.get()))
-Tk.Label(diskPanel, text="arcsec            ").grid(column=2, row=2)
+Tk.Label(diskPanel, text="arcsec").grid(column=2, row=2, sticky=Tk.W)
 
 # Disc axis ratio
 Tk.Label(diskPanel, text="Axis ratio").grid(column=0, row=3)
@@ -484,7 +484,7 @@ diskThicknessValue.set("0.20")
 diskThicknessEntry = Tk.Entry(diskPanel, textvariable=diskThicknessValue, width=5, state="disabled", bg="white")
 diskThicknessEntry.grid(column=1, row=4, sticky=Tk.W)
 diskThicknessValue.trace("w", lambda n, i, m, v=diskThicknessValue: some_parameter_changed("dThickness", v.get()))
-Tk.Label(diskPanel, text="* h                  ").grid(column=2, row=4)
+Tk.Label(diskPanel, text="* h").grid(column=2, row=4, sticky=Tk.W)
 
 # Disc M-to-L ratio
 Tk.Label(diskPanel, text="M/L").grid(column=0, row=5)
@@ -543,7 +543,7 @@ haloSecondParamValue = Tk.StringVar()
 haloSecondParamValue.trace("w", lambda n, i, m, v=haloSecondParamValue: some_parameter_changed("haloSecond", v.get()))
 haloSecondParamEntry = Tk.Entry(haloPanel, textvariable=haloSecondParamValue, width=5, state="disabled", bg="white")
 haloSecondParamEntry.grid(column=1, row=2)
-Tk.Label(haloPanel, text="Km/sec     ").grid(column=2, row=2)
+Tk.Label(haloPanel, text="Km/sec").grid(column=2, row=2, sticky=Tk.W)
 
 
 # Button for computation running
