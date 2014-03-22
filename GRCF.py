@@ -321,6 +321,7 @@ rightPanel.pack(side=Tk.RIGHT, expand=1)
 ##########################
 
 generalPanel = Tk.Frame(rightPanel)
+generalBalloon = Balloon(generalPanel)
 generalPanel.grid(column=0, row=1)
 
 # Place checkbutton for correcting for inclination question
@@ -331,10 +332,10 @@ correctForInclinationCB = Tk.Checkbutton(generalPanel,
                                          text="Correct for inclination?",
                                          variable=correctForInclination,
                                          state="disabled")
-correctForInclinationBaloon = Balloon(generalPanel)
+
 correctForInclinationText = """If this option is on, observed rotation curve will be corrected
 for inclination computed from disc's q and z0/h."""
-correctForInclinationBaloon.bind(correctForInclinationCB, correctForInclinationText)
+generalBalloon.bind(correctForInclinationCB, correctForInclinationText)
 correctForInclinationCB.grid(column=0, row=0, columnspan=3)
 
 # Luminosity distance entry
@@ -346,6 +347,7 @@ generalLDValue.trace("w",
 generalLDEntry = Tk.Entry(generalPanel, textvariable=generalLDValue, width=5, state="disabled", bg="white")
 generalLDEntry.grid(column=1, row=1, sticky=Tk.W)
 Tk.Label(generalPanel, text="Mpc        ", width=7).grid(column=2, row=1, sticky=Tk.W)
+generalBalloon.bind(generalLDEntry, "Luminosity distance of the galaxy [Mpc].")
 
 # Place entry for galaxy scale
 Tk.Label(generalPanel, text=" scale", width=6).grid(column=0, row=2, sticky=Tk.E)
@@ -356,6 +358,7 @@ generalScaleValue.trace("w",
 generalScaleEntry = Tk.Entry(generalPanel, textvariable=generalScaleValue, width=5, state="disabled", bg="white")
 generalScaleEntry.grid(column=1, row=2, sticky=Tk.W)
 Tk.Label(generalPanel, text="kpc/''      ", width=7).grid(column=2, row=2, sticky=Tk.W)
+generalBalloon.bind(generalScaleEntry, "Scale of the galaxy [kpc per arcsec].")
 
 # Hubble parameter value
 Tk.Label(generalPanel, text=u"     H\u2080", font=font11, width=6).grid(column=0, row=3, sticky=Tk.E)
@@ -365,6 +368,7 @@ generalHubbleValue.trace("w",
                         lambda n, i, m, v=generalHubbleValue: some_parameter_changed("hubble", v.get()))
 generalHubbleEntry = Tk.Entry(generalPanel, textvariable=generalHubbleValue, width=5, state="disabled", bg="white")
 generalHubbleEntry.grid(column=1, row=3, sticky=Tk.W)
+generalBalloon.bind(generalHubbleEntry, "Hubble constant.") ### FIXME z or zero???
 Tk.Label(generalPanel, text="km/sec/Mpc", width=9).grid(column=2, row=3, sticky=Tk.W)
 
 # Solar absolute magnitude
@@ -393,14 +397,18 @@ generalBandValue.trace("w", band_selected)
 #  Parameters of bulge  #
 #########################
 
+# Include bulge
 bulgePanel = Tk.Frame(rightPanel, pady=5)
+bulgeBalloon = Balloon(bulgePanel)
 bulgePanel.grid(column=0, row=2)
 includeBulge = Tk.IntVar()
 includeBulge.set(0)
 includeBulge.trace("w", lambda n, i, m, v=includeBulge: some_parameter_changed("bInclude", v.get()))
 includeBulgeCButton = Tk.Checkbutton(bulgePanel, text="Bulge", variable=includeBulge, state="disabled")
 includeBulgeCButton.grid(column=0, row=0, columnspan=2)
+bulgeBalloon.bind(includeBulgeCButton, "Include bulge in the computation.")
 
+# Bulge effective brightness entry
 Tk.Label(bulgePanel, text=u"      \u03bc\u2091", font=font11, width=6).grid(column=0, row=1, sticky=Tk.E)
 bulgeEffSurfBriValue = Tk.StringVar()
 bulgeEffSurfBriValue.set("99.99")
@@ -408,14 +416,18 @@ bulgeEffSurfBriValue.trace("w", lambda n, i, m, v=bulgeEffSurfBriValue: some_par
 bulgeEffSurfBriEntry = Tk.Entry(bulgePanel, textvariable=bulgeEffSurfBriValue, width=5, state="disabled", bg="white")
 bulgeEffSurfBriEntry.grid(column=1, row=1, sticky=Tk.W)
 Tk.Label(bulgePanel, text=u"mag/\u25a1''       ", width=9).grid(column=2, row=1, sticky=Tk.W)
+bulgeBalloon.bind(bulgeEffSurfBriEntry, "Bulge effective brightness.")
 
+# Bulge Sersic index
 Tk.Label(bulgePanel, text="n  ", font=font11).grid(column=0, row=2, sticky=Tk.E)
 bulgeSersicIndexValue = Tk.StringVar()
 bulgeSersicIndexEntry = Tk.Entry(bulgePanel, textvariable=bulgeSersicIndexValue, width=5, state="disabled", bg="white")
 bulgeSersicIndexEntry.grid(column=1, row=2, sticky=Tk.W)
 bulgeSersicIndexValue.set("4.0")
 bulgeSersicIndexValue.trace("w", lambda n, i, m, v=bulgeSersicIndexValue: some_parameter_changed("bSersic", v.get()))
+bulgeBalloon.bind(bulgeSersicIndexEntry, u"Bulge S\u00E9rsic index.")
 
+# Bulge effective radius
 Tk.Label(bulgePanel, text=u"r\u2091\u2009 ", font=font11).grid(column=0, row=3, sticky=Tk.E)
 bulgeEffRadiusValue = Tk.StringVar()
 bulgeEffRadiusValue.set("0.00")
@@ -423,6 +435,7 @@ bulgeEffRadiusValue.trace("w", lambda n, i, m, v=bulgeEffRadiusValue: some_param
 bulgeEffRadiusEntry = Tk.Entry(bulgePanel, textvariable=bulgeEffRadiusValue, width=5, state="disabled", bg="white")
 bulgeEffRadiusEntry.grid(column=1, row=3, sticky=Tk.W)
 Tk.Label(bulgePanel, text="''").grid(column=2, row=3, sticky=Tk.W)
+bulgeBalloon.bind(bulgeEffRadiusEntry, "Bulge effective radius in arcseconds.")
 
 # Axis ratio
 Tk.Label(bulgePanel, text="    b/a").grid(column=0, row=5)
@@ -431,6 +444,8 @@ bulgeAxisRatioValue.set("1.0") # Default value for face-on disc
 bulgeAxisRatioEntry = Tk.Entry(bulgePanel, textvariable=bulgeAxisRatioValue, width=5, state="disabled", bg="white")
 bulgeAxisRatioEntry.grid(column=1, row=5, sticky=Tk.W)
 bulgeAxisRatioValue.trace("w", lambda n, i, m, v=bulgeAxisRatioValue: some_parameter_changed("dAxisRatio", v.get()))
+bulgeBalloon.bind(bulgeAxisRatioEntry, """Bulge minor to major axis ratio (b/a=1 means
+bulge with circular isophotes).""")
 
 Tk.Label(bulgePanel, text="    M/L").grid(column=0, row=6)
 bulgeMLratioValue = Tk.StringVar()
@@ -447,18 +462,21 @@ bulgeMLratioValue.trace("w", lambda n, i, m, v=bulgeMLratioValue: some_parameter
 bulgeMLratioEntry.grid(column=1, row=6, sticky=Tk.W)
 bulgeMLratioEntry.bind("<Button-4>", mouse_wheel_up)
 bulgeMLratioEntry.bind("<Button-5>", mouse_wheel_down)
+bulgeBalloon.bind(bulgeMLratioEntry, "Bulge mass-to-light ratio.")
 
 ##########################
 #   Parameters of disk   #
 ##########################
 diskPanel = Tk.Frame(rightPanel, pady=5)
 diskPanel.grid(column=0, row=3)
+diskBalloon = Balloon(diskPanel)
 
 includeDisk = Tk.IntVar()
 includeDisk.set(0)
 includeDisk.trace("w", lambda n, i, m, v=includeDisk: some_parameter_changed("dInclude", v.get()))
 includeDiskCButton = Tk.Checkbutton(diskPanel, text="Disk", variable=includeDisk, state="disabled")
 includeDiskCButton.grid(column=0, row=0, columnspan=2)
+diskBalloon.bind(includeDiskCButton, "Include disk in the computation.")
 
 # Disc central surface brightness
 Tk.Label(diskPanel, text=u"       \u03bc\u2080 ", font=font11, width=6).grid(column=0, row=1, sticky=Tk.E)
@@ -468,6 +486,7 @@ diskCenSurfBriEntry = Tk.Entry(diskPanel, textvariable=diskCenSurfBriValue, widt
 diskCenSurfBriEntry.grid(column=1, row=1, sticky=Tk.W)
 diskCenSurfBriValue.trace("w", lambda n, i, m, v=diskCenSurfBriValue: some_parameter_changed("dSurfBri", v.get()))
 Tk.Label(diskPanel, text=u"mag/\u25a1''      ", width=9).grid(column=2, row=1, sticky=Tk.W)
+diskBalloon.bind(diskCenSurfBriEntry, "Disk central surface brightness.")
 
 # Disc exponential scale
 Tk.Label(diskPanel, text="      h", font=font11).grid(column=0, row=2)
@@ -477,6 +496,7 @@ diskExpScaleEntry = Tk.Entry(diskPanel, textvariable=diskExpScaleValue, width=5,
 diskExpScaleEntry.grid(column=1, row=2, sticky=Tk.W)
 diskExpScaleValue.trace("w", lambda n, i, m, v=diskExpScaleValue: some_parameter_changed("dExpScale", v.get()))
 Tk.Label(diskPanel, text="''").grid(column=2, row=2, sticky=Tk.W)
+diskBalloon.bind(diskExpScaleEntry, "Disk exponential scalelength.")
 
 # Disc axis ratio
 Tk.Label(diskPanel, text="      b/a").grid(column=0, row=3)
@@ -485,6 +505,7 @@ diskAxisRatioValue.set("1.0") # Default value for face-on disc
 diskAxisRatioEntry = Tk.Entry(diskPanel, textvariable=diskAxisRatioValue, width=5, state="disabled", bg="white")
 diskAxisRatioEntry.grid(column=1, row=3, sticky=Tk.W)
 diskAxisRatioValue.trace("w", lambda n, i, m, v=diskAxisRatioValue: some_parameter_changed("dAxisRatio", v.get()))
+diskBalloon.bind(diskAxisRatioEntry, "Disk minor to major axis ratio.")
 
 # Disc thickness
 Tk.Label(diskPanel, text=u"    z\u2080/h ", font=font11).grid(column=0, row=4)
@@ -493,7 +514,8 @@ diskThicknessValue.set("0.20")
 diskThicknessEntry = Tk.Entry(diskPanel, textvariable=diskThicknessValue, width=5, state="disabled", bg="white")
 diskThicknessEntry.grid(column=1, row=4, sticky=Tk.W)
 diskThicknessValue.trace("w", lambda n, i, m, v=diskThicknessValue: some_parameter_changed("dThickness", v.get()))
-# Tk.Label(diskPanel, text=u"\u00b7 h").grid(column=2, row=4, sticky=Tk.W)
+diskBalloon.bind(diskThicknessEntry, u"""The ratio of the disk scaleheight z\u2080 to the disk exponential
+scalelength h (internal thickness of the disk).""")
 
 # Disc M-to-L ratio
 Tk.Label(diskPanel, text="     M/L").grid(column=0, row=5)
@@ -511,6 +533,7 @@ diskMLratioValue.trace("w", lambda n, i, m, v=diskMLratioValue: some_parameter_c
 diskMLratioEntry.grid(column=1, row=5, sticky=Tk.W)
 diskMLratioEntry.bind("<Button-4>", mouse_wheel_up)
 diskMLratioEntry.bind("<Button-5>", mouse_wheel_down)
+diskBalloon.bind(diskMLratioEntry, "Disk mass to light ratio.")
 
 ###########################
 #   Parameters of halo    #
@@ -518,11 +541,14 @@ diskMLratioEntry.bind("<Button-5>", mouse_wheel_down)
 
 haloPanel = Tk.Frame(rightPanel, pady=5)
 haloPanel.grid(column=0, row=4)
+haloBalloon = Balloon(haloPanel)
+
 includeHalo = Tk.IntVar()
 includeHalo.set(0)
 includeHalo.trace("w", lambda n, i, m, v=includeHalo: some_parameter_changed("hInclude", v.get()))
 includeHaloCButton = Tk.Checkbutton(haloPanel, text="Halo", variable=includeHalo, state="disabled")
 includeHaloCButton.grid(column=0, row=0, columnspan=2)
+haloBalloon.bind(includeHaloCButton, "Include halo in the computation.")
 
 # Halo type
 haloModelValue = Tk.StringVar()
@@ -530,6 +556,16 @@ haloModelValue.set("isoterm")
 haloModelValue.trace("w", lambda n, i, m, v=haloModelValue: some_parameter_changed("haloModel", v.get()))
 haloFirstParamLabel = Tk.Label(haloPanel, text='Rc', width=5)
 haloSecondParamLabel = Tk.Label(haloPanel, text=u'V(\u221E)', font=font11, width=5)
+
+# We have to allocate these two entries here, before their 'griding' because
+# we are needed them to bind balloons for proper description
+# of their parameters (balloons have to depend on selected model). 
+haloFirstParamValue = Tk.StringVar()
+haloFirstParamEntry = Tk.Entry(haloPanel, textvariable=haloFirstParamValue, width=5, state="disabled", bg="white")
+haloSecondParamValue = Tk.StringVar()
+haloSecondParamEntry = Tk.Entry(haloPanel, textvariable=haloSecondParamValue, width=5, state="disabled", bg="white")
+
+# Radiobuttons to select halo model.
 isotermHaloRadiobutton = Tk.Radiobutton(haloPanel, 
                                         text="isoterm", 
                                         variable=haloModelValue, 
@@ -537,7 +573,9 @@ isotermHaloRadiobutton = Tk.Radiobutton(haloPanel,
                                         state="disabled", 
                                         width=5,
                                         command=lambda : [haloFirstParamLabel.config(text="Rc"), 
-                                                          haloSecondParamLabel.config(text=u'V(\u221E)', font=font11)])
+                                                          haloSecondParamLabel.config(text=u'V(\u221E)', font=font11),
+                                                          haloBalloon.bind(haloFirstParamEntry, "Core radius."),
+                                                          haloBalloon.bind(haloSecondParamEntry, "Velocity at infinity.")])
 isotermHaloRadiobutton.grid(column=0, row=1)
 NFWHaloRadiobutton = Tk.Radiobutton(haloPanel,
                                     text="NFW",
@@ -546,8 +584,14 @@ NFWHaloRadiobutton = Tk.Radiobutton(haloPanel,
                                     value="NFW", 
                                     state="disabled",
                                     command=lambda : [haloFirstParamLabel.config(text="C"),
-                                                      haloSecondParamLabel.config(text="V200")])
+                                                      haloSecondParamLabel.config(text="V200"),
+                                                      haloBalloon.bind(haloFirstParamEntry, "Consentration parameter."),
+                                                      haloBalloon.bind(haloSecondParamEntry, "Velocity at the virial radius.")])
 NFWHaloRadiobutton.grid(column=1, row=1)
+haloBalloon.bind(isotermHaloRadiobutton, "Halo type: isothermal halo.")
+haloBalloon.bind(NFWHaloRadiobutton, "Halo type: Navarro Frenk White profile.")
+haloBalloon.bind(haloFirstParamEntry, "Core radius.")
+haloBalloon.bind(haloSecondParamEntry, "Velocity at infinity.")
 
 # AC checkbutton
 haloIncludeAC = Tk.IntVar()
@@ -555,17 +599,17 @@ haloIncludeAC.set(0)
 haloIncludeAC.trace("w", lambda n, i, m, v=haloIncludeAC: some_parameter_changed("includeAC", v.get()))
 haloACCheckbutton = Tk.Checkbutton(haloPanel, text="AC", variable=haloIncludeAC, state="disabled")
 haloACCheckbutton.grid(column=2, row=1)
+haloBalloon.bind(haloACCheckbutton, """Take into account the adiabatic contraction of the halo.
+Warning: the computation with this mode turned on
+will take considerably longer time.""")
 
+# Place allocated before entries and stuff around them
 haloFirstParamLabel.grid(column=0, row=2)
-haloFirstParamValue = Tk.StringVar()
 haloFirstParamValue.trace("w", lambda n, i, m, v=haloFirstParamValue: some_parameter_changed("haloFirst", v.get()))
-haloFirstParamEntry = Tk.Entry(haloPanel, textvariable=haloFirstParamValue, width=5, state="disabled", bg="white")
 haloFirstParamEntry.grid(column=1, row=2, sticky=Tk.W)
 
 haloSecondParamLabel.grid(column=0, row=3)
-haloSecondParamValue = Tk.StringVar()
 haloSecondParamValue.trace("w", lambda n, i, m, v=haloSecondParamValue: some_parameter_changed("haloSecond", v.get()))
-haloSecondParamEntry = Tk.Entry(haloPanel, textvariable=haloSecondParamValue, width=5, state="disabled", bg="white")
 haloSecondParamEntry.grid(column=1, row=3, sticky=Tk.W)
 Tk.Label(haloPanel, text="Km/sec").grid(column=2, row=3)
 
