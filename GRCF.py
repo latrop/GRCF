@@ -186,8 +186,13 @@ def some_parameter_changed(parameter, newValue):
         onoffPanel(diskPanel, newValue)
     if parameter == "hInclude":
         onoffPanel(haloPanel, newValue)
-        if newValue:
-            haloACCheckbutton.config(state="active")
+        if newValue and (haloModelValue.get() == "NFW"):   # Adiabatic contraction only for NFW profile
+            haloACCheckbutton.config(state="normal")
+        else:
+            haloACCheckbutton.config(state="disabled")
+    if parameter == "haloModel":
+        if newValue == "NFW":
+            haloACCheckbutton.config(state="normal")
         else:
             haloACCheckbutton.config(state="disabled")
     if parameter == "Msun":
