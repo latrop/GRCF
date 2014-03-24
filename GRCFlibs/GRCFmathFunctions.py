@@ -7,7 +7,7 @@ import tkFileDialog
 from scipy.interpolate import interp1d, InterpolatedUnivariateSpline
 from scipy.optimize import fmin
 import numpy
-from numpy import arange, linspace, abs, array, zeros_like, concatenate, log
+from numpy import arange, linspace, abs, array, zeros_like, concatenate, log, zeros
 from numpy import sum as npsum
 
 from GRCFveloFunctions import *
@@ -60,14 +60,14 @@ class GalaxyRotation(object):
         self.distancesToComputeArcSec = concatenate((additinal, self.distanceArcSec))
         print self.distancesToComputeArcSec
         self.distancesToComputeKpc = self.distancesToComputeArcSec * scale
-        self.bulgeVelocity = zeros_like(self.distancesToComputeArcSec)
+        self.distancesToComputeLength = len(distancesToComputeArcSec)
+        self.bulgeVelocity = zeros(self.distancesToComputeLength)
         self.plotBulge = 0
-        self.diskVelocity = zeros_like(self.distancesToComputeArcSec)
+        self.diskVelocity = zeros(self.distancesToComputeLength)
         self.plotDisk = 0
-        self.haloVelocity = zeros_like(self.distancesToComputeArcSec)
+        self.haloVelocity = zeros(self.distancesToComputeLength)
         self.plotHalo = 0
-        self.sumVelocity = zeros_like(self.distancesToComputeArcSec)
-
+        self.sumVelocity = zeros(self.distancesToComputeLength)
 
     def reScale(self, newscale):
         try:
@@ -220,22 +220,6 @@ class GalaxyRotation(object):
             self.diskVelocity = 0.001 * diskVelSquared ** 0.5
             self.sumVelocity += diskVelSquared
 
-        if hParams["include"]:
-            # compute halo rotation velocity
-            if hParams["model"] == "isoterm": # isotermal falo
-                Rc = float(hParams["firstParam"])
-                Vinf = float(hParams["secondParam"])
-                haloVelsquared = isoHaloRotVel(Rc, Vinf, self.distancesToComputeKpc)
-                self.haloVelocity = 0.001 * haloVelsquared ** 0.5
-                self.sumVelocity += haloVelsquared
-            elif hParams["model"] == "NFW":  # Navarro Frenk White halo
-                concentrationParameter = float(hParams["firstParam"])
-                v200 = float(hParams["secondParam"])
-                H = float(gParams["hubble"])
-                haloVelsquared = NFWRotVel(concentrationParameter, v200, H, self.distancesToComputeKpc)
-                self.haloVelocity = haloVelsquared ** 0.5
-                self.sumVelocity += 1e6*haloVelsquared
-
         if bParams["include"]:
             # compude bulge rotation velocity
                 bulgeEffSurfBri = float(bParams["effSurfBri"])
@@ -274,6 +258,23 @@ class GalaxyRotation(object):
                 self.oldBulgeParams["sersicIndex"] = bulgeSersicIndex
                 self.oldBulgeParams["effRadius"] = bulgeEffRadius
                 self.oldBulgeParams["MLratio"] = bulgeMLratio
+
+        if hParams["include"]:
+            # compute halo rotation velocity
+            if hParams["model"] == "isoterm": # isotermal falo
+                Rc = float(hParams["firstParam"])
+                Vinf = float(hParams["secondParam"])
+                haloVelsquared = isoHaloRotVel(Rc, Vinf, self.distancesToComputeKpc)
+                self.haloVelocity = 0.001 * haloVelsquared ** 0.5
+                self.sumVelocity += haloVelsquared
+            elif hParams["model"] == "NFW":  # Navarro Frenk White halo
+                concentrationParameter = float(hParams["firstParam"])
+                v200 = float(hParams["secondParam"])
+                H = float(gParams["hubble"])
+                haloVelsquared = NFWRotVel(concentrationParameter, v200, H, self.distancesToComputeKpc)
+                self.haloVelocity = haloVelsquared ** 0.5
+                self.sumVelocity += 1e6*haloVelsquared
+
         self.oldGeneralParams["incl"] = incl
         self.oldGeneralParams["scale"] = scale
         self.oldGeneralParams["Msun"] = Msun
