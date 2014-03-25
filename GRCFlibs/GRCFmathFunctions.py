@@ -250,12 +250,24 @@ class GalaxyRotation(object):
 
         if hParams["include"]:
             # compute halo rotation velocity
-            ### TODO make here checking for changing of parameters to avoid halo recomputation
             if self.haloParametersChanged:
-                print "recomputation of halo"
-                haloVelsquared = v_halo(bParams, 
-                                        dParams, 
-                                        hParams, 
+                bParams_copy = bParams.copy()
+                dParams_copy = dParams.copy()
+                hParams_copy = hParams.copy()
+                # if both disc and bulge are switched off, then we can compute halo
+                # without adiabatic contraction
+                if (not bParams["include"]) and (not dParams["include"]):
+                    hParams_copy["includeAC"] = 0
+                # if only bulge is switched off, set temporary it's ML ratio to
+                # zero such that it will not affect no adiabatic contraction
+                elif not bParams["include"]:
+                    bParams_copy["MLratio"] = 0.0
+                # the same with the disc
+                if not dParams["include"]:
+                    dParams_copy["MLratio"] = 0.0
+                haloVelsquared = v_halo(bParams_copy, 
+                                        dParams_copy, 
+                                        hParams_copy, 
                                         gParams, 
                                         self.distancesToComputeKpc)
                 self.haloVelocity = haloVelsquared ** 0.5
