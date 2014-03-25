@@ -296,6 +296,7 @@ extern "C" double * c_v_halo(double * bulge_params,
     if (includeAC==0){
       for(i=0; i < num_of_points; i++){
 	rr = distances[i];
+	rh = rr / r200;
 	v_squared[i] = facth2*Fh(rh*concentr) / Fc / rr;
       }
     }

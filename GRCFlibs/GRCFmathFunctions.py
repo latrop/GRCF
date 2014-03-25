@@ -5,12 +5,12 @@ from math import radians, sin
 import Tkinter as Tk
 import tkFileDialog
 from scipy.interpolate import interp1d, InterpolatedUnivariateSpline
-from scipy.optimize import fmin
+from scipy.optimize import fmin as fmin_sco
 import numpy
 from numpy import arange, linspace, abs, array, zeros_like, concatenate, log, zeros
 from numpy import sum as npsum
 
-from GRCFveloFunctions import *
+from wrap_velocity import *
 from GRCFcommonFunctions import fig2img, fig2data
 import time
 
@@ -60,7 +60,7 @@ class GalaxyRotation(object):
         self.distancesToComputeArcSec = concatenate((additinal, self.distanceArcSec))
         print self.distancesToComputeArcSec
         self.distancesToComputeKpc = self.distancesToComputeArcSec * scale
-        self.distancesToComputeLength = len(distancesToComputeArcSec)
+        self.distancesToComputeLength = len(self.distancesToComputeArcSec)
         self.bulgeVelocity = zeros(self.distancesToComputeLength)
         self.plotBulge = 0
         self.diskVelocity = zeros(self.distancesToComputeLength)
@@ -189,35 +189,25 @@ class GalaxyRotation(object):
                 or (scale != scale_old)
                 or (Msun != Msun_old)
                 or (incl != incl_old)):
-                if diskThickness == 0.0: # if z is 0 then use simple thin disk model
-                    diskVelSquared = flatDiskRotVel(diskCenSurfBri,
-                                                    diskExpScale,
-                                                    scale,
-                                                    Msun,
-                                                    diskMLratio,
-                                                    self.distancesToComputeKpc)
-                else: # Thick disc model
-                    diskVelSquared = thickDiskRotVel(diskCenSurfBri,
-                                                     diskExpScale,
-                                                     scale,
-                                                     Msun,
-                                                     diskMLratio,
-                                                     diskThickness,
-                                                     self.distancesToComputeKpc)
+                    diskVelSquared = v_disk(dParams,
+                                            gParams,
+                                            self.distancesToComputeKpc)
+                    self.diskVelocity = diskVelSquared ** 0.5
             elif (diskMLratio != diskMLratio_old):
                 # if only M/L ratio was changed one can compute the new values
                 # of velocity just by rescaling the old values, without
                 # a computation of that big integral
-                diskVelSquared = (diskMLratio / self.previousDiskMLratio) * self.diskVelocity**2 * 1000000
+                diskVelSquared = (diskMLratio / self.previousDiskMLratio) * self.diskVelocity**2
+                self.diskVelocity = diskVelSquared ** 0.5
             else:
-                diskVelSquared = self.diskVelocity**2 * 1000000
+                diskVelSquared = self.diskVelocity**2
             # Store new values as new old ones
             self.oldDiskParams["cenSurfBri"] = diskCenSurfBri
             self.oldDiskParams["expScale"] = diskExpScale
             self.oldDiskParams["thickness"] = diskThickness
             self.oldDiskParams["MLratio"] = diskMLratio
             self.previousDiskMLratio = diskMLratio
-            self.diskVelocity = 0.001 * diskVelSquared ** 0.5
+            self.diskVelocity = diskVelSquared ** 0.5
             self.sumVelocity += diskVelSquared
 
         if bParams["include"]:
@@ -237,20 +227,18 @@ class GalaxyRotation(object):
                     or (scale != scale_old)
                     or (Msun != Msun_old)
                     or (incl != incl_old)):
-                    bulgeVelSquared = spSymmBulgeRotVel(bulgeEffSurfBri, 
-                                                        bulgeSersicIndex, 
-                                                        bulgeEffRadius, 
-                                                        bulgeMLratio, 
-                                                        Msun,
-                                                        scale,
-                                                        self.distancesToComputeKpc)
+                    bulgeVelSquared = v_bulge(bParams,
+                                              dParams,
+                                              gParams,
+                                              self.distancesToComputeKpc)
+                    self.bulgeVelocity = bulgeVelSquared ** 0.5
                 # if only ML ratio was changes we can just rescale old velocity
                 elif (bulgeMLratio != bulgeMLratio_old):
-                    bulgeVelSquared = (bulgeMLratio / self.previousBulgeMLratio) * self.bulgeVelocity**2 * 1000000
+                    bulgeVelSquared = (bulgeMLratio / self.previousBulgeMLratio) * self.bulgeVelocity**2
+                    self.bulgeVelocity = bulgeVelSquared ** 0.5
                 # If nothing was changed just get old values of velocity
                 else:
-                    bulgeVelSquared = self.bulgeVelocity**2 * 1000000
-                self.bulgeVelocity = 0.001 * bulgeVelSquared ** 0.5
+                    bulgeVelSquared = self.bulgeVelocity**2
                 self.sumVelocity += bulgeVelSquared
                 self.previousBulgeMLratio = bulgeMLratio
                 # store new values as old ones
@@ -261,25 +249,20 @@ class GalaxyRotation(object):
 
         if hParams["include"]:
             # compute halo rotation velocity
-            if hParams["model"] == "isoterm": # isotermal falo
-                Rc = float(hParams["firstParam"])
-                Vinf = float(hParams["secondParam"])
-                haloVelsquared = isoHaloRotVel(Rc, Vinf, self.distancesToComputeKpc)
-                self.haloVelocity = 0.001 * haloVelsquared ** 0.5
-                self.sumVelocity += haloVelsquared
-            elif hParams["model"] == "NFW":  # Navarro Frenk White halo
-                concentrationParameter = float(hParams["firstParam"])
-                v200 = float(hParams["secondParam"])
-                H = float(gParams["hubble"])
-                haloVelsquared = NFWRotVel(concentrationParameter, v200, H, self.distancesToComputeKpc)
+            ### TODO make here checking for changing of parameters to avoid halo recomputation
+                haloVelsquared = v_halo(bParams, 
+                                        dParams, 
+                                        hParams, 
+                                        gParams, 
+                                        self.distancesToComputeKpc)
                 self.haloVelocity = haloVelsquared ** 0.5
-                self.sumVelocity += 1e6*haloVelsquared
+                self.sumVelocity += haloVelsquared
 
         self.oldGeneralParams["incl"] = incl
         self.oldGeneralParams["scale"] = scale
         self.oldGeneralParams["Msun"] = Msun
         self.parametersChanged = False
-        self.sumVelocity = 0.001 * self.sumVelocity ** 0.5
+        self.sumVelocity = self.sumVelocity ** 0.5
         if makePlot:
             self.plot()
 
@@ -487,7 +470,7 @@ class GalaxyRotation(object):
             haloSecond0 = self.hParams["secondParam"]
             # run local minimum finding
             print haloFirst0
-            xopt, fopt, ite, funcalls, warnflag = fmin(func, x0=[MLbulge0, haloFirst0, haloSecond0], full_output=1)
+            xopt, fopt, ite, funcalls, warnflag = fmin_sco(func, x0=[MLbulge0, haloFirst0, haloSecond0], full_output=1)
             MLbulgeOpt, haloFirstOpt, haloSecondOpt = xopt[0], xopt[1], xopt[2]
             # make plot for optimal fitting parameters for given disk ML ratio
             bParams["MLratio"] = MLbulgeOpt
@@ -520,7 +503,7 @@ class GalaxyRotation(object):
             hParams["firstParam"] = haloFirst
             hParams["secondParam"] = haloSecond
             # compute new curve
-            self.makeComputation(gParams, bParams, dParams, hParams, makePlot=False)
+            self.makeComputation(gParams, bParams, dParams, hParams, makePlot=True)
             # return chi squared
             return self.compute_chi_sq()
         # guess parameters are last cumputed fitting parameters
@@ -529,11 +512,11 @@ class GalaxyRotation(object):
         haloFirst0 = self.hParams["firstParam"]
         haloSecond0 = self.hParams["secondParam"]
         # run local minimum finding
-        xopt, fopt, ite, funcalls, warnflag = fmin(func, x0=[MLbulge0, MLdisk0, haloFirst0, haloSecond0], full_output=1)
+        xopt, fopt, ite, funcalls, warnflag = fmin_sco(func, x0=[MLbulge0, MLdisk0, haloFirst0, haloSecond0], full_output=1)
         MLbulgeOpt, MLdiskOpt, haloFirstOpt, haloSecondOpt = xopt[0], xopt[1], xopt[2], xopt[3]
         # plot resulting curve
         self.plot()
-        return MLbulgeOpt, MLdiskOpt, haloFirstOpt, haloSecondOpt, fopt, ite, funcalls
+        return MLbulgeOpt, MLdiskOpt, haloFirstOpt, haloSecondOpt
         
 
     def compute_chi_sq(self):

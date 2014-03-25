@@ -1041,7 +1041,7 @@ class optimalFitWindow(object):
                                       command=lambda: self.optimalFitFrame.destroy())
         self.cancelButton.grid(column=2, row=6)
         # Running of the gradient descent optimization
-        self.MLbulgeOpt, self.MLdiskOpt, self.haloFirstOpt, self.haloSecondOpt, self.fopt, self.ite, self.funcalls = self.rotCurve.fitOptimal()
+        self.MLbulgeOpt, self.MLdiskOpt, self.haloFirstOpt, self.haloSecondOpt = self.rotCurve.fitOptimal()
         # Show results in the small window
         Tk.Label(self.optimalFitFrame, text="Done").grid(column=2, row=0)
         Tk.Label(self.optimalFitFrame, text="Optimal values").grid(column=0, row=1)
