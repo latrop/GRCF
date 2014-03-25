@@ -68,7 +68,7 @@ class GalaxyRotation(object):
         self.haloVelocity = zeros(self.distancesToComputeLength)
         self.plotHalo = 0
         self.sumVelocity = zeros(self.distancesToComputeLength)
-        self.haloParametersChanged = False
+        self.recomputeHalo = False
 
     def reScale(self, newscale):
         try:
@@ -250,10 +250,18 @@ class GalaxyRotation(object):
 
         if hParams["include"]:
             # compute halo rotation velocity
-            if self.haloParametersChanged:
+            # we have to recompute halo if recompute halo flag is equal 1
+            # (wich means that disc or bulge was changed and we have to recompute
+            # adiabatic contraction part) or if some halo parameter was changed
+            if ((self.recomputeHalo == 1) or
+                (self.oldHaloParams["firstParam"] != self.hParams["firstParam"]) or
+                (self.oldHaloParams["secondParam"] != self.hParams["secondParam"]) or
+                (self.oldHaloParams["model"] != self.hParams["model"]) or
+                (self.oldHaloParams["includeAC"] != self.hParams["includeAC"])):
                 bParams_copy = bParams.copy()
                 dParams_copy = dParams.copy()
                 hParams_copy = hParams.copy()
+                print "compute halo!!"
                 # if both disc and bulge are switched off, then we can compute halo
                 # without adiabatic contraction
                 if (not bParams["include"]) and (not dParams["include"]):
@@ -272,10 +280,14 @@ class GalaxyRotation(object):
                                         self.distancesToComputeKpc)
                 self.haloVelocity = haloVelsquared ** 0.5
                 self.sumVelocity += haloVelsquared
-                self.haloParametersChanged = False
+                self.recomputeHalo = False
             else:
                 haloVelsquared = self.haloVelocity ** 2.0
                 self.sumVelocity += haloVelsquared
+            self.oldHaloParams["firstParam"] = hParams["firstParam"]
+            self.oldHaloParams["secondParam"] = hParams["secondParam"]
+            self.oldHaloParams["model"] = hParams["model"]
+            self.oldHaloParams["includeAC"] = hParams["includeAC"]
 
         self.oldGeneralParams["incl"] = incl
         self.oldGeneralParams["scale"] = scale
