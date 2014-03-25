@@ -68,6 +68,7 @@ class GalaxyRotation(object):
         self.haloVelocity = zeros(self.distancesToComputeLength)
         self.plotHalo = 0
         self.sumVelocity = zeros(self.distancesToComputeLength)
+        self.haloParametersChanged = False
 
     def reScale(self, newscale):
         try:
@@ -250,12 +251,18 @@ class GalaxyRotation(object):
         if hParams["include"]:
             # compute halo rotation velocity
             ### TODO make here checking for changing of parameters to avoid halo recomputation
+            if self.haloParametersChanged:
+                print "recomputation of halo"
                 haloVelsquared = v_halo(bParams, 
                                         dParams, 
                                         hParams, 
                                         gParams, 
                                         self.distancesToComputeKpc)
                 self.haloVelocity = haloVelsquared ** 0.5
+                self.sumVelocity += haloVelsquared
+                self.haloParametersChanged = False
+            else:
+                haloVelsquared = self.haloVelocity ** 2.0
                 self.sumVelocity += haloVelsquared
 
         self.oldGeneralParams["incl"] = incl

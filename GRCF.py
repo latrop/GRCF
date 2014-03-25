@@ -170,6 +170,17 @@ def some_parameter_changed(parameter, newValue):
     fitMenu.entryconfig("Maximal disk opt.", state="disabled")  #
     fitMenu.entryconfig("Gradient descent", state="disabled")   #
     rotCurve.parametersChanged = True
+    #  If we include adiabatic contraction in halo model then
+    #  changing of any parameter of the disc and bulge will
+    #  affect halo shape and we have to recompute all halo model
+    if haloIncludeAC.get() == 1:
+        rotCurve.haloParametersChanged = True
+    # If we have changed one of the halo parameter, we have to recompute
+    # halo model. Overwise halo computation will not runned, old velocities
+    # will be given instead
+    if parameter in ("haloFirst", "haloSecond", "includeAC", "haloModel"):
+        rotCurve.haloParametersChanged = True
+    # Hereafter is checking of disc and bulge parameters changing
     if ((parameter == "dThickness") or
         (parameter == "dAxisRatio") or
         (parameter == "inclCorrect")):
