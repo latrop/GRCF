@@ -19,10 +19,11 @@ using namespace std;
 #include "ri_rf.cpp"
 #include "const.h"
 
-extern "C" double * c_v_disk(double * disk_params,
-			     double * general_params,
-			     double * distances,
-			     int num_of_points){
+extern "C" int c_v_disk(double * disk_params,
+			double * general_params,
+			double * distances,
+			double * v_squared,
+			int num_of_points){
 
   /* Unpack parameters of disk model */
   double m0, h, z0_h, qd_obs, M_L_d;
@@ -31,7 +32,6 @@ extern "C" double * c_v_disk(double * disk_params,
   z0_h = disk_params[2];
   qd_obs = disk_params[3];
   M_L_d = disk_params[4];
-
   /* Unpack general parameters */
   double Hz, DL_Mpc, DL_kpc, scale, M_sun;  
   Hz = general_params[0];
@@ -44,7 +44,6 @@ extern "C" double * c_v_disk(double * disk_params,
   h = h*scale; // in kpc
   double z0=z0_h*h;  // in kpc
   double correction = DL_kpc*DL_kpc / scale / scale;
-  double * v_squared = (double *) calloc(num_of_points, sizeof(double));
   
   double     q0 = z0_h;
   double    q02 = q0*q0;
@@ -86,15 +85,16 @@ extern "C" double * c_v_disk(double * disk_params,
       v_squared[i] = vd;
     }
 
-  return v_squared;
+  return 0;
 }
 
 
-extern "C" double * c_v_bulge(double * bulge_params,
-			      double * disk_params,
-			      double * general_params,
-			      double * distances,
-			      int num_of_points){
+extern "C" int c_v_bulge(double * bulge_params,
+			 double * disk_params,
+			 double * general_params,
+			 double * distances,
+			 double * v_squared,
+			 int num_of_points){
 
   /* Unpack bulge parameters */
   double mu_eb, reb, nsersic, qb_obs, M_L_b;
@@ -153,19 +153,19 @@ extern "C" double * c_v_bulge(double * bulge_params,
   int i=0;
   double fact_velb = fact_mb*Lb_fact*fact2 / r0;
   /* Compute velocities for all distances */
-  double * v_squared = (double *) calloc(num_of_points, sizeof(double));
   for(i=0; i < num_of_points; i++)
       v_squared[i] = fact_velb*vb2(distances[i] / r0, (void*) &params_b1);
 
-  return v_squared;
+  return 0;
 }
 
-extern "C" double * c_v_halo(double * bulge_params,
-			     double * disk_params,
-			     double * halo_params,
-			     double * general_params,
-			     double * distances,
-			     int num_of_points){
+extern "C" int c_v_halo(double * bulge_params,
+			double * disk_params,
+			double * halo_params,
+			double * general_params,
+			double * distances,
+			double * v_squared,
+			int num_of_points){
 
   /* Unpack bulge parameters */
   double mu_eb, reb, nsersic, qb_obs, M_L_b, qb_int;
@@ -283,7 +283,6 @@ extern "C" double * c_v_halo(double * bulge_params,
   /* Compute velocities now */
   int i;
   double rr, rrc, ri, rh;
-  double * v_squared = (double *) calloc(num_of_points, sizeof(double));
 
   if(hType==0){
     for(i=0; i < num_of_points; i++){
@@ -310,5 +309,5 @@ extern "C" double * c_v_halo(double * bulge_params,
       }
     }
   }
-  return v_squared;
+  return 0;
 }

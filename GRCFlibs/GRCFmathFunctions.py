@@ -69,6 +69,7 @@ class GalaxyRotation(object):
         self.plotHalo = 0
         self.sumVelocity = zeros(self.distancesToComputeLength)
         self.recomputeHalo = False
+        self.optimal_fit_niter = 0
 
     def reScale(self, newscale):
         try:
@@ -102,6 +103,8 @@ class GalaxyRotation(object):
     def plot(self):
         a = self.mainGraph.add_subplot(111)
         a.clear()
+        clf()
+        cla()
         a.set_xlabel("Distance [arcsec]")
         a.set_ylabel("Velocity [km/sec]")
         if self.colouredPaint:
@@ -261,7 +264,6 @@ class GalaxyRotation(object):
                 bParams_copy = bParams.copy()
                 dParams_copy = dParams.copy()
                 hParams_copy = hParams.copy()
-                print "compute halo!!"
                 # if both disc and bulge are switched off, then we can compute halo
                 # without adiabatic contraction
                 if (not bParams["include"]) and (not dParams["include"]):
@@ -349,7 +351,7 @@ class GalaxyRotation(object):
                         if (chisq < bestChiSq) and (chisq < self.previousChiSq):
                             bestChiSq = chisq
                             print bestChiSq
-                            self.plot()
+                            #self.plot()
                             self.fittedBulgeML = bulgeML
                             self.fittedDiskML = diskML
                             self.fittedHaloFirst = firstParam
@@ -516,9 +518,11 @@ class GalaxyRotation(object):
 
 
     def fitOptimal(self):
+        self.optimal_fit_niter = 0
         def func(x): # we are going to minimize this function
             """this function runs computation of rotation curve with given parameters
             and returns chi squared. Variable x expands as [MLbulge, MLdisk, h1, h2]"""
+            self.optimal_fit_niter += 1
             MLbulge = x[0]
             MLdisk = x[1]
             haloFirst = x[2]
@@ -534,7 +538,13 @@ class GalaxyRotation(object):
             hParams["firstParam"] = haloFirst
             hParams["secondParam"] = haloSecond
             # compute new curve
-            self.makeComputation(gParams, bParams, dParams, hParams, makePlot=True)
+            if dParams["MLratio"] < 0.1:
+                return 1e15
+            self.makeComputation(gParams,
+                                 bParams,
+                                 dParams,
+                                 hParams,
+                                 makePlot=(self.optimal_fit_niter%10==0))
             # return chi squared
             return self.compute_chi_sq()
         # guess parameters are last cumputed fitting parameters
@@ -543,7 +553,9 @@ class GalaxyRotation(object):
         haloFirst0 = self.hParams["firstParam"]
         haloSecond0 = self.hParams["secondParam"]
         # run local minimum finding
-        xopt, fopt, ite, funcalls, warnflag = fmin_sco(func, x0=[MLbulge0, MLdisk0, haloFirst0, haloSecond0], full_output=1)
+        xopt, fopt, ite, funcalls, warnflag = fmin_sco(func,
+                                                       x0=[MLbulge0, MLdisk0, haloFirst0, haloSecond0],
+                                                       full_output=1)
         MLbulgeOpt, MLdiskOpt, haloFirstOpt, haloSecondOpt = xopt[0], xopt[1], xopt[2], xopt[3]
         # plot resulting curve
         self.plot()

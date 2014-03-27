@@ -216,6 +216,7 @@ master = Tk.Tk()
 font11 = tkFont.Font(size=11)
 master.title("Galaxy Rotation Curve Fit")
 master.geometry(("950x600"))
+master.protocol('WM_DELETE_WINDOW', master.quit)
 
 ############################################################
 #                Creating menu                             #
