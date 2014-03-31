@@ -123,7 +123,7 @@ double
 /*********************************************************************/
 
 double
-  vd2 (double r, void* params)
+vd2 (double r, void* params)
 {
   struct vd2_params *p
     = (struct vd2_params *)params;

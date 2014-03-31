@@ -84,7 +84,6 @@ extern "C" int c_v_disk(double * disk_params,
 	vd = fact_thick*vd2(rr / h, (void*) &params_d1);
       v_squared[i] = vd;
     }
-
   return 0;
 }
 

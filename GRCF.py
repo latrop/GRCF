@@ -267,7 +267,8 @@ fitMenu.add_command(label="Best chi squared",
                                                      bulgeMLratioValue,
                                                      diskMLratioValue,
                                                      haloFirstParamValue,
-                                                     haloSecondParamValue),
+                                                     haloSecondParamValue,
+                                                     computationIsNeeded),
                     state="disabled")
 fitMenu.add_command(label="Constant M/L",
                     command=lambda: ConstantMLWindow(master,
@@ -276,19 +277,21 @@ fitMenu.add_command(label="Constant M/L",
                                                      bulgeMLratioValue,
                                                      diskMLratioValue,
                                                      haloFirstParamValue,
-                                                     haloSecondParamValue),
+                                                     haloSecondParamValue,
+                                                     computationIsNeeded),
                     state="disabled")
 
 fitMenu.add_command(label="Maximal disk",
                     command=lambda: MaximalDiskWindow(master,
-                                                     rotCurve,
-                                                     includeBulge.get(),
-                                                     includeDisk.get(),
-                                                     includeHalo.get(),
-                                                     bulgeMLratioValue,
-                                                     diskMLratioValue,
-                                                     haloFirstParamValue,
-                                                     haloSecondParamValue),
+                                                      rotCurve,
+                                                      includeBulge.get(),
+                                                      includeDisk.get(),
+                                                      includeHalo.get(),
+                                                      bulgeMLratioValue,
+                                                      diskMLratioValue,
+                                                      haloFirstParamValue,
+                                                      haloSecondParamValue,
+                                                      computationIsNeeded),
                     state="disabled")
 
 fitMenu.add_command(label="Maximal disk opt.",
@@ -297,7 +300,8 @@ fitMenu.add_command(label="Maximal disk opt.",
                                                          bulgeMLratioValue,
                                                          diskMLratioValue,
                                                          haloFirstParamValue,
-                                                         haloSecondParamValue),
+                                                         haloSecondParamValue,
+                                                         computationIsNeeded),
                     state="disabled")
 
 fitMenu.add_command(label="Gradient descent",
@@ -306,7 +310,8 @@ fitMenu.add_command(label="Gradient descent",
                                                      bulgeMLratioValue,
                                                      diskMLratioValue,
                                                      haloFirstParamValue,
-                                                     haloSecondParamValue),
+                                                     haloSecondParamValue,
+                                                     computationIsNeeded),
                     state="disabled")
 
 menubar.add_cascade(label="Fit", menu=fitMenu)
@@ -327,6 +332,11 @@ master.config(menu=menubar)
 
 rightPanel = Tk.Frame(master)
 rightPanel.pack(side=Tk.RIGHT, expand=1)
+
+# Variable to check if computation is needed after brtforce, dradient descent etc.
+computationIsNeeded = Tk.IntVar()
+computationIsNeeded.set(0)
+computationIsNeeded.trace("w", lambda n, i, m, v=computationIsNeeded: runComputation())
 
 ##########################
 #   general parameters   #

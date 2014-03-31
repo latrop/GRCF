@@ -193,10 +193,12 @@ class GalaxyRotation(object):
                 or (scale != scale_old)
                 or (Msun != Msun_old)
                 or (incl != incl_old)):
-                    diskVelSquared = v_disk(dParams,
-                                            gParams,
-                                            self.distancesToComputeKpc)
-                    self.diskVelocity = diskVelSquared ** 0.5
+                t1 = time.time()
+                diskVelSquared = v_disk(dParams,
+                                        gParams,
+                                        self.distancesToComputeKpc)
+                print time.time()-t1
+                self.diskVelocity = diskVelSquared ** 0.5
             elif (diskMLratio != diskMLratio_old):
                 # if only M/L ratio was changed one can compute the new values
                 # of velocity just by rescaling the old values, without
@@ -331,16 +333,16 @@ class GalaxyRotation(object):
         else:
             hLower1 = hUpper1 = float(hParams["firstParam"])
             hLower2 = hUpper2 = float(hParams["secondParam"])
-        for diskML in arange(dLower, dUpper+0.01, 0.1):
+        for diskML in arange(dLower, dUpper+0.01, 0.5):
             chi_map.append([])
             dParams["MLratio"] = diskML
-            for bulgeML in arange(bLower, bUpper+0.01, 0.1):
+            for bulgeML in arange(bLower, bUpper+0.01, 0.5):
                 bParams["MLratio"] = bulgeML
                 chi_map[-1].append([])
                 chi_halo_params = []
-                for firstParam in arange(hLower1, hUpper1+0.01, 0.1):
+                for firstParam in arange(hLower1, hUpper1+0.01, 0.25):
                     hParams["firstParam"] = firstParam
-                    for secondParam in arange(hLower2, hUpper2+0.01, 1):
+                    for secondParam in arange(hLower2, hUpper2+0.01, 5):
                         hParams["secondParam"] = secondParam
                         self.makeComputation(gParams, bParams, dParams, hParams, makePlot=False)
                         chisq = self.compute_chi_sq()
@@ -351,7 +353,7 @@ class GalaxyRotation(object):
                         if (chisq < bestChiSq) and (chisq < self.previousChiSq):
                             bestChiSq = chisq
                             print bestChiSq
-                            #self.plot()
+                            self.plot()
                             self.fittedBulgeML = bulgeML
                             self.fittedDiskML = diskML
                             self.fittedHaloFirst = firstParam
