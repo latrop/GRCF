@@ -1180,9 +1180,9 @@ class MaximalDiskOptWindow(object):
         diskMLopt = value
         bulgeMLopt, haloFirstOpt, haloSecondOpt = self.bhOptimalList[index]
         self.imgLabel.config(image=self.plotList[index])
-        self.selectedBulgeML.set(str(bulgeMLopt))
-        self.selectedHaloFirst.set(str(haloFirstOpt))
-        self.selectedHaloSecond.set(str(haloSecondOpt))
+        self.selectedBulgeML.set("%6.2f" % bulgeMLopt)
+        self.selectedHaloFirst.set("%6.2f" % haloFirstOpt)
+        self.selectedHaloSecond.set("%7.2f" % haloSecondOpt)
 
     def run(self):
         if ((float(self.diskMLlowerValue.get()) > float(self.diskMLupperValue.get()))
