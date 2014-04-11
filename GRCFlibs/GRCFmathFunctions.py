@@ -353,7 +353,7 @@ class GalaxyRotation(object):
                         if (chisq < bestChiSq) and (chisq < self.previousChiSq):
                             bestChiSq = chisq
                             print bestChiSq
-                            self.plot()
+                            # self.plot()
                             self.fittedBulgeML = bulgeML
                             self.fittedDiskML = diskML
                             self.fittedHaloFirst = firstParam

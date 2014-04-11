@@ -75,14 +75,18 @@ extern "C" int c_v_disk(double * disk_params,
   for(i=0; i < num_of_points; i++)
     {
       rr = distances[i];
-      if (z0_h <= 0.01)
-	{
-	  double y = 0.5*rr / h;
-	  vd = fact_thin*vd2_thin(y);
-	}
-      else
-	vd = fact_thick*vd2(rr / h, (void*) &params_d1);
-      v_squared[i] = vd;
+      if (rr < 0.01)
+	v_squared[i] = 0.0;
+      else{
+	if (z0_h <= 0.01)
+	  {
+	    double y = 0.5*rr / h;
+	    vd = fact_thin*vd2_thin(y);
+	  }
+	else
+	  vd = fact_thick*vd2(rr / h, (void*) &params_d1);
+	v_squared[i] = vd;
+      }
     }
   return 0;
 }
@@ -151,9 +155,15 @@ extern "C" int c_v_bulge(double * bulge_params,
 
   int i=0;
   double fact_velb = fact_mb*Lb_fact*fact2 / r0;
+  double d_i;
   /* Compute velocities for all distances */
-  for(i=0; i < num_of_points; i++)
-      v_squared[i] = fact_velb*vb2(distances[i] / r0, (void*) &params_b1);
+  for(i=0; i < num_of_points; i++){
+    d_i = distances[i];
+    if (d_i<0.01)
+      v_squared[i] = 0.0;
+    else
+      v_squared[i] = fact_velb*vb2(d_i / r0, (void*) &params_b1);
+  }
 
   return 0;
 }
@@ -287,7 +297,10 @@ extern "C" int c_v_halo(double * bulge_params,
     for(i=0; i < num_of_points; i++){
       rr = distances[i];
       rrc = rr / Rc;
-      v_squared[i] = vinf2*(1.0 - atan(rrc)/rrc);
+      if (rr<0.01)
+	v_squared[i] = 0.0;
+      else
+	v_squared[i] = vinf2*(1.0 - atan(rrc)/rrc);
     }
   }
   else{
@@ -301,10 +314,14 @@ extern "C" int c_v_halo(double * bulge_params,
     else{
       for(i=0; i < num_of_points; i++){
 	rr = distances[i];
-	rh = rr / r200;
-	params_ri.rf = rh;
-	ri = fun_root((void*) &params_ri);
-	v_squared[i] = facth2*Fh(ri*concentr) / Fc / rr;
+	if (rr < 0.0)
+	  v_squared[i] = 0.0;
+	else{
+	  rh = rr / r200;
+	  params_ri.rf = rh;
+	  ri = fun_root((void*) &params_ri);
+	  v_squared[i] = facth2*Fh(ri*concentr) / Fc / rr;
+	}
       }
     }
   }
