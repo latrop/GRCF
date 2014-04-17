@@ -411,7 +411,7 @@ class BruteForceWindow(object):
         elif self.rotCurve.hParams["model"] == "NFW":
             Tk.Label(self.bruteForceFrame, text="C  from").grid(column=1, row=3)
         self.haloFirstlowerValue = Tk.StringVar()
-        self.haloFirstlowerValue.set(3.0)#self.rotCurve.hParams["firstParam"])
+        self.haloFirstlowerValue.set(1.0)#self.rotCurve.hParams["firstParam"])
         self.haloFirstlowerEntry = Tk.Spinbox(self.bruteForceFrame,
                                               textvariable=self.haloFirstlowerValue,
                                               width=5,
@@ -426,7 +426,7 @@ class BruteForceWindow(object):
             self.haloFirstlowerEntry.bind("<Button-5>", mouse_wheel_down)
         Tk.Label(self.bruteForceFrame, text=" to ").grid(column=3, row=3)
         self.haloFirstupperValue = Tk.StringVar()
-        self.haloFirstupperValue.set(7.0)#self.rotCurve.hParams["firstParam"])
+        self.haloFirstupperValue.set(10.0)#self.rotCurve.hParams["firstParam"])
         self.haloFirstupperEntry = Tk.Spinbox(self.bruteForceFrame,
                                               textvariable=self.haloFirstupperValue,
                                               width=5, 
@@ -445,7 +445,7 @@ class BruteForceWindow(object):
         elif self.rotCurve.hParams["model"] == "NFW":
             Tk.Label(self.bruteForceFrame, text="V200  from").grid(column=1, row=4)
         self.haloSecondlowerValue = Tk.StringVar()
-        self.haloSecondlowerValue.set(100)#self.rotCurve.hParams["secondParam"])
+        self.haloSecondlowerValue.set(150)#self.rotCurve.hParams["secondParam"])
         self.haloSecondlowerEntry = Tk.Spinbox(self.bruteForceFrame,
                                                textvariable=self.haloSecondlowerValue,
                                                width=5,
@@ -540,7 +540,7 @@ class BruteForceWindow(object):
         xlabel("Bulge M/L")
         ylabel("Disk M/L")
         colorbar()
-        plot([self.rotCurve.fittedBulgeML+0.05], [self.rotCurve.fittedDiskML+0.05], "ro")
+        #plot([self.rotCurve.fittedBulgeML+0.05], [self.rotCurve.fittedDiskML+0.05], "ro")
         show()
 
 

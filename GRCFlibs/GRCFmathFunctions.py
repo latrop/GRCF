@@ -44,7 +44,8 @@ class GalaxyRotation(object):
         self.oldBulgeParams = {"effSurfBri": 0.0,
                                "sersicIndex": 0.0,
                                "effRadius": 0.0,
-                               "MLratio": 0.0}
+                               "MLratio": 0.0,
+                               "axisRatio": 0.0}
         self.oldDiskParams = {"cenSurfBri": 0.0,
                               "expScale" : 0.0,
                               "thickness" : 0.0,
@@ -222,17 +223,20 @@ class GalaxyRotation(object):
                 bulgeSersicIndex = float(bParams["sersicIndex"])
                 bulgeEffRadius = float(bParams["effRadius"])
                 bulgeMLratio = float(bParams["MLratio"])
+                bulgeAxisRatio = float(bParams["axisRatio"])
                 bulgeEffSurfBri_old = self.oldBulgeParams["effSurfBri"]
                 bulgeSersicIndex_old = self.oldBulgeParams["sersicIndex"]
                 bulgeEffRadius_old = self.oldBulgeParams["effRadius"]
                 bulgeMLratio_old = self.oldBulgeParams["MLratio"]
+                bulgeAxisRatio_old = self.oldBulgeParams["axisRatio"]
                 # if some parameters of bulge was changes we have to recompute all curve
                 if ((bulgeEffSurfBri != bulgeEffSurfBri_old) 
                     or (bulgeSersicIndex != bulgeSersicIndex_old) 
                     or (bulgeEffRadius != bulgeEffRadius_old)
                     or (scale != scale_old)
                     or (Msun != Msun_old)
-                    or (incl != incl_old)):
+                    or (incl != incl_old)
+                    or (bulgeAxisRatio != bulgeAxisRatio_old)):
                     bulgeVelSquared = v_bulge(bParams,
                                               dParams,
                                               gParams,
@@ -252,6 +256,7 @@ class GalaxyRotation(object):
                 self.oldBulgeParams["sersicIndex"] = bulgeSersicIndex
                 self.oldBulgeParams["effRadius"] = bulgeEffRadius
                 self.oldBulgeParams["MLratio"] = bulgeMLratio
+                self.oldBulgeParams["axisRatio"] = bulgeAxisRatio
 
         if hParams["include"]:
             # compute halo rotation velocity
@@ -353,12 +358,12 @@ class GalaxyRotation(object):
                         if (chisq < bestChiSq) and (chisq < self.previousChiSq):
                             bestChiSq = chisq
                             print bestChiSq
-                            # self.plot()
+                            self.plot()
                             self.fittedBulgeML = bulgeML
                             self.fittedDiskML = diskML
                             self.fittedHaloFirst = firstParam
                             self.fittedHaloSecond = secondParam
-                chi_map[-1][-1] = min(chi_halo_params)
+                            chi_map[-1][-1] = min(chi_halo_params)
         return chi_map
 
     def fitConstantML(self, fitParams):
@@ -694,6 +699,13 @@ def checAllValues(gParams, bParams, dParams, hParams):
                 return False, "Bulge ML", "must be positive"
         except ValueError:
             return False, "Bulge ML", "not a number"
+        try:
+            qb = float(bParams["axisRatio"])
+            qd = float(dParams["axisRatio"])
+            if qb < qd:
+                return False, "Bulge axis ratio", "must be greater than the axis ratio of the disc"
+        except:
+            return False, "Bulge or disc axis ratio", "not a number"
     # 3) check disk params
     if dParams["include"]:
         try:

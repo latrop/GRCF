@@ -465,7 +465,7 @@ bulgeAxisRatioValue = Tk.StringVar()
 bulgeAxisRatioValue.set("1.0") # Default value for face-on disc
 bulgeAxisRatioEntry = Tk.Entry(bulgePanel, textvariable=bulgeAxisRatioValue, width=5, state="disabled", bg="white")
 bulgeAxisRatioEntry.grid(column=1, row=5, sticky=Tk.W)
-bulgeAxisRatioValue.trace("w", lambda n, i, m, v=bulgeAxisRatioValue: some_parameter_changed("dAxisRatio", v.get()))
+bulgeAxisRatioValue.trace("w", lambda n, i, m, v=bulgeAxisRatioValue: some_parameter_changed("bAxisRatio", v.get()))
 bulgeBalloon.bind(bulgeAxisRatioEntry, """Bulge minor to major axis ratio (b/a=1 means
 bulge with circular isophotes).""")
 
