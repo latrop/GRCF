@@ -1021,8 +1021,10 @@ class MaximalDiskWindow(object):
         self.haloSecondParamValue.set(str(haloSecondOpt))
         self.computationIsNeeded.set(self.computationIsNeeded.get()+1)
 
+
 class optimalFitWindow(object):
-    """ Fitting by gradient descent method (scipy.optimize.fmin function) """
+    """ Fitting by gradient descent method with constraints on parameters
+    (scipy.optimize.fmin_tnc function) """
     def __init__(self,
                  master,
                  rotCurve,
@@ -1043,28 +1045,169 @@ class optimalFitWindow(object):
         xScreenSize = master.winfo_screenwidth()
         yScreenSize = master.winfo_screenheight()
         self.optimalFitFrame.geometry("+%i+%i" % (xScreenSize/2-250, yScreenSize/2-100))
-        Tk.Label(self.optimalFitFrame, text="Gradient descent running... ").grid(column=0, row=0, columnspan=2)
-        # Two buttons: save results of fitting and close window without saving 
-        self.saveButton = Tk.Button(self.optimalFitFrame, text="Save", state="normal", command=self.save_fitted)       
-        self.saveButton.grid(column=0, row=6)
-        self.cancelButton = Tk.Button(self.optimalFitFrame,
-                                      text="Close",
-                                      state="normal",
-                                      command=lambda: self.optimalFitFrame.destroy())
-        self.cancelButton.grid(column=2, row=6)
-        # Running of the gradient descent optimization
-        self.MLbulgeOpt, self.MLdiskOpt, self.haloFirstOpt, self.haloSecondOpt = self.rotCurve.fitOptimal()
-        # Show results in the small window
-        Tk.Label(self.optimalFitFrame, text="Done").grid(column=2, row=0)
-        Tk.Label(self.optimalFitFrame, text="Optimal values").grid(column=0, row=1)
-        Tk.Label(self.optimalFitFrame, text="Bulge M/L = %1.1f" % (self.MLbulgeOpt)).grid(column=0, row=2)
-        Tk.Label(self.optimalFitFrame, text="Disk M/L = %1.1f" % (self.MLdiskOpt)).grid(column=0, row=3)
+        Tk.Label(self.optimalFitFrame, text="Constraints on parameters").grid(column=0, row=0, columnspan=3)
+        # Bulge ML section
+        Tk.Label(self.optimalFitFrame, text="Bulge M/L from").grid(column=0, row=1)
+        self.bulgeMLlowerValue = Tk.StringVar()
+        self.bulgeMLlowerValue.set("1.0")
+        self.bulgeMLlowerEntry = Tk.Spinbox(self.optimalFitFrame,
+                                            textvariable=self.bulgeMLlowerValue,
+                                            width=5,
+                                            bg="white",
+                                            from_=0.0,
+                                            to=100.0,
+                                            increment=0.1)
+        self.bulgeMLlowerEntry.grid(column=1, row=1)
+        self.bulgeMLlowerEntry.bind("<Button-4>", mouse_wheel_up)
+        self.bulgeMLlowerEntry.bind("<Button-5>", mouse_wheel_down)
+        Tk.Label(self.optimalFitFrame, text=" to ").grid(column=2, row=1)
+        self.bulgeMLupperValue = Tk.StringVar()
+        self.bulgeMLupperValue.set("8.0")
+        self.bulgeMLupperEntry = Tk.Spinbox(self.optimalFitFrame,
+                                            textvariable=self.bulgeMLupperValue,
+                                            width=5,
+                                            bg="white",
+                                            from_=0.0,
+                                            to=100.0,
+                                            increment=0.1)
+        self.bulgeMLupperEntry.grid(column=3, row=1)
+        self.bulgeMLupperEntry.bind("<Button-4>", mouse_wheel_up)
+        self.bulgeMLupperEntry.bind("<Button-5>", mouse_wheel_down)
+        self.bulgeMLoptimalValue = Tk.StringVar()
+        self.bulgeMLoptimalValue.set("---")
+        self.bulgeMLoptimalLabel = Tk.Label(self.optimalFitFrame,
+                                            textvariable=self.bulgeMLoptimalValue)
+        self.bulgeMLoptimalLabel.grid(column=4, row=1)
+        # Disc ML section
+        Tk.Label(self.optimalFitFrame, text="Disc M/L from").grid(column=0, row=2)
+        self.discMLlowerValue = Tk.StringVar()
+        self.discMLlowerValue.set("1.0")
+        self.discMLlowerEntry = Tk.Spinbox(self.optimalFitFrame,
+                                            textvariable=self.discMLlowerValue,
+                                            width=5,
+                                            bg="white",
+                                            from_=0.0,
+                                            to=100.0,
+                                            increment=0.1)
+        self.discMLlowerEntry.grid(column=1, row=2)
+        self.discMLlowerEntry.bind("<Button-4>", mouse_wheel_up)
+        self.discMLlowerEntry.bind("<Button-5>", mouse_wheel_down)
+        Tk.Label(self.optimalFitFrame, text=" to ").grid(column=2, row=2)
+        self.discMLupperValue = Tk.StringVar()
+        self.discMLupperValue.set("8.0")
+        self.discMLupperEntry = Tk.Spinbox(self.optimalFitFrame,
+                                            textvariable=self.discMLupperValue,
+                                            width=5,
+                                            bg="white",
+                                            from_=0.0,
+                                            to=100.0,
+                                            increment=0.1)
+        self.discMLupperEntry.grid(column=3, row=2)
+        self.discMLupperEntry.bind("<Button-4>", mouse_wheel_up)
+        self.discMLupperEntry.bind("<Button-5>", mouse_wheel_down)
+        self.discMLoptimalValue = Tk.StringVar()
+        self.discMLoptimalValue.set("---")
+        self.discMLoptimalLabel = Tk.Label(self.optimalFitFrame,
+                                            textvariable=self.discMLoptimalValue)
+        self.discMLoptimalLabel.grid(column=4, row=2)
+        # Halo first parameter
         if self.rotCurve.hParams["model"] == "isoterm":
-            Tk.Label(self.optimalFitFrame, text="Rc = %1.1f" % (self.haloFirstOpt)).grid(column=0, row=4)
-            Tk.Label(self.optimalFitFrame, text="V(inf) = %1.1f" % (self.haloSecondOpt)).grid(column=0, row=5)
+            Tk.Label(self.optimalFitFrame, text="Rc from").grid(column=0, row=3)
         elif self.rotCurve.hParams["model"] == "NFW":
-            Tk.Label(self.optimalFitFrame, text="C = %1.1f" % (self.haloFirstOpt)).grid(column=0, row=4)
-            Tk.Label(self.optimalFitFrame, text="V200 = %1.1f" % (self.haloSecondOpt)).grid(column=0, row=5)
+            Tk.Label(self.optimalFitFrame, text="C from").grid(column=0, row=3)
+        self.haloFirstlowerValue = Tk.StringVar()
+        self.haloFirstlowerValue.set("1.0")
+        self.haloFirstlowerEntry = Tk.Spinbox(self.optimalFitFrame,
+                                            textvariable=self.haloFirstlowerValue,
+                                            width=5,
+                                            bg="white",
+                                            from_=0.0,
+                                            to=100.0,
+                                            increment=0.1)
+        self.haloFirstlowerEntry.grid(column=1, row=3)
+        self.haloFirstlowerEntry.bind("<Button-4>", mouse_wheel_up)
+        self.haloFirstlowerEntry.bind("<Button-5>", mouse_wheel_down)
+        Tk.Label(self.optimalFitFrame, text=" to ").grid(column=2, row=3)
+        self.haloFirstupperValue = Tk.StringVar()
+        self.haloFirstupperValue.set("20.0")
+        self.haloFirstupperEntry = Tk.Spinbox(self.optimalFitFrame,
+                                            textvariable=self.haloFirstupperValue,
+                                            width=5,
+                                            bg="white",
+                                            from_=0.0,
+                                            to=100.0,
+                                            increment=0.1)
+        self.haloFirstupperEntry.grid(column=3, row=3)
+        self.haloFirstupperEntry.bind("<Button-4>", mouse_wheel_up)
+        self.haloFirstupperEntry.bind("<Button-5>", mouse_wheel_down)
+        self.haloFirstoptimalValue = Tk.StringVar()
+        self.haloFirstoptimalValue.set("---")
+        self.haloFirstoptimalLabel = Tk.Label(self.optimalFitFrame,
+                                            textvariable=self.haloFirstoptimalValue)
+        self.haloFirstoptimalLabel.grid(column=4, row=3)
+        # Halo second parameter
+        if self.rotCurve.hParams["model"] == "isoterm":
+            Tk.Label(self.optimalFitFrame, text=u"V(\u221E) from").grid(column=0, row=4)
+        elif self.rotCurve.hParams["model"] == "NFW":
+            Tk.Label(self.optimalFitFrame, text="V200 from").grid(column=0, row=4)
+        self.haloSecondlowerValue = Tk.StringVar()
+        self.haloSecondlowerValue.set("50.0")
+        self.haloSecondlowerEntry = Tk.Spinbox(self.optimalFitFrame,
+                                            textvariable=self.haloSecondlowerValue,
+                                            width=5,
+                                            bg="white",
+                                            from_=0.0,
+                                            to=1000.0,
+                                            increment=0.1)
+        self.haloSecondlowerEntry.grid(column=1, row=4)
+        self.haloSecondlowerEntry.bind("<Button-4>", mouse_wheel_up)
+        self.haloSecondlowerEntry.bind("<Button-5>", mouse_wheel_down)
+        Tk.Label(self.optimalFitFrame, text=" to ").grid(column=2, row=4)
+        self.haloSecondupperValue = Tk.StringVar()
+        self.haloSecondupperValue.set("300.0")
+        self.haloSecondupperEntry = Tk.Spinbox(self.optimalFitFrame,
+                                            textvariable=self.haloSecondupperValue,
+                                            width=5,
+                                            bg="white",
+                                            from_=0.0,
+                                            to=1000.0,
+                                            increment=0.1)
+        self.haloSecondupperEntry.grid(column=3, row=4)
+        self.haloSecondupperEntry.bind("<Button-4>", mouse_wheel_up)
+        self.haloSecondupperEntry.bind("<Button-5>", mouse_wheel_down)
+        self.haloSecondoptimalValue = Tk.StringVar()
+        self.haloSecondoptimalValue.set("---")
+        self.haloSecondoptimalLabel = Tk.Label(self.optimalFitFrame,
+                                            textvariable=self.haloSecondoptimalValue)
+        self.haloSecondoptimalLabel.grid(column=4, row=4)
+        self.runButton = Tk.Button(self.optimalFitFrame,
+                                   text="Run",
+                                   state="normal",
+                                   command=self.run)
+        self.runButton.grid(column=0, row=5)
+        self.saveButton = Tk.Button(self.optimalFitFrame,
+                                    text="Save",
+                                    state="normal",
+                                    command=self.save_fitted)
+        self.saveButton.grid(column=1, row=5)
+        self.closeButton = Tk.Button(self.optimalFitFrame,
+                                     text="Close",
+                                     state="normal",
+                                     command=lambda: self.optimalFitFrame.destroy())
+        self.closeButton.grid(column=3, row=5)
+
+    def run(self):
+        # Running of the gradient descent optimization
+        bounds = [(float(self.bulgeMLlowerValue.get()), float(self.bulgeMLupperValue.get())),
+                  (float(self.discMLlowerValue.get()), float(self.discMLupperValue.get())),
+                  (float(self.haloFirstlowerValue.get()), float(self.haloFirstupperValue.get())),
+                  (float(self.haloSecondlowerValue.get()), float(self.haloSecondupperValue.get()))]
+        self.MLbulgeOpt, self.MLdiskOpt, self.haloFirstOpt, self.haloSecondOpt = self.rotCurve.fitOptimal(bounds)
+        # Show results
+        self.bulgeMLoptimalValue.set("%1.2f" % self.MLbulgeOpt)
+        self.discMLoptimalValue.set("%1.2f" % self.MLdiskOpt)
+        self.haloFirstoptimalValue.set("%1.2f" % self.haloFirstOpt)
+        self.haloSecondoptimalValue.set("%1.2f" % self.haloSecondOpt)
 
     def save_fitted(self):
         self.bulgeMLratioValue.set("%1.3f"%(self.MLbulgeOpt))
@@ -1073,6 +1216,7 @@ class optimalFitWindow(object):
         self.haloSecondParamValue.set("%1.3f"%(self.haloSecondOpt))
         self.computationIsNeeded.set(self.computationIsNeeded.get()+1)
         self.optimalFitFrame.destroy()
+
 
 
 class MaximalDiskOptWindow(object):

@@ -6,6 +6,7 @@ import Tkinter as Tk
 import tkFileDialog
 from scipy.interpolate import interp1d, InterpolatedUnivariateSpline
 from scipy.optimize import fmin as fmin_sco
+from scipy.optimize import fmin_tnc
 import numpy
 from numpy import arange, linspace, abs, array, zeros_like, concatenate, log, zeros
 from numpy import sum as npsum
@@ -150,6 +151,7 @@ class GalaxyRotation(object):
             self.a.legend(loc="best", fancybox=True, ncol=2, prop={'size':10})
         self.a.axis([0, max(self.distanceArcSec)*1.1, 0, maxVelocityAxes])
         self.a2.clear()
+        self.a2.cla()
         self.a2.set_xlabel("Distance [kpc]")
         self.a2.errorbar(self.distanceKpc, self.velocity, self.velocity_sigma, color="k", linestyle="-", label="Data")
         self.a2.axis([0, max(self.distanceKpc)*1.1, 0, maxVelocityAxes])
@@ -524,7 +526,7 @@ class GalaxyRotation(object):
         return bhOptimalList, plotList            
 
 
-    def fitOptimal(self):
+    def fitOptimal(self, bounds):
         self.optimal_fit_niter = 0
         def func(x): # we are going to minimize this function
             """this function runs computation of rotation curve with given parameters
@@ -560,9 +562,10 @@ class GalaxyRotation(object):
         haloFirst0 = self.hParams["firstParam"]
         haloSecond0 = self.hParams["secondParam"]
         # run local minimum finding
-        xopt, fopt, ite, funcalls, warnflag = fmin_sco(func,
-                                                       x0=[MLbulge0, MLdisk0, haloFirst0, haloSecond0],
-                                                       full_output=1)
+        xopt, nfeval, rc = fmin_tnc(func,
+                                    x0=[MLbulge0, MLdisk0, haloFirst0, haloSecond0],
+                                    approx_grad = True,
+                                    bounds=bounds)
         MLbulgeOpt, MLdiskOpt, haloFirstOpt, haloSecondOpt = xopt[0], xopt[1], xopt[2], xopt[3]
         # plot resulting curve
         self.plot()
