@@ -2,7 +2,7 @@ GRCF
 ====
 Galaxy Rotation Curve Fit
 
-== Summary
+## Summary
 GRCF is an astronomical package for the decomposition of rotation
 curves of disc galaxies. GRCF allows to perform the decomposition
 of rotation curve on to three galactic components:
@@ -18,6 +18,6 @@ There are several fitting techniques:
 - maximal disc hypothesis
 - bounded gradient descent algorithm 
 
-== Installation
+## Installation
 
 For installation guide see INSTALL file. 
