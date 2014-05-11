@@ -14,7 +14,7 @@ of rotation curve on to three galactic components:
 There are several fitting techniques:
 
 - brute-force finding of chi-squared minimum
-- constant mass-to-light ration hypothesis
+- constant mass-to-light ratio hypothesis
 - maximal disc hypothesis
 - bounded gradient descent algorithm 
 
