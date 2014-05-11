@@ -4,8 +4,10 @@ from numpy import frombuffer
 from pylab import *
 from ctypes import CDLL, c_double
 from numpy.ctypeslib import ndpointer
+from os.path import dirname
 
-lib = CDLL("./GRCFlibs/c_velo_lib.so")
+
+lib = CDLL(dirname(__file__)+"/c_velo_lib.so")
 
 
 def v_disk(dParams, gParams, distances):

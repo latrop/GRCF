@@ -1,1 +1,70 @@
-Installation instructions of GRCF package
+Installation instructions for GRCF package.
+
+
+-=REQUIREMENTS=-
+
+GRCF requires some additional packages installed on your system. In this section we
+provide the complete list of dependencies. As an example we show how to install these
+packages on a deb-based operating system (Debian, Ubuntu, Mint, etc.) with Apt
+package manager. On other operating systems these packages can be installed in
+the same way, using corresponding package manager (Yum, Yast, Pacman, etc.), but 
+particular names of following packages can be somewhat different.
+
+1) C++ compiler (http://gcc.gnu.org/)
+
+   sudo apt-get install g++
+
+2) GSL (GNU Scientific Library) development files (http://www.gnu.org/software/gsl/)
+
+   sudo apt-get install libgsl0-dev
+
+3) Numpy python library (http://www.numpy.org/)
+
+   sudo apt-get install python-numpy
+
+4) Python scientific library (http://scipy.org/)
+
+   sudo apt-get install python-scipy
+
+5) Matplotlib python library (http://matplotlib.org)
+
+   sudo apt-get install python-matplotlib
+
+6) Python high-level widgets library (http://pmw.sourceforge.net/)
+
+   sudo apt-get install python-pmw
+
+7) ImakeTk module for Python Image Library (PIL) (http://www.pythonware.com/products/pil/)
+
+   sudo apt-get install python-pil.imagetk
+
+
+-=INSTALLATION=-
+
+Installation of the package requires two main steps.
+
+1) Download the package from the github repository either by 'git clone' command
+
+   git clone http://github.com/latrop/GRCF
+
+or as a zip-archive directly from web-page of the project on the github site (http://github.com/latrop/GRCF).
+
+2) Run make in the GRCFlibs sub-directory:
+
+   cd %directory where GRCF is located%
+   cd GRCFlibs/
+   make
+
+Now you can run GRCF package from the command line:
+
+    ./GRCF.py
+
+Note, that this will work only if your terminal is currently in the main package directory
+(directory that contains GRCF.py file). If you want to run the program from an arbitrary
+directory, you can add alias to your .bashrc file. For example, if you add this line
+
+    alias GRCF='%full_path_to_file%GRCF.py'
+
+in your .bashrc file, you will able to run GRCF package from any location using 'GRCF' command.
+Note also, that some operating systems allow to run this package directly by double-clicking on
+GRCF.py file.
