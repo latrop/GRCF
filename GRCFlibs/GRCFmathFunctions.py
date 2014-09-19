@@ -365,8 +365,8 @@ class GalaxyRotation(object):
                             self.fittedDiskML = diskML
                             self.fittedHaloFirst = firstParam
                             self.fittedHaloSecond = secondParam
-                            chi_map[-1][-1] = min(chi_halo_params)
-        return chi_map
+                chi_map[-1][-1] = min(chi_halo_params)
+        return array(chi_map)
 
     def fitConstantML(self, fitParams):
         bestChiSq = 1e20
