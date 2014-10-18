@@ -28,6 +28,8 @@ def loadVelocityData():
     fileName = tkFileDialog.askopenfilename(parent=master,
                                  filetypes=[("Data files", "*.dat"), ("All files", ".*")],
                                  title="Open data file")
+    if fileName == "" :
+        return
     distance, velocity, sigma = getRotationCurve(fileName)
     global rotCurve 
     rotCurve = GalaxyRotation(distance, 
@@ -136,8 +138,9 @@ def runComputation():
     rotCurve.makeComputation(gParams, bParams, dParams, hParams)
     master.title("Galaxy Rotation Curve Fit")
     # Fitting has sence only after initial computation
-    fitMenu.entryconfig("Best chi squared", state="normal")
-    fitMenu.entryconfig("Gradient descent", state="normal")
+    if (includeDisc.get() > 0) or (includeBulge.get() > 0) or (includeHalo.get() > 0):
+        fitMenu.entryconfig("Best chi squared", state="normal")
+        fitMenu.entryconfig("Gradient descent", state="normal")
     # Maximal disc approximation works only if the disc model is on
     if includeDisc.get() > 0:
         fitMenu.entryconfig("Maximal disc", state="normal")

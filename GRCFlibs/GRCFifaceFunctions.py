@@ -221,7 +221,7 @@ def saveVelocity(master, rotCurve):
                                                          ("Velocity files", "*.vel")],
                                               title="Open file to save velocity curves")
     if not fileName:
-        return
+        return None
     fout = open(fileName, "w", buffering=0)
     fout.truncate(0)
     includeBulge = int(rotCurve.bParams["include"])
