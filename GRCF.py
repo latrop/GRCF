@@ -198,8 +198,16 @@ def some_parameter_changed(parameter, newValue):
             haloACCheckbutton.config(state="disabled")
     if parameter == "haloModel":
         if newValue == "NFW":
+            haloFirstParamLabel.config(text="C")
+            haloSecondParamLabel.config(text="V200")
+            haloBalloon.bind(haloFirstParamEntry, "Consentration parameter.")
+            haloBalloon.bind(haloSecondParamEntry, "Velocity at the virial radius.")
             haloACCheckbutton.config(state="normal")
         else:
+            haloFirstParamLabel.config(text="Rc")
+            haloSecondParamLabel.config(text=u'V(\u221E)', font=font11)
+            haloBalloon.bind(haloFirstParamEntry, "Core radius.")
+            haloBalloon.bind(haloSecondParamEntry, "Velocity at infinity.")
             haloACCheckbutton.config(state="disabled")
     if parameter == "Msun":
         for item, value in mSunBands.iteritems():
@@ -593,22 +601,14 @@ isotermHaloRadiobutton = Tk.Radiobutton(haloPanel,
                                         variable=haloModelValue, 
                                         value="isoterm", 
                                         state="disabled", 
-                                        width=5,
-                                        command=lambda : [haloFirstParamLabel.config(text="Rc"), 
-                                                          haloSecondParamLabel.config(text=u'V(\u221E)', font=font11),
-                                                          haloBalloon.bind(haloFirstParamEntry, "Core radius."),
-                                                          haloBalloon.bind(haloSecondParamEntry, "Velocity at infinity.")])
+                                        width=5)
 isotermHaloRadiobutton.grid(column=0, row=1)
 NFWHaloRadiobutton = Tk.Radiobutton(haloPanel,
                                     text="NFW",
                                     variable=haloModelValue,
                                     width=3,
                                     value="NFW", 
-                                    state="disabled",
-                                    command=lambda : [haloFirstParamLabel.config(text="C"),
-                                                      haloSecondParamLabel.config(text="V200"),
-                                                      haloBalloon.bind(haloFirstParamEntry, "Consentration parameter."),
-                                                      haloBalloon.bind(haloSecondParamEntry, "Velocity at the virial radius.")])
+                                    state="disabled")
 NFWHaloRadiobutton.grid(column=1, row=1)
 haloBalloon.bind(isotermHaloRadiobutton, "Halo type: isothermal halo.")
 haloBalloon.bind(NFWHaloRadiobutton, "Halo type: Navarro Frenk White profile.")
