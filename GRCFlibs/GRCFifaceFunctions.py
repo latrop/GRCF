@@ -416,13 +416,17 @@ class BruteForceWindow(object):
         self.variateHalo.set(1)
         self.variateHaloCButton = Tk.Checkbutton(self.bruteForceFrame, variable=self.variateHalo, text=" Halo: ", state=self.haloState)
         self.variateHaloCButton.grid(column=0, row=3, rowspan=2)
-
+        # parameters labels depend on the halo type
         if self.rotCurve.hParams["model"] == "isoterm":
             Tk.Label(self.bruteForceFrame, text="Rc  from").grid(column=1, row=3)
         elif self.rotCurve.hParams["model"] == "NFW":
             Tk.Label(self.bruteForceFrame, text="C  from").grid(column=1, row=3)
         self.haloFirstlowerValue = Tk.StringVar()
-        self.haloFirstlowerValue.set(3.0)#self.rotCurve.hParams["firstParam"])
+        # lower bound of searching range depend on the halo type
+        if self.rotCurve.hParams["model"] == "isoterm":
+            self.haloFirstlowerValue.set(1.0)
+        elif self.rotCurve.hParams["model"] == "NFW":
+            self.haloFirstlowerValue.set(3.0)
         self.haloFirstlowerEntry = Tk.Spinbox(self.bruteForceFrame,
                                               textvariable=self.haloFirstlowerValue,
                                               width=5,
@@ -437,7 +441,11 @@ class BruteForceWindow(object):
             self.haloFirstlowerEntry.bind("<Button-5>", mouse_wheel_down)
         Tk.Label(self.bruteForceFrame, text=" to ").grid(column=3, row=3)
         self.haloFirstupperValue = Tk.StringVar()
-        self.haloFirstupperValue.set(7.0)#self.rotCurve.hParams["firstParam"])
+        # upper bound of searching range depend on the halo type
+        if self.rotCurve.hParams["model"] == "isoterm":
+            self.haloFirstupperValue.set(10.0)
+        elif self.rotCurve.hParams["model"] == "NFW":
+            self.haloFirstupperValue.set(7.0)
         self.haloFirstupperEntry = Tk.Spinbox(self.bruteForceFrame,
                                               textvariable=self.haloFirstupperValue,
                                               width=5, 
@@ -461,7 +469,11 @@ class BruteForceWindow(object):
         elif self.rotCurve.hParams["model"] == "NFW":
             Tk.Label(self.bruteForceFrame, text="V200  from").grid(column=1, row=4)
         self.haloSecondlowerValue = Tk.StringVar()
-        self.haloSecondlowerValue.set(100)#self.rotCurve.hParams["secondParam"])
+        # lower bound of searching range depend on the halo type
+        if self.rotCurve.hParams["model"] == "isoterm":
+            self.haloSecondlowerValue.set(150.0)
+        elif self.rotCurve.hParams["model"] == "NFW":
+            self.haloSecondlowerValue.set(100.0)
         self.haloSecondlowerEntry = Tk.Spinbox(self.bruteForceFrame,
                                                textvariable=self.haloSecondlowerValue,
                                                width=5,
@@ -476,7 +488,11 @@ class BruteForceWindow(object):
             self.haloSecondlowerEntry.bind("<Button-5>", mouse_wheel_down)
         Tk.Label(self.bruteForceFrame, text=" to ").grid(column=3, row=4)
         self.haloSecondupperValue = Tk.StringVar()
-        self.haloSecondupperValue.set(250.0)#self.rotCurve.hParams["secondParam"])
+        # upper bound of searching range depend on the halo type
+        if self.rotCurve.hParams["model"] == "isoterm":
+            self.haloSecondupperValue.set(250.0)
+        elif self.rotCurve.hParams["model"] == "NFW":
+            self.haloSecondupperValue.set(250.0)
         self.haloSecondupperEntry = Tk.Spinbox(self.bruteForceFrame,
                                                textvariable=self.haloSecondupperValue,
                                                width=5, 
@@ -597,7 +613,7 @@ class ConstantMLWindow(object):
         # Bulge parameters
         Tk.Label(self.bruteForceFrame, text="Bulge and disc M-to-L  from").grid(column=0, row=1, columnspan=2)
         self.bothMLlowerValue = Tk.StringVar()
-        self.bothMLlowerValue.set(self.rotCurve.bParams["MLratio"])
+        self.bothMLlowerValue.set(1.0)
         self.bothMLlowerEntry = Tk.Spinbox(self.bruteForceFrame,
                                             textvariable=self.bothMLlowerValue, 
                                             width=5, 
@@ -610,7 +626,7 @@ class ConstantMLWindow(object):
         self.bothMLlowerEntry.bind("<Button-5>", mouse_wheel_down)
         Tk.Label(self.bruteForceFrame, text=" to ").grid(column=3, row=1)
         self.bothMLupperValue = Tk.StringVar()
-        self.bothMLupperValue.set(self.rotCurve.bParams["MLratio"])
+        self.bothMLupperValue.set(8.0)
         self.bothMLupperEntry = Tk.Spinbox(self.bruteForceFrame,
                                             textvariable=self.bothMLupperValue,
                                             width=5,
@@ -632,7 +648,11 @@ class ConstantMLWindow(object):
         elif self.rotCurve.hParams["model"] == "NFW":
             Tk.Label(self.bruteForceFrame, text="C  from").grid(column=1, row=3)
         self.haloFirstlowerValue = Tk.StringVar()
-        self.haloFirstlowerValue.set(self.rotCurve.hParams["firstParam"])
+        # lower bound of searching range depend on the halo type
+        if self.rotCurve.hParams["model"] == "isoterm":
+            self.haloFirstlowerValue.set(1.0)
+        elif self.rotCurve.hParams["model"] == "NFW":
+            self.haloFirstlowerValue.set(3.0)
         self.haloFirstlowerEntry = Tk.Spinbox(self.bruteForceFrame,
                                               textvariable=self.haloFirstlowerValue,
                                               width=5,
@@ -647,7 +667,10 @@ class ConstantMLWindow(object):
             self.haloFirstlowerEntry.bind("<Button-5>", mouse_wheel_down)
         Tk.Label(self.bruteForceFrame, text=" to ").grid(column=3, row=3)
         self.haloFirstupperValue = Tk.StringVar()
-        self.haloFirstupperValue.set(self.rotCurve.hParams["firstParam"])
+        if self.rotCurve.hParams["model"] == "isoterm":
+            self.haloFirstupperValue.set(10.0)
+        elif self.rotCurve.hParams["model"] == "NFW":
+            self.haloFirstupperValue.set(7.0)
         self.haloFirstupperEntry = Tk.Spinbox(self.bruteForceFrame,
                                               textvariable=self.haloFirstupperValue,
                                               width=5, 
@@ -666,7 +689,11 @@ class ConstantMLWindow(object):
         elif self.rotCurve.hParams["model"] == "NFW":
             Tk.Label(self.bruteForceFrame, text="V200  from").grid(column=1, row=4)
         self.haloSecondlowerValue = Tk.StringVar()
-        self.haloSecondlowerValue.set(self.rotCurve.hParams["secondParam"])
+        # lower bound of searching range depend on the halo type
+        if self.rotCurve.hParams["model"] == "isoterm":
+            self.haloSecondlowerValue.set(150.0)
+        elif self.rotCurve.hParams["model"] == "NFW":
+            self.haloSecondlowerValue.set(100.0)
         self.haloSecondlowerEntry = Tk.Spinbox(self.bruteForceFrame,
                                                textvariable=self.haloSecondlowerValue,
                                                width=5,
@@ -681,7 +708,11 @@ class ConstantMLWindow(object):
             self.haloSecondlowerEntry.bind("<Button-5>", mouse_wheel_down)
         Tk.Label(self.bruteForceFrame, text=" to ").grid(column=3, row=4)
         self.haloSecondupperValue = Tk.StringVar()
-        self.haloSecondupperValue.set(self.rotCurve.hParams["secondParam"])
+        # upper bound of searching range depend on the halo type
+        if self.rotCurve.hParams["model"] == "isoterm":
+            self.haloSecondupperValue.set(250.0)
+        elif self.rotCurve.hParams["model"] == "NFW":
+            self.haloSecondupperValue.set(250.0)
         self.haloSecondupperEntry = Tk.Spinbox(self.bruteForceFrame,
                                                textvariable=self.haloSecondupperValue,
                                                width=5, 
@@ -775,7 +806,7 @@ class MaximalDiscWindow(object):
         self.variateBulgeCButton.grid(column=0, row=1)
         Tk.Label(self.maximalDiscFrame, text="M-to-L  from").grid(column=1, row=1)
         self.bulgeMLlowerValue = Tk.StringVar()
-        self.bulgeMLlowerValue.set(self.rotCurve.bParams["MLratio"])
+        self.bulgeMLlowerValue.set(1.0)
         self.bulgeMLlowerEntry = Tk.Spinbox(self.maximalDiscFrame,
                                             textvariable=self.bulgeMLlowerValue, 
                                             width=5, 
@@ -790,7 +821,7 @@ class MaximalDiscWindow(object):
             self.bulgeMLlowerEntry.bind("<Button-5>", mouse_wheel_down)
         Tk.Label(self.maximalDiscFrame, text=" to ").grid(column=3, row=1)
         self.bulgeMLupperValue = Tk.StringVar()
-        self.bulgeMLupperValue.set(self.rotCurve.bParams["MLratio"])
+        self.bulgeMLupperValue.set(8.0)
         self.bulgeMLupperEntry = Tk.Spinbox(self.maximalDiscFrame,
                                             textvariable=self.bulgeMLupperValue,
                                             width=5,
@@ -812,7 +843,7 @@ class MaximalDiscWindow(object):
 
         Tk.Label(self.maximalDiscFrame, text="M-to-L  from").grid(column=1, row=2)
         self.discMLlowerValue = Tk.StringVar()
-        self.discMLlowerValue.set(self.rotCurve.dParams["MLratio"])
+        self.discMLlowerValue.set(1.0)
         self.discMLlowerEntry = Tk.Spinbox(self.maximalDiscFrame,
                                            textvariable=self.discMLlowerValue,
                                            width=5,
@@ -827,7 +858,7 @@ class MaximalDiscWindow(object):
             self.discMLlowerEntry.bind("<Button-5>", mouse_wheel_down)
         Tk.Label(self.maximalDiscFrame, text=" to ").grid(column=3, row=2)
         self.discMLupperValue = Tk.StringVar()
-        self.discMLupperValue.set(self.rotCurve.dParams["MLratio"])
+        self.discMLupperValue.set(8.0)
         self.discMLupperEntry = Tk.Spinbox(self.maximalDiscFrame,
                                            textvariable=self.discMLupperValue,
                                            width=5, 
@@ -851,7 +882,11 @@ class MaximalDiscWindow(object):
         elif self.rotCurve.hParams["model"] == "NFW":
             Tk.Label(self.maximalDiscFrame, text="C  from").grid(column=1, row=3)
         self.haloFirstlowerValue = Tk.StringVar()
-        self.haloFirstlowerValue.set(self.rotCurve.hParams["firstParam"])
+        # lower bound of searching range depend on the halo type
+        if self.rotCurve.hParams["model"] == "isoterm":
+            self.haloFirstlowerValue.set(1.0)
+        elif self.rotCurve.hParams["model"] == "NFW":
+            self.haloFirstlowerValue.set(3.0)
         self.haloFirstlowerEntry = Tk.Spinbox(self.maximalDiscFrame,
                                               textvariable=self.haloFirstlowerValue,
                                               width=5,
@@ -866,7 +901,11 @@ class MaximalDiscWindow(object):
             self.haloFirstlowerEntry.bind("<Button-5>", mouse_wheel_down)
         Tk.Label(self.maximalDiscFrame, text=" to ").grid(column=3, row=3)
         self.haloFirstupperValue = Tk.StringVar()
-        self.haloFirstupperValue.set(self.rotCurve.hParams["firstParam"])
+        # upper bound of searching range depend on the halo type
+        if self.rotCurve.hParams["model"] == "isoterm":
+            self.haloFirstupperValue.set(10.0)
+        elif self.rotCurve.hParams["model"] == "NFW":
+            self.haloFirstupperValue.set(7.0)
         self.haloFirstupperEntry = Tk.Spinbox(self.maximalDiscFrame,
                                               textvariable=self.haloFirstupperValue,
                                               width=5, 
@@ -885,7 +924,11 @@ class MaximalDiscWindow(object):
         elif self.rotCurve.hParams["model"] == "NFW":
             Tk.Label(self.maximalDiscFrame, text="V200  from").grid(column=1, row=4)
         self.haloSecondlowerValue = Tk.StringVar()
-        self.haloSecondlowerValue.set(self.rotCurve.hParams["secondParam"])
+        # lower bound of searching range depend on the halo type
+        if self.rotCurve.hParams["model"] == "isoterm":
+            self.haloSecondlowerValue.set(150.0)
+        elif self.rotCurve.hParams["model"] == "NFW":
+            self.haloSecondlowerValue.set(100.0)
         self.haloSecondlowerEntry = Tk.Spinbox(self.maximalDiscFrame,
                                                textvariable=self.haloSecondlowerValue,
                                                width=5,
@@ -900,7 +943,11 @@ class MaximalDiscWindow(object):
             self.haloSecondlowerEntry.bind("<Button-5>", mouse_wheel_down)
         Tk.Label(self.maximalDiscFrame, text=" to ").grid(column=3, row=4)
         self.haloSecondupperValue = Tk.StringVar()
-        self.haloSecondupperValue.set(self.rotCurve.hParams["secondParam"])
+        # upper bound of searching range depend on the halo type
+        if self.rotCurve.hParams["model"] == "isoterm":
+            self.haloSecondupperValue.set(250.0)
+        elif self.rotCurve.hParams["model"] == "NFW":
+            self.haloSecondupperValue.set(250.0)
         self.haloSecondupperEntry = Tk.Spinbox(self.maximalDiscFrame,
                                                textvariable=self.haloSecondupperValue,
                                                width=5, 
@@ -1145,7 +1192,11 @@ class optimalFitWindow(object):
             Tk.Label(self.optimalFitFrame, text="C").grid(column=0, row=3)
         Tk.Label(self.optimalFitFrame, text="from").grid(column=1, row=3)
         self.haloFirstlowerValue = Tk.StringVar()
-        self.haloFirstlowerValue.set("3.0")
+        # lower bound of searching range depend on the halo type
+        if self.rotCurve.hParams["model"] == "isoterm":
+            self.haloFirstlowerValue.set(1.0)
+        elif self.rotCurve.hParams["model"] == "NFW":
+            self.haloFirstlowerValue.set(3.0)
         self.haloFirstlowerEntry = Tk.Spinbox(self.optimalFitFrame,
                                             textvariable=self.haloFirstlowerValue,
                                             width=5,
@@ -1158,7 +1209,11 @@ class optimalFitWindow(object):
         self.haloFirstlowerEntry.bind("<Button-5>", mouse_wheel_down)
         Tk.Label(self.optimalFitFrame, text=" to ").grid(column=3, row=3)
         self.haloFirstupperValue = Tk.StringVar()
-        self.haloFirstupperValue.set("7.0")
+        # upper bound of searching range depend on the halo type
+        if self.rotCurve.hParams["model"] == "isoterm":
+            self.haloFirstupperValue.set(10.0)
+        elif self.rotCurve.hParams["model"] == "NFW":
+            self.haloFirstupperValue.set(7.0)
         self.haloFirstupperEntry = Tk.Spinbox(self.optimalFitFrame,
                                             textvariable=self.haloFirstupperValue,
                                             width=5,
@@ -1181,7 +1236,11 @@ class optimalFitWindow(object):
             Tk.Label(self.optimalFitFrame, text="V200").grid(column=0, row=4)
         Tk.Label(self.optimalFitFrame, text="from").grid(column=1, row=4)
         self.haloSecondlowerValue = Tk.StringVar()
-        self.haloSecondlowerValue.set("100.0")
+        # lower bound of searching range depend on the halo type
+        if self.rotCurve.hParams["model"] == "isoterm":
+            self.haloSecondlowerValue.set(150.0)
+        elif self.rotCurve.hParams["model"] == "NFW":
+            self.haloSecondlowerValue.set(100.0)
         self.haloSecondlowerEntry = Tk.Spinbox(self.optimalFitFrame,
                                             textvariable=self.haloSecondlowerValue,
                                             width=5,
@@ -1194,7 +1253,11 @@ class optimalFitWindow(object):
         self.haloSecondlowerEntry.bind("<Button-5>", mouse_wheel_down)
         Tk.Label(self.optimalFitFrame, text=" to ").grid(column=3, row=4)
         self.haloSecondupperValue = Tk.StringVar()
-        self.haloSecondupperValue.set("250.0")
+        # upper bound of searching range depend on the halo type
+        if self.rotCurve.hParams["model"] == "isoterm":
+            self.haloSecondupperValue.set(250.0)
+        elif self.rotCurve.hParams["model"] == "NFW":
+            self.haloSecondupperValue.set(250.0)
         self.haloSecondupperEntry = Tk.Spinbox(self.optimalFitFrame,
                                             textvariable=self.haloSecondupperValue,
                                             width=5,
