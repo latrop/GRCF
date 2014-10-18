@@ -47,7 +47,7 @@ class GalaxyRotation(object):
                                "effRadius": 0.0,
                                "MLratio": 0.0,
                                "axisRatio": 0.0}
-        self.oldDiskParams = {"cenSurfBri": 0.0,
+        self.oldDiscParams = {"cenSurfBri": 0.0,
                               "expScale" : 0.0,
                               "thickness" : 0.0,
                               "MLratio" : 0.0}
@@ -65,8 +65,8 @@ class GalaxyRotation(object):
         self.distancesToComputeLength = len(self.distancesToComputeArcSec)
         self.bulgeVelocity = zeros(self.distancesToComputeLength)
         self.plotBulge = 0
-        self.diskVelocity = zeros(self.distancesToComputeLength)
-        self.plotDisk = 0
+        self.discVelocity = zeros(self.distancesToComputeLength)
+        self.plotDisc = 0
         self.haloVelocity = zeros(self.distancesToComputeLength)
         self.plotHalo = 0
         self.sumVelocity = zeros(self.distancesToComputeLength)
@@ -114,23 +114,23 @@ class GalaxyRotation(object):
             self.a.errorbar(self.distanceArcSec, self.velocity, self.velocity_sigma, color="k", linestyle="-", label="Data")
             if self.plotBulge:
                 self.a.plot(self.distancesToComputeArcSec, self.bulgeVelocity, color="m", linestyle=":", label="Bulge")
-            if self.plotDisk:
-                self.a.plot(self.distancesToComputeArcSec, self.diskVelocity, color="g", linestyle="--", label="Disk")
+            if self.plotDisc:
+                self.a.plot(self.distancesToComputeArcSec, self.discVelocity, color="g", linestyle="--", label="Disc")
             if self.plotHalo:
                 self.a.plot(self.distancesToComputeArcSec, self.haloVelocity, color="b", linestyle="-.", label="Halo")
-            if self.plotDisk + self.plotHalo+self.plotBulge > 1:
+            if self.plotDisc + self.plotHalo+self.plotBulge > 1:
                 self.a.plot(self.distancesToComputeArcSec, self.sumVelocity, color="r", linestyle="-", label="Sum")
         else:
             self.a.errorbar(self.distanceArcSec, self.velocity, self.velocity_sigma, color="k", linestyle="-", label="Data", linewidth=2)
             if self.plotBulge:
                 self.a.plot(self.distancesToComputeArcSec, self.bulgeVelocity, color="k", linestyle=":", label="Bulge")
-            if self.plotDisk:
-                self.a.plot(self.distancesToComputeArcSec, self.diskVelocity, color="k", linestyle="--", label="Disk")
+            if self.plotDisc:
+                self.a.plot(self.distancesToComputeArcSec, self.discVelocity, color="k", linestyle="--", label="Disc")
             if self.plotHalo:
                 self.a.plot(self.distancesToComputeArcSec, self.haloVelocity, color="k", linestyle="-.", label="Halo")
-            if self.plotDisk + self.plotHalo+self.plotBulge > 1:
+            if self.plotDisc + self.plotHalo+self.plotBulge > 1:
                 self.a.plot(self.distancesToComputeArcSec, self.sumVelocity, color="k", linestyle="-", label="Sum")
-        if (self.showChiSquared > 0) and (self.plotDisk + self.plotHalo+self.plotBulge >= 1):
+        if (self.showChiSquared > 0) and (self.plotDisc + self.plotHalo+self.plotBulge >= 1):
             # chi squared value to the plot
             chisq = self.compute_chi_sq()
             # if this iteration gives a better chi square value, then choose the green color for
@@ -169,7 +169,7 @@ class GalaxyRotation(object):
         self.hParams = hParams
         # check what curves is needed to be plotted
         self.plotBulge = float(bParams["include"])
-        self.plotDisk = float(dParams["include"])
+        self.plotDisc = float(dParams["include"])
         self.plotHalo = float(hParams["include"])
         scale = float(gParams["scale"])
         Msun = float(gParams["Msun"])
@@ -180,44 +180,44 @@ class GalaxyRotation(object):
         self.sumVelocity = zeros_like(self.distancesToComputeArcSec)
 
         if dParams["include"]:
-            # compute disk rotation velocity
-            diskCenSurfBri = float(dParams["cenSurfBri"])
-            diskExpScale = float(dParams["expScale"])
-            diskThickness = float(dParams["thickness"])
-            diskMLratio = float(dParams["MLratio"])
-            diskCenSurfBri_old = self.oldDiskParams["cenSurfBri"]
-            diskExpScale_old = self.oldDiskParams["expScale"]
-            diskThickness_old = self.oldDiskParams["thickness"]
-            diskMLratio_old = self.oldDiskParams["MLratio"]
-            # Check if some parameters of the disk was changed
-            if ((diskCenSurfBri != diskCenSurfBri_old)
-                or (diskExpScale != diskExpScale_old)
-                or (diskThickness != diskThickness_old)
+            # compute disc rotation velocity
+            discCenSurfBri = float(dParams["cenSurfBri"])
+            discExpScale = float(dParams["expScale"])
+            discThickness = float(dParams["thickness"])
+            discMLratio = float(dParams["MLratio"])
+            discCenSurfBri_old = self.oldDiscParams["cenSurfBri"]
+            discExpScale_old = self.oldDiscParams["expScale"]
+            discThickness_old = self.oldDiscParams["thickness"]
+            discMLratio_old = self.oldDiscParams["MLratio"]
+            # Check if some parameters of the disc was changed
+            if ((discCenSurfBri != discCenSurfBri_old)
+                or (discExpScale != discExpScale_old)
+                or (discThickness != discThickness_old)
                 or (scale != scale_old)
                 or (Msun != Msun_old)
                 or (incl != incl_old)):
                 t1 = time.time()
-                diskVelSquared = v_disk(dParams,
+                discVelSquared = v_disc(dParams,
                                         gParams,
                                         self.distancesToComputeKpc)
                 print time.time()-t1
-                self.diskVelocity = diskVelSquared ** 0.5
-            elif (diskMLratio != diskMLratio_old):
+                self.discVelocity = discVelSquared ** 0.5
+            elif (discMLratio != discMLratio_old):
                 # if only M/L ratio was changed one can compute the new values
                 # of velocity just by rescaling the old values, without
                 # a computation of that big integral
-                diskVelSquared = (diskMLratio / self.previousDiskMLratio) * self.diskVelocity**2
-                self.diskVelocity = diskVelSquared ** 0.5
+                discVelSquared = (discMLratio / self.previousDiscMLratio) * self.discVelocity**2
+                self.discVelocity = discVelSquared ** 0.5
             else:
-                diskVelSquared = self.diskVelocity**2
+                discVelSquared = self.discVelocity**2
             # Store new values as new old ones
-            self.oldDiskParams["cenSurfBri"] = diskCenSurfBri
-            self.oldDiskParams["expScale"] = diskExpScale
-            self.oldDiskParams["thickness"] = diskThickness
-            self.oldDiskParams["MLratio"] = diskMLratio
-            self.previousDiskMLratio = diskMLratio
-            self.diskVelocity = diskVelSquared ** 0.5
-            self.sumVelocity += diskVelSquared
+            self.oldDiscParams["cenSurfBri"] = discCenSurfBri
+            self.oldDiscParams["expScale"] = discExpScale
+            self.oldDiscParams["thickness"] = discThickness
+            self.oldDiscParams["MLratio"] = discMLratio
+            self.previousDiscMLratio = discMLratio
+            self.discVelocity = discVelSquared ** 0.5
+            self.sumVelocity += discVelSquared
 
         if bParams["include"]:
             # compude bulge rotation velocity
@@ -317,7 +317,7 @@ class GalaxyRotation(object):
         hParams = self.hParams
         # inital best fitting parameters
         self.fittedBulgeML = float(bParams["MLratio"])
-        self.fittedDiskML = float(dParams["MLratio"])
+        self.fittedDiscML = float(dParams["MLratio"])
         self.fittedHaloFirst = float(hParams["firstParam"])
         self.fittedHaloSecond = float(hParams["secondParam"])
         chi_map = []
@@ -327,9 +327,9 @@ class GalaxyRotation(object):
             bUpper = fitParams["bulgeMLupper"]
         else:
             bLower = bUpper = float(bParams["MLratio"])
-        if fitParams["diskVariate"] > 0:
-            dLower = fitParams["diskMLlower"]
-            dUpper = fitParams["diskMLupper"]
+        if fitParams["discVariate"] > 0:
+            dLower = fitParams["discMLlower"]
+            dUpper = fitParams["discMLupper"]
         else:
             dLower = dUpper = float(dParams["MLratio"])
         if fitParams["haloVariate"] > 0:
@@ -340,9 +340,9 @@ class GalaxyRotation(object):
         else:
             hLower1 = hUpper1 = float(hParams["firstParam"])
             hLower2 = hUpper2 = float(hParams["secondParam"])
-        for diskML in arange(dLower, dUpper+0.01, 0.5):
+        for discML in arange(dLower, dUpper+0.01, 0.5):
             chi_map.append([])
-            dParams["MLratio"] = diskML
+            dParams["MLratio"] = discML
             for bulgeML in arange(bLower, bUpper+0.01, 0.5):
                 bParams["MLratio"] = bulgeML
                 chi_map[-1].append([])
@@ -362,7 +362,7 @@ class GalaxyRotation(object):
                             print bestChiSq
                             self.plot()
                             self.fittedBulgeML = bulgeML
-                            self.fittedDiskML = diskML
+                            self.fittedDiscML = discML
                             self.fittedHaloFirst = firstParam
                             self.fittedHaloSecond = secondParam
                 chi_map[-1][-1] = min(chi_halo_params)
@@ -401,19 +401,19 @@ class GalaxyRotation(object):
                         print bestChiSq
                         self.plot()
                         self.fittedBulgeML = bothML
-                        self.fittedDiskML = bothML
+                        self.fittedDiscML = bothML
                         self.fittedHaloFirst = firstParam
                         self.fittedHaloSecond = secondParam
 
 
-    def fitMaximalDisk(self, fitParams):
+    def fitMaximalDisc(self, fitParams):
         gParams = self.gParams
         bParams = self.bParams
         dParams = self.dParams
         hParams = self.hParams
         # inital best fitting parameters
         self.fittedBulgeML = float(bParams["MLratio"])
-        self.fittedDiskML = float(dParams["MLratio"])
+        self.fittedDiscML = float(dParams["MLratio"])
         self.fittedHaloFirst = float(hParams["firstParam"])
         self.fittedHaloSecond = float(hParams["secondParam"])
         if fitParams["bulgeVariate"] > 0:
@@ -421,9 +421,9 @@ class GalaxyRotation(object):
             bUpper = fitParams["bulgeMLupper"]
         else:
             bLower = bUpper = float(bParams["MLratio"])
-        if fitParams["diskVariate"] > 0:
-            dLower = fitParams["diskMLlower"]
-            dUpper = fitParams["diskMLupper"]
+        if fitParams["discVariate"] > 0:
+            dLower = fitParams["discMLlower"]
+            dUpper = fitParams["discMLupper"]
         else:
             dLower = dUpper = float(dParams["MLratio"])
         if fitParams["haloVariate"] > 0:
@@ -435,11 +435,11 @@ class GalaxyRotation(object):
             hLower1 = hUpper1 = float(hParams["firstParam"])
             hLower2 = hUpper2 = float(hParams["secondParam"])
         chi_sqList = []
-        bhOptimalList = [] # parameters of bulge end halo wich lead to minimum of chi sq. for given disk ML ratio
-        plotList = [] # list of graphs with optimal fitting values for given disk ML ratio
-        for diskML in arange(dLower, dUpper+0.01, 0.1):
+        bhOptimalList = [] # parameters of bulge end halo wich lead to minimum of chi sq. for given disc ML ratio
+        plotList = [] # list of graphs with optimal fitting values for given disc ML ratio
+        for discML in arange(dLower, dUpper+0.01, 0.1):
             bestChiSq = 1e20
-            dParams["MLratio"] = diskML
+            dParams["MLratio"] = discML
             for bulgeML in arange(bLower, bUpper+0.01, 0.1):
                 bParams["MLratio"] = bulgeML
                 for firstParam in arange(hLower1, hUpper1+0.01, 0.1):
@@ -453,7 +453,7 @@ class GalaxyRotation(object):
                             fittedBulgeML = bulgeML
                             fittedHaloFirst = firstParam
                             fittedHaloSecond = secondParam
-            # make plot for optimal fitting parameters for given disk ML ratio
+            # make plot for optimal fitting parameters for given disc ML ratio
             bParams["MLratio"] = fittedBulgeML
             hParams["firstParam"] = fittedHaloFirst
             hParams["secondParam"] = fittedHaloSecond
@@ -466,28 +466,28 @@ class GalaxyRotation(object):
         return bhOptimalList, plotList
 
 
-    def fitMaximalDisk2(self, fitParams):
+    def fitMaximalDisc2(self, fitParams):
         gParams = self.gParams
         bParams = self.bParams
         dParams = self.dParams
         hParams = self.hParams
-        dLower = fitParams["diskMLlower"]
-        dUpper = fitParams["diskMLupper"]
+        dLower = fitParams["discMLlower"]
+        dUpper = fitParams["discMLupper"]
         # inital best fitting parameters
         self.fittedBulgeML = float(bParams["MLratio"])
-        self.fittedDiskML = float(dParams["MLratio"])
+        self.fittedDiscML = float(dParams["MLratio"])
         self.fittedHaloFirst = float(hParams["firstParam"])
         self.fittedHaloSecond = float(hParams["secondParam"])
         chi_sqList = []
-        bhOptimalList = [] # parameters of bulge end halo wich lead to minimum of chi sq. for given disk ML ratio
-        plotList = [] # list of graphs with optimal fitting values for given disk ML ratio
-        for diskML in arange(dLower, dUpper+0.01, 0.1):
+        bhOptimalList = [] # parameters of bulge end halo wich lead to minimum of chi sq. for given disc ML ratio
+        plotList = [] # list of graphs with optimal fitting values for given disc ML ratio
+        for discML in arange(dLower, dUpper+0.01, 0.1):
             bestChiSq = 1e20
-            dParams["MLratio"] = diskML
+            dParams["MLratio"] = discML
 
             def func(x): # we are going to minimize this function
                 """this function runs computation of rotation curve with given parameters
-                and returns chi squared. Variable x expands as [MLbulge, MLdisk, h1, h2]"""
+                and returns chi squared. Variable x expands as [MLbulge, MLdisc, h1, h2]"""
                 MLbulge = x[0]
                 haloFirst = x[1]
                 haloSecond = x[2]
@@ -514,7 +514,7 @@ class GalaxyRotation(object):
             print haloFirst0
             xopt, fopt, ite, funcalls, warnflag = fmin_sco(func, x0=[MLbulge0, haloFirst0, haloSecond0], full_output=1)
             MLbulgeOpt, haloFirstOpt, haloSecondOpt = xopt[0], xopt[1], xopt[2]
-            # make plot for optimal fitting parameters for given disk ML ratio
+            # make plot for optimal fitting parameters for given disc ML ratio
             bParams["MLratio"] = MLbulgeOpt
             hParams["firstParam"] = haloFirstOpt
             hParams["secondParam"] = haloSecondOpt
@@ -530,10 +530,10 @@ class GalaxyRotation(object):
         self.optimal_fit_niter = 0
         def func(x): # we are going to minimize this function
             """this function runs computation of rotation curve with given parameters
-            and returns chi squared. Variable x expands as [MLbulge, MLdisk, h1, h2]"""
+            and returns chi squared. Variable x expands as [MLbulge, MLdisc, h1, h2]"""
             self.optimal_fit_niter += 1
             MLbulge = x[0]
-            MLdisk = x[1]
+            MLdisc = x[1]
             haloFirst = x[2]
             haloSecond = x[3]
             # get all model params
@@ -543,7 +543,7 @@ class GalaxyRotation(object):
             hParams = self.hParams
             # modify fitting params
             bParams["MLratio"] = MLbulge
-            dParams["MLratio"] = MLdisk
+            dParams["MLratio"] = MLdisc
             hParams["firstParam"] = haloFirst
             hParams["secondParam"] = haloSecond
             # compute new curve
@@ -558,18 +558,18 @@ class GalaxyRotation(object):
             return self.compute_chi_sq()
         # guess parameters are last cumputed fitting parameters
         MLbulge0 = self.bParams["MLratio"]
-        MLdisk0 = self.dParams["MLratio"]
+        MLdisc0 = self.dParams["MLratio"]
         haloFirst0 = self.hParams["firstParam"]
         haloSecond0 = self.hParams["secondParam"]
         # run local minimum finding
         xopt, nfeval, rc = fmin_tnc(func,
-                                    x0=[MLbulge0, MLdisk0, haloFirst0, haloSecond0],
+                                    x0=[MLbulge0, MLdisc0, haloFirst0, haloSecond0],
                                     approx_grad = True,
                                     bounds=bounds)
-        MLbulgeOpt, MLdiskOpt, haloFirstOpt, haloSecondOpt = xopt[0], xopt[1], xopt[2], xopt[3]
+        MLbulgeOpt, MLdiscOpt, haloFirstOpt, haloSecondOpt = xopt[0], xopt[1], xopt[2], xopt[3]
         # plot resulting curve
         self.plot()
-        return MLbulgeOpt, MLdiskOpt, haloFirstOpt, haloSecondOpt
+        return MLbulgeOpt, MLdiscOpt, haloFirstOpt, haloSecondOpt
         
 
     def compute_chi_sq(self):
@@ -709,30 +709,30 @@ def checAllValues(gParams, bParams, dParams, hParams):
                 return False, "Bulge axis ratio", "must be greater than the axis ratio of the disc"
         except:
             return False, "Bulge or disc axis ratio", "not a number"
-    # 3) check disk params
+    # 3) check disc params
     if dParams["include"]:
         try:
             val = float(dParams["cenSurfBri"])
         except ValueError:
-            return False, "Disk cen.surf.bri", "not a number"
+            return False, "Disc cen.surf.bri", "not a number"
         try:
             val = float(dParams["expScale"])
             if val <= 0.0:
-                return False, "Disk h", "must be positive"
+                return False, "Disc h", "must be positive"
         except ValueError:
-            return False, "Disk h", "not a number"
+            return False, "Disc h", "not a number"
         try:
             val = float(dParams["thickness"])
             if val < 0:
-                return False, "Disk z", "must be positive"
+                return False, "Disc z", "must be positive"
         except ValueError:
-            return False, "Disk z", "not a number"
+            return False, "Disc z", "not a number"
         try:
             val = float(dParams["MLratio"])
             if val <=0:
-                return False, "Disk ML", "must be positive"
+                return False, "Disc ML", "must be positive"
         except ValueError:
-            return False, "Disk ML", "not a number"
+            return False, "Disc ML", "not a number"
     # 4) check halo params
     if hParams["include"]:
         try:

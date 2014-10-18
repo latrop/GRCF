@@ -18,8 +18,8 @@ from math import acos, sqrt, degrees
 
 
 def get_inclination():
-    q = float(diskAxisRatioValue.get())
-    q0 = float(diskThicknessValue.get())
+    q = float(discAxisRatioValue.get())
+    q0 = float(discThicknessValue.get())
     if q0 < q <1.0:
         return degrees(acos(sqrt((q**2 - q0**2) / (1-q0**2))))
     return 90.0
@@ -43,7 +43,7 @@ def loadVelocityData():
     generalLDEntry.config(state="normal")
     generalScaleEntry.config(state="normal")
     generalHubbleEntry.config(state="normal")
-    includeDiskCButton.config(state="normal")
+    includeDiscCButton.config(state="normal")
     includeBulgeCButton.config(state="normal")
     includeHaloCButton.config(state="normal")
     runButton.config(state="normal")
@@ -78,12 +78,12 @@ def getValuesFromAllFields():
     bParams["axisRatio"] = bulgeAxisRatioValue.get()
     bParams["MLratio"] = bulgeMLratioValue.get()
     dParams = {}
-    dParams["include"] = includeDisk.get()
-    dParams["cenSurfBri"] = diskCenSurfBriValue.get()
-    dParams["expScale"] = diskExpScaleValue.get()
-    dParams["thickness"] = diskThicknessValue.get()
-    dParams["MLratio"] = diskMLratioValue.get()
-    dParams["axisRatio"] = diskAxisRatioValue.get()
+    dParams["include"] = includeDisc.get()
+    dParams["cenSurfBri"] = discCenSurfBriValue.get()
+    dParams["expScale"] = discExpScaleValue.get()
+    dParams["thickness"] = discThicknessValue.get()
+    dParams["MLratio"] = discMLratioValue.get()
+    dParams["axisRatio"] = discAxisRatioValue.get()
     hParams = {}
     hParams["include"] = includeHalo.get()
     hParams["firstParam"] = haloFirstParamValue.get()
@@ -111,12 +111,12 @@ def setValuesToAllFields(params):
     bulgeEffRadiusValue.set(bParams["effRadius"])
     bulgeAxisRatioValue.set(bParams["axisRatio"])
     bulgeMLratioValue.set(bParams["MLratio"])
-    includeDisk.set(dParams["include"])
-    diskCenSurfBriValue.set(dParams["cenSurfBri"])
-    diskExpScaleValue.set(dParams["expScale"])
-    diskThicknessValue.set(dParams["thickness"])
-    diskMLratioValue.set(dParams["MLratio"])
-    diskAxisRatioValue.set(dParams["axisRatio"])
+    includeDisc.set(dParams["include"])
+    discCenSurfBriValue.set(dParams["cenSurfBri"])
+    discExpScaleValue.set(dParams["expScale"])
+    discThicknessValue.set(dParams["thickness"])
+    discMLratioValue.set(dParams["MLratio"])
+    discAxisRatioValue.set(dParams["axisRatio"])
     includeHalo.set(hParams["include"])
     haloFirstParamValue.set(hParams["firstParam"])
     haloSecondParamValue.set(hParams["secondParam"])
@@ -138,19 +138,19 @@ def runComputation():
     # Fitting has sence only after initial computation
     fitMenu.entryconfig("Best chi squared", state="normal")
     fitMenu.entryconfig("Gradient descent", state="normal")
-    # Maximal disk approximation works only if the disk model is on
-    if includeDisk.get() > 0:
-        fitMenu.entryconfig("Maximal disk", state="normal")
-        fitMenu.entryconfig("Maximal disk opt.", state="normal")
-    # Constant M/L approximation works only if the disk and the bulge models are on
-    if (includeBulge.get() > 0) and (includeDisk.get() > 0):
+    # Maximal disc approximation works only if the disc model is on
+    if includeDisc.get() > 0:
+        fitMenu.entryconfig("Maximal disc", state="normal")
+        fitMenu.entryconfig("Maximal disc opt.", state="normal")
+    # Constant M/L approximation works only if the disc and the bulge models are on
+    if (includeBulge.get() > 0) and (includeDisc.get() > 0):
         fitMenu.entryconfig("Constant M/L", state="normal")
     runButton.config(state="normal")
 
 
 def some_parameter_changed(parameter, newValue):
     """ This function calls every time when any parameter
-    of galaxy, bulge, disk or halo is changes """
+    of galaxy, bulge, disc or halo is changes """
     if parameter == "viewLegend": 
         rotCurve.viewLegend = newValue
         rotCurve.plot()
@@ -166,8 +166,8 @@ def some_parameter_changed(parameter, newValue):
     master.title("Galaxy Rotation Curve Fit (*)")
     fitMenu.entryconfig("Best chi squared", state="disabled")   # fitting is not allowed when parameters are changed
     fitMenu.entryconfig("Constant M/L", state="disabled")       #
-    fitMenu.entryconfig("Maximal disk", state="disabled")       #
-    fitMenu.entryconfig("Maximal disk opt.", state="disabled")  #
+    fitMenu.entryconfig("Maximal disc", state="disabled")       #
+    fitMenu.entryconfig("Maximal disc opt.", state="disabled")  #
     fitMenu.entryconfig("Gradient descent", state="disabled")   #
     rotCurve.parametersChanged = True
     #  If we include adiabatic contraction in halo model then
@@ -189,7 +189,7 @@ def some_parameter_changed(parameter, newValue):
     if parameter == "bInclude":
         onoffPanel(bulgePanel, newValue)
     if parameter == "dInclude":
-        onoffPanel(diskPanel, newValue)
+        onoffPanel(discPanel, newValue)
     if parameter == "hInclude":
         onoffPanel(haloPanel, newValue)
         if newValue and (haloModelValue.get() == "NFW"):   # Adiabatic contraction only for NFW profile
@@ -262,10 +262,10 @@ fitMenu.add_command(label="Best chi squared",
                     command=lambda: BruteForceWindow(master,
                                                      rotCurve,
                                                      includeBulge.get(),
-                                                     includeDisk.get(),
+                                                     includeDisc.get(),
                                                      includeHalo.get(),
                                                      bulgeMLratioValue,
-                                                     diskMLratioValue,
+                                                     discMLratioValue,
                                                      haloFirstParamValue,
                                                      haloSecondParamValue,
                                                      computationIsNeeded),
@@ -275,30 +275,30 @@ fitMenu.add_command(label="Constant M/L",
                                                      rotCurve,
                                                      includeHalo.get(),
                                                      bulgeMLratioValue,
-                                                     diskMLratioValue,
+                                                     discMLratioValue,
                                                      haloFirstParamValue,
                                                      haloSecondParamValue,
                                                      computationIsNeeded),
                     state="disabled")
 
-fitMenu.add_command(label="Maximal disk",
-                    command=lambda: MaximalDiskWindow(master,
+fitMenu.add_command(label="Maximal disc",
+                    command=lambda: MaximalDiscWindow(master,
                                                       rotCurve,
                                                       includeBulge.get(),
-                                                      includeDisk.get(),
+                                                      includeDisc.get(),
                                                       includeHalo.get(),
                                                       bulgeMLratioValue,
-                                                      diskMLratioValue,
+                                                      discMLratioValue,
                                                       haloFirstParamValue,
                                                       haloSecondParamValue,
                                                       computationIsNeeded),
                     state="disabled")
 
-fitMenu.add_command(label="Maximal disk opt.",
-                    command=lambda: MaximalDiskOptWindow(master,
+fitMenu.add_command(label="Maximal disc opt.",
+                    command=lambda: MaximalDiscOptWindow(master,
                                                          rotCurve,
                                                          bulgeMLratioValue,
-                                                         diskMLratioValue,
+                                                         discMLratioValue,
                                                          haloFirstParamValue,
                                                          haloSecondParamValue,
                                                          computationIsNeeded),
@@ -308,7 +308,7 @@ fitMenu.add_command(label="Gradient descent",
                     command=lambda: optimalFitWindow(master,
                                                      rotCurve,
                                                      bulgeMLratioValue,
-                                                     diskMLratioValue,
+                                                     discMLratioValue,
                                                      haloFirstParamValue,
                                                      haloSecondParamValue,
                                                      computationIsNeeded),
@@ -487,75 +487,75 @@ bulgeMLratioEntry.bind("<Button-5>", mouse_wheel_down)
 bulgeBalloon.bind(bulgeMLratioEntry, "Bulge mass-to-light ratio.")
 
 ##########################
-#   Parameters of disk   #
+#   Parameters of disc   #
 ##########################
-diskPanel = Tk.Frame(rightPanel, pady=5)
-diskPanel.grid(column=0, row=3)
-diskBalloon = Balloon(diskPanel)
+discPanel = Tk.Frame(rightPanel, pady=5)
+discPanel.grid(column=0, row=3)
+discBalloon = Balloon(discPanel)
 
-includeDisk = Tk.IntVar()
-includeDisk.set(0)
-includeDisk.trace("w", lambda n, i, m, v=includeDisk: some_parameter_changed("dInclude", v.get()))
-includeDiskCButton = Tk.Checkbutton(diskPanel, text="Disk", variable=includeDisk, state="disabled")
-includeDiskCButton.grid(column=0, row=0, columnspan=2)
-diskBalloon.bind(includeDiskCButton, "Include disk in the computation.")
+includeDisc = Tk.IntVar()
+includeDisc.set(0)
+includeDisc.trace("w", lambda n, i, m, v=includeDisc: some_parameter_changed("dInclude", v.get()))
+includeDiscCButton = Tk.Checkbutton(discPanel, text="Disc", variable=includeDisc, state="disabled")
+includeDiscCButton.grid(column=0, row=0, columnspan=2)
+discBalloon.bind(includeDiscCButton, "Include disc in the computation.")
 
 # Disc central surface brightness
-Tk.Label(diskPanel, text=u"       \u03bc\u2080 ", font=font11, width=6).grid(column=0, row=1, sticky=Tk.E)
-diskCenSurfBriValue = Tk.StringVar()
-diskCenSurfBriValue.set("99.99")
-diskCenSurfBriEntry = Tk.Entry(diskPanel, textvariable=diskCenSurfBriValue, width=5, state="disabled", bg="white")
-diskCenSurfBriEntry.grid(column=1, row=1, sticky=Tk.W)
-diskCenSurfBriValue.trace("w", lambda n, i, m, v=diskCenSurfBriValue: some_parameter_changed("dSurfBri", v.get()))
-Tk.Label(diskPanel, text=u"mag/\u25a1''      ", width=9).grid(column=2, row=1, sticky=Tk.W)
-diskBalloon.bind(diskCenSurfBriEntry, "Disk central surface brightness.")
+Tk.Label(discPanel, text=u"       \u03bc\u2080 ", font=font11, width=6).grid(column=0, row=1, sticky=Tk.E)
+discCenSurfBriValue = Tk.StringVar()
+discCenSurfBriValue.set("99.99")
+discCenSurfBriEntry = Tk.Entry(discPanel, textvariable=discCenSurfBriValue, width=5, state="disabled", bg="white")
+discCenSurfBriEntry.grid(column=1, row=1, sticky=Tk.W)
+discCenSurfBriValue.trace("w", lambda n, i, m, v=discCenSurfBriValue: some_parameter_changed("dSurfBri", v.get()))
+Tk.Label(discPanel, text=u"mag/\u25a1''      ", width=9).grid(column=2, row=1, sticky=Tk.W)
+discBalloon.bind(discCenSurfBriEntry, "Disc central surface brightness.")
 
 # Disc exponential scale
-Tk.Label(diskPanel, text="      h", font=font11).grid(column=0, row=2)
-diskExpScaleValue = Tk.StringVar()
-diskExpScaleValue.set("0.00")
-diskExpScaleEntry = Tk.Entry(diskPanel, textvariable=diskExpScaleValue, width=5, state="disabled", bg="white")
-diskExpScaleEntry.grid(column=1, row=2, sticky=Tk.W)
-diskExpScaleValue.trace("w", lambda n, i, m, v=diskExpScaleValue: some_parameter_changed("dExpScale", v.get()))
-Tk.Label(diskPanel, text="''").grid(column=2, row=2, sticky=Tk.W)
-diskBalloon.bind(diskExpScaleEntry, "Disk exponential scalelength.")
+Tk.Label(discPanel, text="      h", font=font11).grid(column=0, row=2)
+discExpScaleValue = Tk.StringVar()
+discExpScaleValue.set("0.00")
+discExpScaleEntry = Tk.Entry(discPanel, textvariable=discExpScaleValue, width=5, state="disabled", bg="white")
+discExpScaleEntry.grid(column=1, row=2, sticky=Tk.W)
+discExpScaleValue.trace("w", lambda n, i, m, v=discExpScaleValue: some_parameter_changed("dExpScale", v.get()))
+Tk.Label(discPanel, text="''").grid(column=2, row=2, sticky=Tk.W)
+discBalloon.bind(discExpScaleEntry, "Disc exponential scalelength.")
 
 # Disc axis ratio
-Tk.Label(diskPanel, text="      b/a").grid(column=0, row=3)
-diskAxisRatioValue = Tk.StringVar()
-diskAxisRatioValue.set("1.0") # Default value for face-on disc
-diskAxisRatioEntry = Tk.Entry(diskPanel, textvariable=diskAxisRatioValue, width=5, state="disabled", bg="white")
-diskAxisRatioEntry.grid(column=1, row=3, sticky=Tk.W)
-diskAxisRatioValue.trace("w", lambda n, i, m, v=diskAxisRatioValue: some_parameter_changed("dAxisRatio", v.get()))
-diskBalloon.bind(diskAxisRatioEntry, "Disk minor to major axis ratio.")
+Tk.Label(discPanel, text="      b/a").grid(column=0, row=3)
+discAxisRatioValue = Tk.StringVar()
+discAxisRatioValue.set("1.0") # Default value for face-on disc
+discAxisRatioEntry = Tk.Entry(discPanel, textvariable=discAxisRatioValue, width=5, state="disabled", bg="white")
+discAxisRatioEntry.grid(column=1, row=3, sticky=Tk.W)
+discAxisRatioValue.trace("w", lambda n, i, m, v=discAxisRatioValue: some_parameter_changed("dAxisRatio", v.get()))
+discBalloon.bind(discAxisRatioEntry, "Disc minor to major axis ratio.")
 
 # Disc thickness
-Tk.Label(diskPanel, text=u"    z\u2080/h ", font=font11).grid(column=0, row=4)
-diskThicknessValue = Tk.StringVar()
-diskThicknessValue.set("0.20") 
-diskThicknessEntry = Tk.Entry(diskPanel, textvariable=diskThicknessValue, width=5, state="disabled", bg="white")
-diskThicknessEntry.grid(column=1, row=4, sticky=Tk.W)
-diskThicknessValue.trace("w", lambda n, i, m, v=diskThicknessValue: some_parameter_changed("dThickness", v.get()))
-diskBalloon.bind(diskThicknessEntry, u"""The ratio of the disk scaleheight z\u2080 to the disk exponential
-scalelength h (internal thickness of the disk).""")
+Tk.Label(discPanel, text=u"    z\u2080/h ", font=font11).grid(column=0, row=4)
+discThicknessValue = Tk.StringVar()
+discThicknessValue.set("0.20") 
+discThicknessEntry = Tk.Entry(discPanel, textvariable=discThicknessValue, width=5, state="disabled", bg="white")
+discThicknessEntry.grid(column=1, row=4, sticky=Tk.W)
+discThicknessValue.trace("w", lambda n, i, m, v=discThicknessValue: some_parameter_changed("dThickness", v.get()))
+discBalloon.bind(discThicknessEntry, u"""The ratio of the disc scaleheight z\u2080 to the disc exponential
+scalelength h (internal thickness of the disc).""")
 
 # Disc M-to-L ratio
-Tk.Label(diskPanel, text="     M/L").grid(column=0, row=5)
-diskMLratioValue = Tk.StringVar()
-diskMLratioValue.set("3.00")
-diskMLratioEntry = Tk.Spinbox(diskPanel,
-                              textvariable=diskMLratioValue,
+Tk.Label(discPanel, text="     M/L").grid(column=0, row=5)
+discMLratioValue = Tk.StringVar()
+discMLratioValue.set("3.00")
+discMLratioEntry = Tk.Spinbox(discPanel,
+                              textvariable=discMLratioValue,
                               width=5,
                               state="disabled",
                               from_=0.1,
                               to=50,
                               increment=0.1,
                               bg="white")
-diskMLratioValue.trace("w", lambda n, i, m, v=diskMLratioValue: some_parameter_changed("diskML", v.get()))
-diskMLratioEntry.grid(column=1, row=5, sticky=Tk.W)
-diskMLratioEntry.bind("<Button-4>", mouse_wheel_up)
-diskMLratioEntry.bind("<Button-5>", mouse_wheel_down)
-diskBalloon.bind(diskMLratioEntry, "Disk mass to light ratio.")
+discMLratioValue.trace("w", lambda n, i, m, v=discMLratioValue: some_parameter_changed("discML", v.get()))
+discMLratioEntry.grid(column=1, row=5, sticky=Tk.W)
+discMLratioEntry.bind("<Button-4>", mouse_wheel_up)
+discMLratioEntry.bind("<Button-5>", mouse_wheel_down)
+discBalloon.bind(discMLratioEntry, "Disc mass to light ratio.")
 
 ###########################
 #   Parameters of halo    #

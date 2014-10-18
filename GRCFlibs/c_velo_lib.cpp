@@ -19,19 +19,19 @@ using namespace std;
 #include "ri_rf.cpp"
 #include "const.h"
 
-extern "C" int c_v_disk(double * disk_params,
+extern "C" int c_v_disc(double * disc_params,
 			double * general_params,
 			double * distances,
 			double * v_squared,
 			int num_of_points){
 
-  /* Unpack parameters of disk model */
+  /* Unpack parameters of disc model */
   double m0, h, z0_h, qd_obs, M_L_d;
-  m0 = disk_params[0];
-  h = disk_params[1];
-  z0_h = disk_params[2];
-  qd_obs = disk_params[3];
-  M_L_d = disk_params[4];
+  m0 = disc_params[0];
+  h = disc_params[1];
+  z0_h = disc_params[2];
+  qd_obs = disc_params[3];
+  M_L_d = disc_params[4];
   /* Unpack general parameters */
   double Hz, DL_Mpc, DL_kpc, scale, M_sun;  
   Hz = general_params[0];
@@ -93,7 +93,7 @@ extern "C" int c_v_disk(double * disk_params,
 
 
 extern "C" int c_v_bulge(double * bulge_params,
-			 double * disk_params,
+			 double * disc_params,
 			 double * general_params,
 			 double * distances,
 			 double * v_squared,
@@ -109,8 +109,8 @@ extern "C" int c_v_bulge(double * bulge_params,
 
   /* Unpack disc parameters (we need them for inclination computing) */
   double z0_h, qd_obs;
-  z0_h = disk_params[0];
-  qd_obs = disk_params[1];
+  z0_h = disc_params[0];
+  qd_obs = disc_params[1];
 
   /* Unpack general parameters */
   double Hz, DL_Mpc, scale, M_sun;
@@ -169,7 +169,7 @@ extern "C" int c_v_bulge(double * bulge_params,
 }
 
 extern "C" int c_v_halo(double * bulge_params,
-			double * disk_params,
+			double * disc_params,
 			double * halo_params,
 			double * general_params,
 			double * distances,
@@ -186,11 +186,11 @@ extern "C" int c_v_halo(double * bulge_params,
 
   /* Unpack disc parameters */
   double m0, h, z0_h, qd_obs, M_L_d, z0;
-  m0 = disk_params[0];
-  h = disk_params[1];
-  z0_h = disk_params[2];
-  qd_obs = disk_params[3];
-  M_L_d = disk_params[4];
+  m0 = disc_params[0];
+  h = disc_params[1];
+  z0_h = disc_params[2];
+  qd_obs = disc_params[3];
+  M_L_d = disc_params[4];
 
   /* Unpack halo parameters (list of parameters depends on halo type) */
   int includeAC, hType;
