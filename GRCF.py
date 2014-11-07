@@ -143,8 +143,8 @@ def runComputation():
         fitMenu.entryconfig("Gradient descent", state="normal")
     # Maximal disc approximation works only if the disc model is on
     if includeDisc.get() > 0:
+        # fitMenu.entryconfig("Maximal disc", state="normal")
         fitMenu.entryconfig("Maximal disc", state="normal")
-        fitMenu.entryconfig("Maximal disc opt.", state="normal")
     # Constant M/L approximation works only if the disc and the bulge models are on
     if (includeBulge.get() > 0) and (includeDisc.get() > 0):
         fitMenu.entryconfig("Constant M/L", state="normal")
@@ -169,8 +169,8 @@ def some_parameter_changed(parameter, newValue):
     master.title("Galaxy Rotation Curve Fit (*)")
     fitMenu.entryconfig("Best chi squared", state="disabled")   # fitting is not allowed when parameters are changed
     fitMenu.entryconfig("Constant M/L", state="disabled")       #
-    fitMenu.entryconfig("Maximal disc", state="disabled")       #
-    fitMenu.entryconfig("Maximal disc opt.", state="disabled")  #
+    # fitMenu.entryconfig("Maximal disc", state="disabled")     #
+    fitMenu.entryconfig("Maximal disc", state="disabled")  #
     fitMenu.entryconfig("Gradient descent", state="disabled")   #
     rotCurve.parametersChanged = True
     #  If we include adiabatic contraction in halo model then
@@ -292,20 +292,23 @@ fitMenu.add_command(label="Constant M/L",
                                                      computationIsNeeded),
                     state="disabled")
 
-fitMenu.add_command(label="Maximal disc",
-                    command=lambda: MaximalDiscWindow(master,
-                                                      rotCurve,
-                                                      includeBulge.get(),
-                                                      includeDisc.get(),
-                                                      includeHalo.get(),
-                                                      bulgeMLratioValue,
-                                                      discMLratioValue,
-                                                      haloFirstParamValue,
-                                                      haloSecondParamValue,
-                                                      computationIsNeeded),
-                    state="disabled")
+# 'Maximal disc algorithm' is very slow. 'Maximal disc opt.' algorithm
+# do the same job, but much much faster, so I've desided just to turn
+# of the regular 'maximal disc' algorithm
+# fitMenu.add_command(label="Maximal disc",
+#                     command=lambda: MaximalDiscWindow(master,
+#                                                       rotCurve,
+#                                                       includeBulge.get(),
+#                                                       includeDisc.get(),
+#                                                       includeHalo.get(),
+#                                                       bulgeMLratioValue,
+#                                                       discMLratioValue,
+#                                                       haloFirstParamValue,
+#                                                       haloSecondParamValue,
+#                                                       computationIsNeeded),
+#                     state="disabled")
 
-fitMenu.add_command(label="Maximal disc opt.",
+fitMenu.add_command(label="Maximal disc",
                     command=lambda: MaximalDiscOptWindow(master,
                                                          rotCurve,
                                                          bulgeMLratioValue,
