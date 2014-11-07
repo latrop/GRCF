@@ -321,7 +321,7 @@ class BruteForceWindow(object):
         xScreenSize = master.winfo_screenwidth()
         yScreenSize = master.winfo_screenheight()
         self.bruteForceFrame.geometry("+%i+%i" % (xScreenSize/2-250, yScreenSize/2-100))
-        Tk.Label(self.bruteForceFrame, text="Chose models and ranges to variate:").grid(column=0, row=0, columnspan=5)
+        Tk.Label(self.bruteForceFrame, text="Choose models and ranges to variate:").grid(column=0, row=0, columnspan=5)
         self.bulgeState = "normal" if includeBulge else "disabled"
         self.discState = "normal" if includeDisc else "disabled"
         self.haloState = "normal" if includeHalo else "disabled"
@@ -368,6 +368,15 @@ class BruteForceWindow(object):
         self.bulgeMLoptimalLabel = Tk.Label(self.bruteForceFrame,
                                             textvariable=self.bulgeMLoptimalValue)
         self.bulgeMLoptimalLabel.grid(column=5, row=1)
+        # if bulge disabled, there is no need in these entries
+        def bulge_disabled(newState):
+            if newState == 0:
+                self.bulgeMLlowerEntry.configure(state = "disabled")
+                self.bulgeMLupperEntry.configure(state = "disabled")
+            else:
+                self.bulgeMLlowerEntry.configure(state = "normal")
+                self.bulgeMLupperEntry.configure(state = "normal")
+        self.variateBulge.trace("w", lambda n, i, m, v=self.variateBulge: bulge_disabled(v.get()))
 
         # Disc parameters
         self.variateDisc = Tk.IntVar()
@@ -410,6 +419,15 @@ class BruteForceWindow(object):
         self.discMLoptimalLabel = Tk.Label(self.bruteForceFrame,
                                            textvariable=self.discMLoptimalValue)
         self.discMLoptimalLabel.grid(column=5, row=2)
+        # if disc disabled, there is no need in these entries
+        def disc_disabled(newState):
+            if newState == 0:
+                self.discMLlowerEntry.configure(state = "disabled")
+                self.discMLupperEntry.configure(state = "disabled")
+            else:
+                self.discMLlowerEntry.configure(state = "normal")
+                self.discMLupperEntry.configure(state = "normal")
+        self.variateDisc.trace("w", lambda n, i, m, v=self.variateDisc: disc_disabled(v.get()))
 
         # Halo
         self.variateHalo = Tk.IntVar()
@@ -510,6 +528,20 @@ class BruteForceWindow(object):
         self.haloSecondoptimalLabel = Tk.Label(self.bruteForceFrame,
                                                textvariable=self.haloSecondoptimalValue)
         self.haloSecondoptimalLabel.grid(column=5, row=4)
+        # if halo is disabled, there is no need in these entries
+        def halo_disabled(newState):
+            if newState == 0:
+                self.haloFirstlowerEntry.configure(state = "disabled")
+                self.haloFirstupperEntry.configure(state = "disabled")
+                self.haloSecondlowerEntry.configure(state = "disabled")
+                self.haloSecondupperEntry.configure(state = "disabled")
+            else:
+                self.haloFirstlowerEntry.configure(state = "normal")
+                self.haloFirstupperEntry.configure(state = "normal")
+                self.haloSecondlowerEntry.configure(state = "normal")
+                self.haloSecondupperEntry.configure(state = "normal")
+        self.variateHalo.trace("w", lambda n, i, m, v=self.variateHalo: halo_disabled(v.get()))
+
 
         # Buttons
         self.runButton = Tk.Button(self.bruteForceFrame, text="Run", state="normal", command=self.run)
@@ -606,7 +638,7 @@ class ConstantMLWindow(object):
         xScreenSize = master.winfo_screenwidth()
         yScreenSize = master.winfo_screenheight()
         self.bruteForceFrame.geometry("+%i+%i" % (xScreenSize/2-250, yScreenSize/2-100))
-        Tk.Label(self.bruteForceFrame, text="Chose models and ranges to variate:").grid(column=0, row=0, columnspan=5)
+        Tk.Label(self.bruteForceFrame, text="Choose models and ranges to variate:").grid(column=0, row=0, columnspan=5)
         self.haloState = "normal" if includeHalo else "disabled"
         self.computationIsNeeded = computationIsNeeded
 
@@ -794,7 +826,7 @@ class MaximalDiscWindow(object):
         xScreenSize = master.winfo_screenwidth()
         yScreenSize = master.winfo_screenheight()
         self.maximalDiscFrame.geometry("+%i+%i" % (xScreenSize/2-250, yScreenSize/2-100))
-        Tk.Label(self.maximalDiscFrame, text="Chose models and ranges to variate:").grid(column=0, row=0, columnspan=5)
+        Tk.Label(self.maximalDiscFrame, text="Choose models and ranges to variate:").grid(column=0, row=0, columnspan=5)
         self.bulgeState = "normal" if includeBulge else "disabled"
         self.discState = "normal" if includeDisc else "disabled"
         self.haloState = "normal" if includeHalo else "disabled"
@@ -1333,7 +1365,7 @@ class MaximalDiscOptWindow(object):
         xScreenSize = master.winfo_screenwidth()
         yScreenSize = master.winfo_screenheight()
         self.maximalDiscFrame.geometry("+%i+%i" % (xScreenSize/2-250, yScreenSize/2-100))
-        Tk.Label(self.maximalDiscFrame, text="Chose models and ranges to variate:").grid(column=0, row=0, columnspan=5)
+        Tk.Label(self.maximalDiscFrame, text="Choose models and ranges to variate:").grid(column=0, row=0, columnspan=5)
 
         # Disc parameters
         Tk.Label(self.maximalDiscFrame, text="M-to-L  from").grid(column=1, row=2)
