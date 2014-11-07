@@ -641,8 +641,9 @@ class ConstantMLWindow(object):
         Tk.Label(self.bruteForceFrame, text="Choose models and ranges to variate:").grid(column=0, row=0, columnspan=5)
         self.haloState = "normal" if includeHalo else "disabled"
         self.computationIsNeeded = computationIsNeeded
+        Tk.Label(self.bruteForceFrame, text="Fitted values").grid(column=5, row=0)
 
-        # Bulge parameters
+        # Bulge and disc parameters
         Tk.Label(self.bruteForceFrame, text="Bulge and disc M-to-L  from").grid(column=0, row=1, columnspan=2)
         self.bothMLlowerValue = Tk.StringVar()
         self.bothMLlowerValue.set(1.0)
@@ -669,9 +670,15 @@ class ConstantMLWindow(object):
         self.bothMLupperEntry.grid(column=4, row=1)
         self.bothMLupperEntry.bind("<Button-4>", mouse_wheel_up)
         self.bothMLupperEntry.bind("<Button-5>", mouse_wheel_down)
+        self.bothMLoptimalValue = Tk.StringVar()
+        self.bothMLoptimalValue.set("---")
+        self.bothMLoptimalLabel = Tk.Label(self.bruteForceFrame,
+                                           textvariable=self.bothMLoptimalValue)
+        self.bothMLoptimalLabel.grid(column=5, row=1)
 
         # Halo
         self.variateHalo = Tk.IntVar()
+        self.variateHalo.set(1)
         self.variateHaloCButton = Tk.Checkbutton(self.bruteForceFrame, variable=self.variateHalo, text=" Halo: ", state=self.haloState)
         self.variateHaloCButton.grid(column=0, row=3, rowspan=2)
 
@@ -715,6 +722,11 @@ class ConstantMLWindow(object):
         if self.haloState == "normal":
             self.haloFirstupperEntry.bind("<Button-4>", mouse_wheel_up)
             self.haloFirstupperEntry.bind("<Button-5>", mouse_wheel_down)
+        self.haloFirstoptimalValue = Tk.StringVar()
+        self.haloFirstoptimalValue.set("---")
+        self.haloFirstoptimalLabel = Tk.Label(self.bruteForceFrame,
+                                              textvariable=self.haloFirstoptimalValue)
+        self.haloFirstoptimalLabel.grid(column=5, row=3)
 
         if self.rotCurve.hParams["model"] == "isoterm":
             Tk.Label(self.bruteForceFrame, text="V(inf)  from").grid(column=1, row=4)
@@ -757,6 +769,24 @@ class ConstantMLWindow(object):
         if self.haloState == "normal":
             self.haloSecondupperEntry.bind("<Button-4>", mouse_wheel_up)
             self.haloSecondupperEntry.bind("<Button-5>", mouse_wheel_down)
+        self.haloSecondoptimalValue = Tk.StringVar()
+        self.haloSecondoptimalValue.set("---")
+        self.haloSecondoptimalLabel = Tk.Label(self.bruteForceFrame,
+                                               textvariable=self.haloSecondoptimalValue)
+        self.haloSecondoptimalLabel.grid(column=5, row=4)
+        # if halo is disabled, there is no need in these entries
+        def halo_disabled(newState):
+            if newState == 0:
+                self.haloFirstlowerEntry.configure(state = "disabled")
+                self.haloFirstupperEntry.configure(state = "disabled")
+                self.haloSecondlowerEntry.configure(state = "disabled")
+                self.haloSecondupperEntry.configure(state = "disabled")
+            else:
+                self.haloFirstlowerEntry.configure(state = "normal")
+                self.haloFirstupperEntry.configure(state = "normal")
+                self.haloSecondlowerEntry.configure(state = "normal")
+                self.haloSecondupperEntry.configure(state = "normal")
+        self.variateHalo.trace("w", lambda n, i, m, v=self.variateHalo: halo_disabled(v.get()))
 
         # Buttons
         self.runButton = Tk.Button(self.bruteForceFrame, text="Run", state="normal", command=self.run)
@@ -767,7 +797,7 @@ class ConstantMLWindow(object):
                                       text="Close",
                                       state="normal",
                                       command=lambda: self.bruteForceFrame.destroy())
-        self.cancelButton.grid(column=4, row=6)
+        self.cancelButton.grid(column=5, row=6)
         self.runLabelValue = Tk.StringVar()
         Tk.Label(self.bruteForceFrame, textvariable=self.runLabelValue).grid(column=1, row=5, columnspan=3)
 
@@ -794,6 +824,9 @@ class ConstantMLWindow(object):
         self.runLabelValue.set("         In process...         ")
         self.rotCurve.fitConstantML(fitParams)
         self.runLabelValue.set("       Done in %1.2f sec      " % (time.time()-t1))
+        self.bothMLoptimalValue.set("%1.2f" % self.rotCurve.fittedDiscML)
+        self.haloFirstoptimalValue.set("%1.2f" % self.rotCurve.fittedHaloFirst)
+        self.haloSecondoptimalValue.set("%1.2f" % self.rotCurve.fittedHaloSecond)
         self.saveButton.config(state="normal")
 
     def save_fitted(self):
