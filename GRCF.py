@@ -582,6 +582,7 @@ haloBalloon = Balloon(haloPanel)
 includeHalo = Tk.IntVar()
 includeHalo.set(0)
 includeHalo.trace("w", lambda n, i, m, v=includeHalo: some_parameter_changed("hInclude", v.get()))
+
 includeHaloCButton = Tk.Checkbutton(haloPanel, text="Halo", variable=includeHalo, state="disabled")
 includeHaloCButton.grid(column=0, row=0, columnspan=2)
 haloBalloon.bind(includeHaloCButton, "Include halo in the computation.")
@@ -601,25 +602,32 @@ haloFirstParamEntry = Tk.Entry(haloPanel, textvariable=haloFirstParamValue, widt
 haloSecondParamValue = Tk.StringVar()
 haloSecondParamEntry = Tk.Entry(haloPanel, textvariable=haloSecondParamValue, width=5, state="disabled", bg="white")
 
-# Radiobuttons to select halo model.
-isotermHaloRadiobutton = Tk.Radiobutton(haloPanel, 
-                                        text="isoterm", 
-                                        variable=haloModelValue, 
-                                        value="isoterm", 
-                                        state="disabled", 
-                                        width=5)
-isotermHaloRadiobutton.grid(column=0, row=1)
-NFWHaloRadiobutton = Tk.Radiobutton(haloPanel,
-                                    text="NFW",
-                                    variable=haloModelValue,
-                                    width=3,
-                                    value="NFW", 
-                                    state="disabled")
-NFWHaloRadiobutton.grid(column=1, row=1)
-haloBalloon.bind(isotermHaloRadiobutton, "Halo type: isothermal halo.")
-haloBalloon.bind(NFWHaloRadiobutton, "Halo type: Navarro Frenk White profile.")
-haloBalloon.bind(haloFirstParamEntry, "Core radius.")
-haloBalloon.bind(haloSecondParamEntry, "Velocity at infinity.")
+# Selection of the halo model.
+
+haloModelCBox = Tk.OptionMenu(haloPanel, haloModelValue, "isoterm", "NFW")
+haloModelCBox.configure(state="disabled")
+haloModelCBox.grid(column=0, row=1, sticky=Tk.W, columnspan=3)
+generalBandValue.trace("w", band_selected)
+
+
+# isotermHaloRadiobutton = Tk.Radiobutton(haloPanel, 
+#                                         text="isoterm", 
+#                                         variable=haloModelValue, 
+#                                         value="isoterm", 
+#                                         state="disabled", 
+#                                         width=5)
+# isotermHaloRadiobutton.grid(column=0, row=1)
+# NFWHaloRadiobutton = Tk.Radiobutton(haloPanel,
+#                                     text="NFW",
+#                                     variable=haloModelValue,
+#                                     width=3,
+#                                     value="NFW", 
+#                                     state="disabled")
+# NFWHaloRadiobutton.grid(column=1, row=1)
+#haloBalloon.bind(isotermHaloRadiobutton, "Halo type: isothermal halo.")
+#haloBalloon.bind(NFWHaloRadiobutton, "Halo type: Navarro Frenk White profile.")
+#haloBalloon.bind(haloFirstParamEntry, "Core radius.")
+#haloBalloon.bind(haloSecondParamEntry, "Velocity at infinity.")
 
 # AC checkbutton
 haloIncludeAC = Tk.IntVar()
