@@ -106,8 +106,8 @@ class GalaxyRotation(object):
 
     def plot(self):
         self.a.clear()
-        clf()
-        cla()
+        # clf()
+        # cla()
         self.a.set_xlabel("Distance [arcsec]")
         self.a.set_ylabel("Velocity [km/sec]")
         if self.colouredPaint:

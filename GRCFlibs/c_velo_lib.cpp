@@ -196,16 +196,23 @@ extern "C" int c_v_halo(double * bulge_params,
   int includeAC, hType;
   hType = (int) halo_params[0];
   includeAC = (int) halo_params[1];
-  double Rc, vinf, concentr, v200;
+  double Rc, vinf, concentr, v200, rho0Burk, hBurk, h3Burk, h2Burk, Mr;
   if (hType == 0){
     // Isothermal halo
     Rc = halo_params[2];
     vinf = halo_params[3];
   }
-  else{
+  if (hType == 1.0){
     // NWF halo
     concentr = halo_params[2];
     v200 = halo_params[3];
+  }
+  if (hType == -1.0){
+    // Burkert profile
+    rho0Burk = halo_params[2];
+    hBurk = halo_params[3];
+    h2Burk = hBurk * hBurk;
+    h3Burk = h2Burk * hBurk;
   }
 
   /* Unpack general parameters */
@@ -263,10 +270,10 @@ extern "C" int c_v_halo(double * bulge_params,
 
   /* halo parameters convertions */
   double vinf2, r200, facth2, facth1, M200, Fc, Mass_tot;
-  if (hType == 0){ // isoterm halo
+  if (hType == 0.0){ // isoterm halo
     vinf2 = vinf*vinf/1e4;
   }
-  else{ // NFW halo
+  if (hType == 1.0){ // NFW halo
     r200 = v200*1e3 / (10 * Hz ); // r200 in kpc
     facth2 = v200*v200*v200*1e-1 / (10*Hz);
     facth1 = PARSEC / GRAV / MSUN;
@@ -303,7 +310,7 @@ extern "C" int c_v_halo(double * bulge_params,
 	v_squared[i] = vinf2*(1.0 - atan(rrc)/rrc);
     }
   }
-  else{
+  if(hType==1.0){
     if (includeAC==0){
       for(i=0; i < num_of_points; i++){
 	rr = distances[i];
@@ -322,6 +329,20 @@ extern "C" int c_v_halo(double * bulge_params,
 	  ri = fun_root((void*) &params_ri);
 	  v_squared[i] = facth2*Fh(ri*concentr) / Fc / rr;
 	}
+      }
+    }
+  }
+  if (hType == -1){
+    // Burkert halo
+    for(i=0; i<num_of_points; i++){
+      rr = distances[i];
+      if (rr <= 0.0)
+	v_squared[i] = 0.0;
+      else{
+	//Mr = M_PI*h3Burk*rho0Burk*(log(h2Burk+rr*rr)+2.0*log(hBurk+rr)-2.0*atan(rr/hBurk)); // in solar masses
+	// G*MSUN/Meters_in_kpc = 4.300
+	Mr = M_PI * h3Burk* rho0Burk*(log(fabs(rr*rr/h2Burk+1))-2.0*atan(rr/hBurk) + 2.0*log(fabs(rr/hBurk+1)));
+	v_squared[i] = 4.300*Mr/rr;
       }
     }
   }

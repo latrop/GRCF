@@ -57,7 +57,13 @@ def v_halo(bParams, dParams, hParams, gParams, distances):
                                  float(dParams["thickness"]),
                                  float(dParams["axisRatio"]),
                                  float(dParams["MLratio"]))
-    halo_params = (c_double * 4)(1.0 if hParams["model"]=="NFW" else 0.0,
+    if hParams["model"] == "NFW":
+        haloType = 1.0
+    elif hParams["model"] == "isoterm":
+        haloType = 0.0
+    elif hParams["model"] == "Burkert":
+        haloType = -1.0
+    halo_params = (c_double * 4)(haloType,
                                 float(hParams["includeAC"]),
                                 float(hParams["firstParam"]),
                                 float(hParams["secondParam"]))

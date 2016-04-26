@@ -203,14 +203,26 @@ def some_parameter_changed(parameter, newValue):
         if newValue == "NFW":
             haloFirstParamLabel.config(text="C")
             haloSecondParamLabel.config(text="V200")
+            haloFirstParamUnits.config(text="")
+            haloSecondParamUnits.config(text="Km/sec")
             haloBalloon.bind(haloFirstParamEntry, "Consentration parameter.")
             haloBalloon.bind(haloSecondParamEntry, "Velocity at the virial radius.")
             haloACCheckbutton.config(state="normal")
-        else:
+        elif newValue == "isoterm":
             haloFirstParamLabel.config(text="Rc")
             haloSecondParamLabel.config(text=u'V(\u221E)', font=font11)
+            haloFirstParamUnits.config(text="")
+            haloSecondParamUnits.config(text="Km/sec")
             haloBalloon.bind(haloFirstParamEntry, "Core radius.")
             haloBalloon.bind(haloSecondParamEntry, "Velocity at infinity.")
+            haloACCheckbutton.config(state="disabled")
+        elif newValue == "Burkert":
+            haloFirstParamLabel.config(text=u"\u03C1")
+            haloFirstParamUnits.config(text=u"M\u2299/pc\u00B3")
+            haloSecondParamLabel.config(text='h', font=font11)
+            haloSecondParamUnits.config(text="kpc")
+            haloBalloon.bind(haloFirstParamEntry, "Central density.")
+            haloBalloon.bind(haloSecondParamEntry, "Scalelength.")
             haloACCheckbutton.config(state="disabled")
     if parameter == "Msun":
         for item, value in mSunBands.iteritems():
@@ -604,7 +616,7 @@ haloSecondParamEntry = Tk.Entry(haloPanel, textvariable=haloSecondParamValue, wi
 
 # Selection of the halo model.
 
-haloModelCBox = Tk.OptionMenu(haloPanel, haloModelValue, "isoterm", "NFW")
+haloModelCBox = Tk.OptionMenu(haloPanel, haloModelValue, "isoterm", "NFW", "Burkert")
 haloModelCBox.configure(state="disabled")
 haloModelCBox.grid(column=0, row=1, sticky=Tk.W, columnspan=3)
 generalBandValue.trace("w", band_selected)
@@ -643,11 +655,14 @@ will take considerably longer time.""")
 haloFirstParamLabel.grid(column=0, row=2)
 haloFirstParamValue.trace("w", lambda n, i, m, v=haloFirstParamValue: some_parameter_changed("haloFirst", v.get()))
 haloFirstParamEntry.grid(column=1, row=2, sticky=Tk.W)
+haloFirstParamUnits = Tk.Label(haloPanel, text="")
+haloFirstParamUnits.grid(column=2, row=2)
 
 haloSecondParamLabel.grid(column=0, row=3)
 haloSecondParamValue.trace("w", lambda n, i, m, v=haloSecondParamValue: some_parameter_changed("haloSecond", v.get()))
 haloSecondParamEntry.grid(column=1, row=3, sticky=Tk.W)
-Tk.Label(haloPanel, text="Km/sec").grid(column=2, row=3)
+haloSecondParamUnits = Tk.Label(haloPanel, text="Km/sec")
+haloSecondParamUnits.grid(column=2, row=3)
 
 
 # Button for computation running
