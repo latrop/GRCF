@@ -572,7 +572,7 @@ class BruteForceWindow(object):
 
     def run(self):
         if self.variateBulge.get():
-            if (float(self.bulgeMLlowerValue.get()) > float(self.bulgeMLupperValue.get()):
+            if float(self.bulgeMLlowerValue.get()) > float(self.bulgeMLupperValue.get()):
                 self.runLabelValue.set("Bulge ML lower limit is higher, than the upper one")
                 return 1
             elif float(self.bulgeMLlowerValue.get())<=0:
@@ -597,7 +597,7 @@ class BruteForceWindow(object):
             elif float(self.haloSecondlowerValue.get()) > float(self.haloSecondupperValue.get()):
                 self.runLabelValue.set("Check halo second parameter")
                 return 1
-            elif float(self.haloSecondlowerValue.get())<=0):
+            elif float(self.haloSecondlowerValue.get())<=0:
                 self.runLabelValue.set("Check halo second parameter")
                 return 1
             
@@ -1330,18 +1330,22 @@ class optimalFitWindow(object):
                                    text="Run",
                                    state="normal",
                                    command=self.run)
-        self.runButton.grid(column=0, row=5)
+        self.runButton.grid(column=0, row=6)
         self.saveButton = Tk.Button(self.optimalFitFrame,
                                     text="Save",
                                     state="disabled",
                                     command=self.save_fitted)
-        self.saveButton.grid(column=1, row=5)
+        self.saveButton.grid(column=1, row=6)
         self.closeButton = Tk.Button(self.optimalFitFrame,
                                      text="Close",
                                      state="normal",
                                      command=lambda: self.optimalFitFrame.destroy())
-        self.closeButton.grid(column=5, row=5)
+        self.closeButton.grid(column=5, row=6)
 
+        # Label to show messages
+        self.runLabelValue = Tk.StringVar()
+        Tk.Label(self.optimalFitFrame,
+                 textvariable=self.runLabelValue).grid(column=1, row=5, columnspan=3)
 
     def run(self):
         # Running of the gradient descent optimization
@@ -1349,13 +1353,16 @@ class optimalFitWindow(object):
                   (float(self.discMLlowerValue.get()), float(self.discMLupperValue.get())),
                   (float(self.haloFirstlowerValue.get()), float(self.haloFirstupperValue.get())),
                   (float(self.haloSecondlowerValue.get()), float(self.haloSecondupperValue.get()))]
+        tStart = time.time()
         fitResults = self.rotCurve.fitOptimal(bounds)
+        tEnd = time.time()
         self.MLbulgeOpt = fitResults[0]
         self.MLdiscOpt = fitResults[1]
         self.haloFirstOpt = fitResults[2]
         self.haloSecondOpt = fitResults[3]
         self.saveButton.config(state="normal")
         # Show results
+        self.runLabelValue.set(" Done in %1.2f sec " % (tEnd-tStart))
         self.bulgeMLoptimalValue.set("%1.2f" % self.MLbulgeOpt)
         self.discMLoptimalValue.set("%1.2f" % self.MLdiscOpt)
         self.haloFirstoptimalValue.set("%1.2f" % self.haloFirstOpt)
