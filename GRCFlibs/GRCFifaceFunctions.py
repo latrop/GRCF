@@ -667,13 +667,15 @@ class ConstantMLWindow(object):
         xScreenSize = master.winfo_screenwidth()
         yScreenSize = master.winfo_screenheight()
         self.bruteForceFrame.geometry("+%i+%i" % (xScreenSize/2-250, yScreenSize/2-100))
-        Tk.Label(self.bruteForceFrame, text="Choose models and ranges to variate:").grid(column=0, row=0, columnspan=5)
+        Tk.Label(self.bruteForceFrame,
+                 text="Choose models and ranges to variate:").grid(column=0, row=0, columnspan=5)
         self.haloState = "normal" if includeHalo else "disabled"
         self.computationIsNeeded = computationIsNeeded
         Tk.Label(self.bruteForceFrame, text="Fitted values").grid(column=5, row=0)
 
         # Bulge and disc parameters
-        Tk.Label(self.bruteForceFrame, text="Bulge and disc M-to-L  from").grid(column=0, row=1, columnspan=2)
+        Tk.Label(self.bruteForceFrame,
+                 text="Bulge and disc M-to-L  from").grid(column=0, row=1, columnspan=2)
         self.bothMLlowerValue = Tk.StringVar()
         self.bothMLlowerEntry = Tk.Spinbox(self.bruteForceFrame,
                                             textvariable=self.bothMLlowerValue, 
@@ -709,7 +711,9 @@ class ConstantMLWindow(object):
         hModel = self.rotCurve.hParams["model"]
         self.variateHalo = Tk.IntVar()
         self.variateHalo.set(1)
-        self.variateHaloCButton = Tk.Checkbutton(self.bruteForceFrame, variable=self.variateHalo, text=" Halo: ", state=self.haloState)
+        self.variateHaloCButton = Tk.Checkbutton(self.bruteForceFrame,
+                                                 variable=self.variateHalo,
+                                                 text=" Halo: ", state=self.haloState)
         self.variateHaloCButton.grid(column=0, row=3, rowspan=2)
 
         Tk.Label(self.bruteForceFrame, text="%s  from" % haloFirstLabels[hModel]).grid(column=1, row=3)
@@ -804,7 +808,8 @@ class ConstantMLWindow(object):
         # Buttons
         self.runButton = Tk.Button(self.bruteForceFrame, text="Run", state="normal", command=self.run)
         self.runButton.grid(column=0, row=6)
-        self.saveButton = Tk.Button(self.bruteForceFrame, text="Save", state="disabled", command=self.save_fitted)
+        self.saveButton = Tk.Button(self.bruteForceFrame, text="Save",
+                                    state="disabled", command=self.save_fitted)
         self.saveButton.grid(column=1, row=6)
         self.cancelButton = Tk.Button(self.bruteForceFrame,
                                       text="Close",
@@ -812,19 +817,27 @@ class ConstantMLWindow(object):
                                       command=lambda: self.bruteForceFrame.destroy())
         self.cancelButton.grid(column=5, row=6)
         self.runLabelValue = Tk.StringVar()
-        Tk.Label(self.bruteForceFrame, textvariable=self.runLabelValue).grid(column=1, row=5, columnspan=3)
+        Tk.Label(self.bruteForceFrame,
+                 textvariable=self.runLabelValue).grid(column=1, row=5, columnspan=3)
 
     def run(self):
         if ((float(self.bothMLlowerValue.get()) > float(self.bothMLupperValue.get()))
             or (float(self.bothMLlowerValue.get())<=0)):
             self.runLabelValue.set("Error in M/L parameters")
             return 1
-        if self.variateHalo.get() and ((float(self.haloFirstlowerValue.get()) > float(self.haloFirstupperValue.get()))
-                                       or (float(self.haloFirstlowerValue.get())<=0)
-                                       or (float(self.haloSecondlowerValue.get()) > float(self.haloSecondupperValue.get()))
-                                       or (float(self.haloSecondlowerValue.get())<=0)):
-            self.runLabelValue.set(" Error in halo parameters ")
-            return 1
+        if self.variateHalo.get():
+            if float(self.haloFirstlowerValue.get()) > float(self.haloFirstupperValue.get()):
+                self.runLabelValue.set(" Error in first halo parameter")
+                return 1
+            elif float(self.haloFirstlowerValue.get()) <= 0:
+                self.runLabelValue.set(" Error in first halo parameter")
+                return 1
+            elif float(self.haloSecondlowerValue.get()) > float(self.haloSecondupperValue.get()):
+                self.runLabelValue.set(" Error in second halo parameter")
+                return 1
+            elif float(self.haloSecondlowerValue.get())<=0:
+                self.runLabelValue.set(" Error in second halo parameter ")
+                return 1
         fitParams = {}
         fitParams["bothMLlower"] = float(self.bothMLlowerValue.get())
         fitParams["bothMLupper"] = float(self.bothMLupperValue.get())
@@ -835,8 +848,11 @@ class ConstantMLWindow(object):
         fitParams["haloSecondupper"] = float(self.haloSecondupperValue.get())
         t1 = time.time()
         self.runLabelValue.set("         In process...         ")
-        self.rotCurve.fitConstantML(fitParams)
-        self.runLabelValue.set("       Done in %1.2f sec      " % (time.time()-t1))
+        fitImproved = self.rotCurve.fitConstantML(fitParams)
+        resStr = "Done in %1.2f sec." % (time.time()-t1)
+        if not fitImproved:
+            resStr += " Fit didn't improved."
+        self.runLabelValue.set(resStr)
         self.bothMLoptimalValue.set("%1.2f" % self.rotCurve.fittedDiscML)
         self.haloFirstoptimalValue.set("%1.2f" % self.rotCurve.fittedHaloFirst)
         self.haloSecondoptimalValue.set("%1.2f" % self.rotCurve.fittedHaloSecond)

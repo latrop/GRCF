@@ -111,25 +111,36 @@ class GalaxyRotation(object):
         self.a.set_xlabel("Distance [arcsec]")
         self.a.set_ylabel("Velocity [km/sec]")
         if self.colouredPaint:
-            self.a.errorbar(self.distanceArcSec, self.velocity, self.velocity_sigma, color="k", linestyle="-", label="Data")
+            self.a.errorbar(self.distanceArcSec, self.velocity, self.velocity_sigma,
+                            color="k", linestyle="-", label="Data")
             if self.plotBulge:
-                self.a.plot(self.distancesToComputeArcSec, self.bulgeVelocity, color="m", linestyle=":", label="Bulge")
+                self.a.plot(self.distancesToComputeArcSec, self.bulgeVelocity,
+                            color="m", linestyle=":", label="Bulge")
             if self.plotDisc:
-                self.a.plot(self.distancesToComputeArcSec, self.discVelocity, color="g", linestyle="--", label="Disc")
+                self.a.plot(self.distancesToComputeArcSec, self.discVelocity,
+                            color="g", linestyle="--", label="Disc")
             if self.plotHalo:
-                self.a.plot(self.distancesToComputeArcSec, self.haloVelocity, color="b", linestyle="-.", label="Halo")
+                self.a.plot(self.distancesToComputeArcSec, self.haloVelocity,
+                            color="b", linestyle="-.", label="Halo")
             if self.plotDisc + self.plotHalo+self.plotBulge > 1:
-                self.a.plot(self.distancesToComputeArcSec, self.sumVelocity, color="r", linestyle="-", label="Sum")
+                self.a.plot(self.distancesToComputeArcSec, self.sumVelocity,
+                            color="r", linestyle="-", label="Sum")
         else:
-            self.a.errorbar(self.distanceArcSec, self.velocity, self.velocity_sigma, color="k", linestyle="-", label="Data", linewidth=2)
+            self.a.errorbar(self.distanceArcSec, self.velocity, self.velocity_sigma,
+                            color="k", linestyle="-", label="Data", linewidth=2)
             if self.plotBulge:
-                self.a.plot(self.distancesToComputeArcSec, self.bulgeVelocity, color="k", linestyle=":", label="Bulge")
+                self.a.plot(self.distancesToComputeArcSec, self.bulgeVelocity,
+                            color="k", linestyle=":", label="Bulge")
             if self.plotDisc:
-                self.a.plot(self.distancesToComputeArcSec, self.discVelocity, color="k", linestyle="--", label="Disc")
+                self.a.plot(self.distancesToComputeArcSec, self.discVelocity,
+                            color="k", linestyle="--", label="Disc")
             if self.plotHalo:
-                self.a.plot(self.distancesToComputeArcSec, self.haloVelocity, color="k", linestyle="-.", label="Halo")
+                self.a.plot(self.distancesToComputeArcSec, self.haloVelocity,
+                            color="k", linestyle="-.", label="Halo")
             if self.plotDisc + self.plotHalo+self.plotBulge > 1:
-                self.a.plot(self.distancesToComputeArcSec, self.sumVelocity, color="k", linestyle="-", label="Sum")
+                self.a.plot(self.distancesToComputeArcSec, self.sumVelocity,
+                            color="k", linestyle="-", label="Sum")
+                
         if (self.showChiSquared > 0) and (self.plotDisc + self.plotHalo+self.plotBulge >= 1):
             # chi squared value to the plot
             chisq = self.compute_chi_sq()
@@ -144,8 +155,10 @@ class GalaxyRotation(object):
                     chisq_color = "black"
             else:
                 chisq_color = "black"
-            self.a.annotate('$\chi^2 = %1.3f$' % (chisq)  , xy=(0.85, -0.09), xycoords='axes fraction', color=chisq_color)
+            self.a.annotate('$\chi^2 = %1.3f$' % (chisq)  , xy=(0.85, -0.09),
+                            xycoords='axes fraction', color=chisq_color)
             self.previousChiSq = chisq
+            
         maxVelocityAxes = max(max(self.velocity), max(self.sumVelocity)) * 1.1
         if self.viewLegend == 1:
             self.a.legend(loc="best", fancybox=True, ncol=2, prop={'size':10})
@@ -153,7 +166,8 @@ class GalaxyRotation(object):
         self.a2.clear()
         #self.a2.cla()
         self.a2.set_xlabel("Distance [kpc]")
-        self.a2.errorbar(self.distanceKpc, self.velocity, self.velocity_sigma, color="k", linestyle="-", label="Data")
+        self.a2.errorbar(self.distanceKpc, self.velocity, self.velocity_sigma,
+                         color="k", linestyle="-", label="Data")
         self.a2.axis([0, max(self.distanceKpc)*1.1, 0, maxVelocityAxes])
         imageWithGraph = fig2img(self.mainGraph) # store image into PIL object for future usage
         self.canvas.show()
@@ -376,6 +390,8 @@ class GalaxyRotation(object):
         hParams = self.hParams
         bothLower = fitParams["bothMLlower"]
         bothUpper = fitParams["bothMLupper"]
+        fitImproved = False
+        chiSqBeforeFit = self.previousChiSq
         if fitParams["haloVariate"] > 0:
             hLower1 = fitParams["haloFirstlower"]
             hUpper1 = fitParams["haloFirstupper"]
@@ -393,10 +409,9 @@ class GalaxyRotation(object):
                     hParams["secondParam"] = secondParam
                     self.makeComputation(gParams, bParams, dParams, hParams, makePlot=False)
                     chisq = self.compute_chi_sq()
-#                    if prevChiSq < chisq:
-#                        break
-#                    prevChiSq = chisq
-                    if (chisq < bestChiSq) and (chisq < self.previousChiSq):
+                    if chisq < bestChiSq:
+                        if chisq < chiSqBeforeFit:
+                            fitImproved = True
                         bestChiSq = chisq
                         print bestChiSq
                         self.plot()
@@ -404,6 +419,7 @@ class GalaxyRotation(object):
                         self.fittedDiscML = bothML
                         self.fittedHaloFirst = firstParam
                         self.fittedHaloSecond = secondParam
+        return fitImproved
 
 
     def fitMaximalDisc(self, fitParams):
