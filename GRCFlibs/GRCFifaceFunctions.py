@@ -12,7 +12,7 @@ from scipy.ndimage import minimum_position
 from pylab import *
 import pylab
 
-import Image
+from PIL import Image
 from PIL import ImageTk
 
 from GRCFcommonFunctions import fig2img, fig2data

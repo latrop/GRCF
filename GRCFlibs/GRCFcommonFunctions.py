@@ -2,7 +2,7 @@
 
 import numpy
 
-import Image
+from PIL import Image
 from PIL import ImageTk
 
 def fig2data(fig):

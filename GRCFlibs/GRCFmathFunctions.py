@@ -15,7 +15,7 @@ from wrap_velocity import *
 from GRCFcommonFunctions import fig2img, fig2data
 import time
 
-import Image
+from PIL import Image
 from PIL import ImageTk
 
 from copy import copy
