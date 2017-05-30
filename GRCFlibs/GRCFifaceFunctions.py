@@ -1515,7 +1515,7 @@ class MaximalDiscOptWindow(object):
         self.sliderMoved(self.discMLlowerValue.get())
 
     def save_fitted(self):
-        value = float(self.discMLSlider.get().replace(",", "."))
+        value = float(self.discMLSlider.get())
         # value = self.discMLSliderValue.get()
         index = int((value - float(self.discMLlowerValue.get())) / 0.1)
         discMLopt = value

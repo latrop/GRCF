@@ -5,3 +5,5 @@
 
 `--parfile %filename%` automatically loads paramters from the givenfile.
 Must beaccompanied with `--velfile` option.
+
+Some bugfixes
