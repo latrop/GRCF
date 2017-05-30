@@ -201,14 +201,15 @@ def saveParams(master, params):
     dataBase["hParams"] = hParams
     dataBase.close()
 
-def loadParams(master):
+def loadParams(master, fName):
     """Load prevoiusly saved parameters from file"""
-    fileName = tkFileDialog.askopenfilename(parent=master,
-                                            filetypes=[("Data Base files", "*.db")],
-                                            title="Open file to load parameters")
-    if not fileName:
+    if fName is None:
+        fName = tkFileDialog.askopenfilename(parent=master,
+                                                filetypes=[("Data Base files", "*.db")],
+                                                title="Open file to load parameters")
+    if not fName:
         return [None, None, None, None]
-    dataBase = shelve.open(fileName)
+    dataBase = shelve.open(fName)
     gParams = dataBase["gParams"]
     bParams = dataBase["bParams"]
     dParams = dataBase["dParams"]

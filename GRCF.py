@@ -6,15 +6,17 @@ import Tkinter as Tk
 import tkFileDialog
 import tkMessageBox
 import tkFont
+from math import acos, sqrt, degrees
 
 from Pmw import Balloon
+
+import argparse
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 
 from GRCFlibs.GRCFmathFunctions import *
 from GRCFlibs.GRCFifaceFunctions import *
 
-from math import acos, sqrt, degrees
 
 
 def get_inclination():
@@ -24,10 +26,13 @@ def get_inclination():
         return degrees(acos(sqrt((q**2 - q0**2) / (1-q0**2))))
     return 90.0
 
-def loadVelocityData():
-    fileName = tkFileDialog.askopenfilename(parent=master,
-                                 filetypes=[("Data files", "*.dat"), ("All files", ".*")],
-                                 title="Open data file")
+
+def loadVelocityData(fileName):
+    if fileName is None:
+        fileName = tkFileDialog.askopenfilename(parent=master,
+                                                filetypes=[("Data files", "*.dat"),
+                                                           ("All files", ".*")],
+                                                title="Open data file")
     if fileName == "" :
         return
     distance, velocity, sigma = getRotationCurve(fileName)
@@ -234,6 +239,15 @@ def some_parameter_changed(parameter, newValue):
 #    fitMenu.entryconfig("Best chi squared", state="normal")
 #    master.title("Galaxy Rotation Curve Fit")
 
+# Command line arguments
+parser = argparse.ArgumentParser()
+parser.add_argument("--velfile", help="File with velocity data", type=str,
+                    default="")
+parser.add_argument("--parfile", help="File with parameters", type=str,
+                    default="")
+clArgs = parser.parse_args()
+
+
 # Creating the main window
 master = Tk.Tk()
 font11 = tkFont.Font(size=11)
@@ -247,12 +261,13 @@ master.protocol('WM_DELETE_WINDOW', master.quit)
 
 menubar = Tk.Menu(master)
 fileMenu = Tk.Menu(menubar, tearoff=0)
-fileMenu.add_command(label="Load velocity", command=loadVelocityData)
+fileMenu.add_command(label="Load velocity",
+                     command=lambda: loadVelocityData(None))
 fileMenu.add_command(label="Save parameters",
                      command=lambda: saveParams(master, getValuesFromAllFields()),
                      state="disabled")
 fileMenu.add_command(label="Load parameters", 
-                     command=lambda: setValuesToAllFields(loadParams(master)), 
+                     command=lambda: setValuesToAllFields(loadParams(master, fName=None)), 
                      state="disabled")
 fileMenu.add_command(label="Save velocity",
                      command=lambda: saveVelocity(master, rotCurve),
@@ -692,5 +707,9 @@ canvas.get_tk_widget().pack(side=Tk.TOP, fill=Tk.BOTH, expand=1)
 #                End of the graph stuff                    #
 ############################################################
 
+if clArgs.velfile:
+    loadVelocityData(clArgs.velfile)
+if clArgs.parfile:
+    setValuesToAllFields(loadParams(master, fName=clArgs.parfile))
 
 Tk.mainloop()
