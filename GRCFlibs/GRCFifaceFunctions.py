@@ -331,7 +331,8 @@ class BruteForceWindow(object):
         xScreenSize = master.winfo_screenwidth()
         yScreenSize = master.winfo_screenheight()
         self.bruteForceFrame.geometry("+%i+%i" % (xScreenSize/2-250, yScreenSize/2-100))
-        Tk.Label(self.bruteForceFrame, text="Choose models and ranges to variate:").grid(column=0, row=0, columnspan=5)
+        Tk.Label(self.bruteForceFrame,
+                 text="Choose models and ranges to variate:").grid(column=0, row=0, columnspan=5)
         self.bulgeState = "normal" if includeBulge else "disabled"
         self.discState = "normal" if includeDisc else "disabled"
         self.haloState = "normal" if includeHalo else "disabled"
@@ -341,7 +342,9 @@ class BruteForceWindow(object):
         # Bulge parameters
         self.variateBulge = Tk.IntVar()
         self.variateBulge.set(1)
-        self.variateBulgeCButton = Tk.Checkbutton(self.bruteForceFrame, variable=self.variateBulge, text="Bulge:", state=self.bulgeState)
+        self.variateBulgeCButton = Tk.Checkbutton(self.bruteForceFrame,
+                                                  variable=self.variateBulge,
+                                                  text="Bulge:", state=self.bulgeState)
         self.variateBulgeCButton.grid(column=0, row=1)
         Tk.Label(self.bruteForceFrame, text="M-to-L  from").grid(column=1, row=1)
         self.bulgeMLlowerValue = Tk.StringVar()
@@ -378,6 +381,7 @@ class BruteForceWindow(object):
         self.bulgeMLoptimalLabel = Tk.Label(self.bruteForceFrame,
                                             textvariable=self.bulgeMLoptimalValue)
         self.bulgeMLoptimalLabel.grid(column=5, row=1)
+
         # if bulge disabled, there is no need in these entries
         def bulge_disabled(newState):
             if newState == 0:
@@ -391,7 +395,9 @@ class BruteForceWindow(object):
         # Disc parameters
         self.variateDisc = Tk.IntVar()
         self.variateDisc.set(1)
-        self.variateDiscCButton = Tk.Checkbutton(self.bruteForceFrame, variable=self.variateDisc, text=" Disc: ", state=self.discState)
+        self.variateDiscCButton = Tk.Checkbutton(self.bruteForceFrame,
+                                                 variable=self.variateDisc,
+                                                 text=" Disc: ", state=self.discState)
         self.variateDiscCButton.grid(column=0, row=2)
 
         Tk.Label(self.bruteForceFrame, text="M-to-L  from").grid(column=1, row=2)
@@ -429,6 +435,7 @@ class BruteForceWindow(object):
         self.discMLoptimalLabel = Tk.Label(self.bruteForceFrame,
                                            textvariable=self.discMLoptimalValue)
         self.discMLoptimalLabel.grid(column=5, row=2)
+
         # if disc disabled, there is no need in these entries
         def disc_disabled(newState):
             if newState == 0:
@@ -443,8 +450,11 @@ class BruteForceWindow(object):
         hModel = self.rotCurve.hParams["model"]
         self.variateHalo = Tk.IntVar()
         self.variateHalo.set(1)
-        self.variateHaloCButton = Tk.Checkbutton(self.bruteForceFrame, variable=self.variateHalo, text=" Halo: ", state=self.haloState)
+        self.variateHaloCButton = Tk.Checkbutton(self.bruteForceFrame,
+                                                 variable=self.variateHalo,
+                                                 text=" Halo: ", state=self.haloState)
         self.variateHaloCButton.grid(column=0, row=3, rowspan=2)
+
         # parameters labels depend on the halo type
         Tk.Label(self.bruteForceFrame, text="%s  from" % haloFirstLabels[hModel]).grid(column=1, row=3)
         self.haloFirstlowerValue = Tk.StringVar()
@@ -472,6 +482,7 @@ class BruteForceWindow(object):
                                               to=100,
                                               increment=0.1,
                                               state=self.haloState)
+
         # upper bound of searching range depend on the halo type
         self.haloFirstupperValue.set(haloFirstUpperValues[hModel])
         self.haloFirstupperEntry.grid(column=4, row=3)
@@ -494,6 +505,7 @@ class BruteForceWindow(object):
                                                to=1000,
                                                increment=1.0,
                                                state=self.haloState)
+
         # lower bound of searching range depend on the halo type
         self.haloSecondlowerValue.set(haloSecondLowerValues[hModel])
         self.haloSecondlowerEntry.grid(column=2, row=4)
@@ -510,6 +522,7 @@ class BruteForceWindow(object):
                                                to=1000,
                                                increment=1.0,
                                                state=self.haloState)
+
         # upper bound of searching range depend on the halo type
         self.haloSecondupperValue.set(haloSecondUpperValues[hModel])
         self.haloSecondupperEntry.grid(column=4, row=4)
@@ -521,6 +534,7 @@ class BruteForceWindow(object):
         self.haloSecondoptimalLabel = Tk.Label(self.bruteForceFrame,
                                                textvariable=self.haloSecondoptimalValue)
         self.haloSecondoptimalLabel.grid(column=5, row=4)
+
         # if halo is disabled, there is no need in these entries
         def halo_disabled(newState):
             if newState == 0:
@@ -535,37 +549,58 @@ class BruteForceWindow(object):
                 self.haloSecondupperEntry.configure(state = "normal")
         self.variateHalo.trace("w", lambda n, i, m, v=self.variateHalo: halo_disabled(v.get()))
 
-
         # Buttons
-        self.runButton = Tk.Button(self.bruteForceFrame, text="Run", state="normal", command=self.run)
+        self.runButton = Tk.Button(self.bruteForceFrame, text="Run",
+                                   state="normal", command=self.run)
         self.runButton.grid(column=0, row=6)
-        self.saveButton = Tk.Button(self.bruteForceFrame, text="Save", state="disabled", command=self.save_fitted)
+        self.saveButton = Tk.Button(self.bruteForceFrame, text="Save",
+                                    state="disabled", command=self.save_fitted)
         self.saveButton.grid(column=1, row=6)
         self.cancelButton = Tk.Button(self.bruteForceFrame,
                                       text="Close",
                                       state="normal",
                                       command=lambda: self.bruteForceFrame.destroy())
         self.cancelButton.grid(column=5, row=6)
-        self.mapButton = Tk.Button(self.bruteForceFrame, text="Map", state="disabled", command=self.show_map)
+        self.mapButton = Tk.Button(self.bruteForceFrame, text="Map",
+                                   state="disabled", command=self.show_map)
         self.mapButton.grid(column=2, row=6)
+
+        # Label to show messages
         self.runLabelValue = Tk.StringVar()
-        Tk.Label(self.bruteForceFrame, textvariable=self.runLabelValue).grid(column=1, row=5, columnspan=3)
+        Tk.Label(self.bruteForceFrame,
+                 textvariable=self.runLabelValue).grid(column=1, row=5, columnspan=3)
 
     def run(self):
-        if self.variateBulge.get() and ((float(self.bulgeMLlowerValue.get()) > float(self.bulgeMLupperValue.get()))
-                                        or (float(self.bulgeMLlowerValue.get())<=0)):
-            self.runLabelValue.set("Error in bulge parameters")
-            return 1
-        if self.variateDisc.get() and ((float(self.discMLlowerValue.get()) > float(self.discMLupperValue.get()))
-                                        or (float(self.discMLlowerValue.get())<=0)):
-            self.runLabelValue.set(" Error in disc parameters ")
-            return 1
-        if self.variateHalo.get() and ((float(self.haloFirstlowerValue.get()) > float(self.haloFirstupperValue.get()))
-                                       or (float(self.haloFirstlowerValue.get())<=0)
-                                       or (float(self.haloSecondlowerValue.get()) > float(self.haloSecondupperValue.get()))
-                                       or (float(self.haloSecondlowerValue.get())<=0)):
-            self.runLabelValue.set(" Error in halo parameters ")
-            return 1
+        if self.variateBulge.get():
+            if (float(self.bulgeMLlowerValue.get()) > float(self.bulgeMLupperValue.get()):
+                self.runLabelValue.set("Bulge ML lower limit is higher, than the upper one")
+                return 1
+            elif float(self.bulgeMLlowerValue.get())<=0:
+                self.runLabelValue.set("Bulge ML value must be positive")
+                return 1
+                
+        if self.variateDisc.get():
+            if float(self.discMLlowerValue.get()) > float(self.discMLupperValue.get()):
+                self.runLabelValue.set("Disk ML lower limit is higher, than the upper one")
+                return 1
+            elif float(self.discMLlowerValue.get())<=0:
+                self.runLabelValue.set(" Disk ML value must be positive ")
+                return 1
+
+        if self.variateHalo.get():
+            if float(self.haloFirstlowerValue.get()) > float(self.haloFirstupperValue.get()):
+                self.runLabelValue.set("Check halo first parameter")
+                return 1
+            elif float(self.haloFirstlowerValue.get())<=0:
+                self.runLabelValue.set("Check halo first parameter")
+                return 1
+            elif float(self.haloSecondlowerValue.get()) > float(self.haloSecondupperValue.get()):
+                self.runLabelValue.set("Check halo second parameter")
+                return 1
+            elif float(self.haloSecondlowerValue.get())<=0):
+                self.runLabelValue.set("Check halo second parameter")
+                return 1
+            
         fitParams = {}
         fitParams["bulgeVariate"] = self.variateBulge.get()
         fitParams["bulgeMLlower"] = float(self.bulgeMLlowerValue.get())
@@ -1143,8 +1178,11 @@ class optimalFitWindow(object):
         xScreenSize = master.winfo_screenwidth()
         yScreenSize = master.winfo_screenheight()
         self.optimalFitFrame.geometry("+%i+%i" % (xScreenSize/2-250, yScreenSize/2-100))
-        Tk.Label(self.optimalFitFrame, text="Constraints on parameters").grid(column=0, row=0, columnspan=4)
-        Tk.Label(self.optimalFitFrame, text="Fitted values").grid(column=5, row=0)
+        Tk.Label(self.optimalFitFrame,
+                 text="Constraints on parameters").grid(column=0, row=0, columnspan=4)
+        Tk.Label(self.optimalFitFrame,
+                 text="Fitted values").grid(column=5, row=0)
+
         # Bulge ML section
         Tk.Label(self.optimalFitFrame, text="Bulge M/L").grid(column=0, row=1)
         Tk.Label(self.optimalFitFrame, text="from").grid(column=1, row=1)
@@ -1178,6 +1216,7 @@ class optimalFitWindow(object):
         self.bulgeMLoptimalLabel = Tk.Label(self.optimalFitFrame,
                                             textvariable=self.bulgeMLoptimalValue)
         self.bulgeMLoptimalLabel.grid(column=5, row=1)
+
         # Disc ML section
         Tk.Label(self.optimalFitFrame, text="Disc M/L").grid(column=0, row=2)
         Tk.Label(self.optimalFitFrame, text="from").grid(column=1, row=2)
@@ -1211,6 +1250,7 @@ class optimalFitWindow(object):
         self.discMLoptimalLabel = Tk.Label(self.optimalFitFrame,
                                             textvariable=self.discMLoptimalValue)
         self.discMLoptimalLabel.grid(column=5, row=2)
+
         # Halo first parameter
         hModel = self.rotCurve.hParams["model"]
         Tk.Label(self.optimalFitFrame, text="%s" % haloFirstLabels[hModel]).grid(column=0, row=3)
@@ -1258,6 +1298,7 @@ class optimalFitWindow(object):
                                             from_=0.0,
                                             to=1000.0,
                                             increment=0.1)
+
         # lower bound of searching range depend on the halo type
         self.haloSecondlowerValue.set(haloSecondLowerValues[hModel])
         self.haloSecondlowerEntry.grid(column=2, row=4)
@@ -1272,6 +1313,7 @@ class optimalFitWindow(object):
                                             from_=0.0,
                                             to=1000.0,
                                             increment=0.1)
+
         # upper bound of searching range depend on the halo type
         self.haloSecondupperValue.set(haloSecondUpperValues[hModel])
         self.haloSecondupperEntry.grid(column=4, row=4)
@@ -1282,6 +1324,8 @@ class optimalFitWindow(object):
         self.haloSecondoptimalLabel = Tk.Label(self.optimalFitFrame,
                                             textvariable=self.haloSecondoptimalValue)
         self.haloSecondoptimalLabel.grid(column=5, row=4)
+
+        # Buttons
         self.runButton = Tk.Button(self.optimalFitFrame,
                                    text="Run",
                                    state="normal",
@@ -1298,13 +1342,18 @@ class optimalFitWindow(object):
                                      command=lambda: self.optimalFitFrame.destroy())
         self.closeButton.grid(column=5, row=5)
 
+
     def run(self):
         # Running of the gradient descent optimization
         bounds = [(float(self.bulgeMLlowerValue.get()), float(self.bulgeMLupperValue.get())),
                   (float(self.discMLlowerValue.get()), float(self.discMLupperValue.get())),
                   (float(self.haloFirstlowerValue.get()), float(self.haloFirstupperValue.get())),
                   (float(self.haloSecondlowerValue.get()), float(self.haloSecondupperValue.get()))]
-        self.MLbulgeOpt, self.MLdiscOpt, self.haloFirstOpt, self.haloSecondOpt = self.rotCurve.fitOptimal(bounds)
+        fitResults = self.rotCurve.fitOptimal(bounds)
+        self.MLbulgeOpt = fitResults[0]
+        self.MLdiscOpt = fitResults[1]
+        self.haloFirstOpt = fitResults[2]
+        self.haloSecondOpt = fitResults[3]
         self.saveButton.config(state="normal")
         # Show results
         self.bulgeMLoptimalValue.set("%1.2f" % self.MLbulgeOpt)
