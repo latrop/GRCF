@@ -2,8 +2,8 @@
 
 from math import radians, sin
 
-import Tkinter as Tk
-import tkFileDialog
+import tkinter as Tk
+from tkinter import filedialog as tkFileDialog
 from scipy.interpolate import interp1d, InterpolatedUnivariateSpline
 from scipy.optimize import fmin as fmin_sco
 from scipy.optimize import fmin_tnc
@@ -11,8 +11,8 @@ import numpy
 from numpy import arange, linspace, abs, array, zeros_like, concatenate, log, zeros
 from numpy import sum as npsum
 
-from wrap_velocity import *
-from GRCFcommonFunctions import fig2img, fig2data
+from .wrap_velocity import *
+from .GRCFcommonFunctions import fig2img, fig2data
 import time
 
 from PIL import Image
@@ -60,7 +60,6 @@ class GalaxyRotation(object):
         else:
             additinal = []
         self.distancesToComputeArcSec = concatenate((additinal, self.distanceArcSec))
-        print self.distancesToComputeArcSec
         self.distancesToComputeKpc = self.distancesToComputeArcSec * scale
         self.distancesToComputeLength = len(self.distancesToComputeArcSec)
         self.bulgeVelocity = zeros(self.distancesToComputeLength)
@@ -140,7 +139,7 @@ class GalaxyRotation(object):
             if self.plotDisc + self.plotHalo+self.plotBulge > 1:
                 self.a.plot(self.distancesToComputeArcSec, self.sumVelocity,
                             color="k", linestyle="-", label="Sum")
-                
+
         if (self.showChiSquared > 0) and (self.plotDisc + self.plotHalo+self.plotBulge >= 1):
             # chi squared value to the plot
             chisq = self.compute_chi_sq()
@@ -158,7 +157,7 @@ class GalaxyRotation(object):
             self.a.annotate('$\chi^2 = %1.3f$' % (chisq)  , xy=(0.85, -0.09),
                             xycoords='axes fraction', color=chisq_color)
             self.previousChiSq = chisq
-            
+
         maxVelocityAxes = max(max(self.velocity), max(self.sumVelocity)) * 1.1
         if self.viewLegend == 1:
             self.a.legend(loc="best", fancybox=True, ncol=2, prop={'size':10})
@@ -170,10 +169,10 @@ class GalaxyRotation(object):
                          color="k", linestyle="-", label="Data")
         self.a2.axis([0, max(self.distanceKpc)*1.1, 0, maxVelocityAxes])
         imageWithGraph = fig2img(self.mainGraph) # store image into PIL object for future usage
-        self.canvas.show()
+        self.canvas.draw()
         self.canvas.get_tk_widget().pack(side=Tk.LEFT, fill=Tk.BOTH, expand=1)
         return ImageTk.PhotoImage(imageWithGraph)
-        
+
     def makeComputation(self, gParams, bParams, dParams, hParams, makePlot=True):
         """Compute rotation velocities according to specifued parameters"""
         # Before start store all parameters as object attributes
@@ -203,6 +202,7 @@ class GalaxyRotation(object):
             discExpScale_old = self.oldDiscParams["expScale"]
             discThickness_old = self.oldDiscParams["thickness"]
             discMLratio_old = self.oldDiscParams["MLratio"]
+
             # Check if some parameters of the disc was changed
             if ((discCenSurfBri != discCenSurfBri_old)
                 or (discExpScale != discExpScale_old)
@@ -214,7 +214,6 @@ class GalaxyRotation(object):
                 discVelSquared = v_disc(dParams,
                                         gParams,
                                         self.distancesToComputeKpc)
-                print time.time()-t1
                 self.discVelocity = discVelSquared ** 0.5
             elif (discMLratio != discMLratio_old):
                 # if only M/L ratio was changed one can compute the new values
@@ -224,6 +223,7 @@ class GalaxyRotation(object):
                 self.discVelocity = discVelSquared ** 0.5
             else:
                 discVelSquared = self.discVelocity**2
+
             # Store new values as new old ones
             self.oldDiscParams["cenSurfBri"] = discCenSurfBri
             self.oldDiscParams["expScale"] = discExpScale
@@ -246,8 +246,8 @@ class GalaxyRotation(object):
                 bulgeMLratio_old = self.oldBulgeParams["MLratio"]
                 bulgeAxisRatio_old = self.oldBulgeParams["axisRatio"]
                 # if some parameters of bulge was changes we have to recompute all curve
-                if ((bulgeEffSurfBri != bulgeEffSurfBri_old) 
-                    or (bulgeSersicIndex != bulgeSersicIndex_old) 
+                if ((bulgeEffSurfBri != bulgeEffSurfBri_old)
+                    or (bulgeSersicIndex != bulgeSersicIndex_old)
                     or (bulgeEffRadius != bulgeEffRadius_old)
                     or (scale != scale_old)
                     or (Msun != Msun_old)
@@ -292,16 +292,16 @@ class GalaxyRotation(object):
                 if (not bParams["include"]) and (not dParams["include"]):
                     hParams_copy["includeAC"] = 0
                 # if only bulge is switched off, set temporary it's ML ratio to
-                # zero such that it will not affect no adiabatic contraction
+                # zero such that it will not affect on the adiabatic contraction
                 elif not bParams["include"]:
                     bParams_copy["MLratio"] = 0.0
                 # the same with the disc
                 if not dParams["include"]:
                     dParams_copy["MLratio"] = 0.0
-                haloVelsquared = v_halo(bParams_copy, 
-                                        dParams_copy, 
-                                        hParams_copy, 
-                                        gParams, 
+                haloVelsquared = v_halo(bParams_copy,
+                                        dParams_copy,
+                                        hParams_copy,
+                                        gParams,
                                         self.distancesToComputeKpc)
                 self.haloVelocity = haloVelsquared ** 0.5
                 self.sumVelocity += haloVelsquared
@@ -335,7 +335,6 @@ class GalaxyRotation(object):
         self.fittedHaloFirst = float(hParams["firstParam"])
         self.fittedHaloSecond = float(hParams["secondParam"])
         chi_map = []
-        print "varb", fitParams["bulgeVariate"]
         if fitParams["bulgeVariate"] > 0:
             bLower = fitParams["bulgeMLlower"]
             bUpper = fitParams["bulgeMLupper"]
@@ -373,7 +372,6 @@ class GalaxyRotation(object):
                         chi_halo_params.append(chisq)
                         if (chisq < bestChiSq) and (chisq < self.previousChiSq):
                             bestChiSq = chisq
-                            print bestChiSq
                             self.plot()
                             self.fittedBulgeML = bulgeML
                             self.fittedDiscML = discML
@@ -413,7 +411,6 @@ class GalaxyRotation(object):
                         if chisq < chiSqBeforeFit:
                             fitImproved = True
                         bestChiSq = chisq
-                        print bestChiSq
                         self.plot()
                         self.fittedBulgeML = bothML
                         self.fittedDiscML = bothML
@@ -527,7 +524,6 @@ class GalaxyRotation(object):
             haloFirst0 = self.hParams["firstParam"]
             haloSecond0 = self.hParams["secondParam"]
             # run local minimum finding
-            print haloFirst0
             xopt, fopt, ite, funcalls, warnflag = fmin_sco(func, x0=[MLbulge0, haloFirst0, haloSecond0], full_output=1)
             MLbulgeOpt, haloFirstOpt, haloSecondOpt = xopt[0], xopt[1], xopt[2]
             # make plot for optimal fitting parameters for given disc ML ratio
@@ -539,7 +535,7 @@ class GalaxyRotation(object):
             # store all optimal parameters and plots of optimal configurations
             bhOptimalList.append([MLbulgeOpt, haloFirstOpt, haloSecondOpt])
             plotList.append(fittedGraph)
-        return bhOptimalList, plotList            
+        return bhOptimalList, plotList
 
 
     def fitOptimal(self, bounds):
@@ -586,10 +582,10 @@ class GalaxyRotation(object):
         # plot resulting curve
         self.plot()
         return MLbulgeOpt, MLdiscOpt, haloFirstOpt, haloSecondOpt
-        
+
 
     def compute_chi_sq(self):
-        return npsum(((self.velocity-self.sumVelocity[-len(self.velocity):])/self.velocity_sigma)**2)
+        return numpy.nansum(((self.velocity-self.sumVelocity[-len(self.velocity):])/self.velocity_sigma)**2)
 
 
 def getRotationCurve(fname):
@@ -615,7 +611,7 @@ def getRotationCurve(fname):
     if "spline" in velocity_sigma:
         rForFit = []
         sigmaForFit = []
-        for i in xrange(len(distance)):
+        for i in range(len(distance)):
             if velocity_sigma[i] != "spline":
                 rForFit.append(distance[i])
                 sigmaForFit.append(velocity_sigma[i])
@@ -625,7 +621,7 @@ def getRotationCurve(fname):
     # If systematic velocity was already corrected, then just return rotation curve
     if (distance[0] >= 0.0) and (distance[-1] >= 0.0):
         return array(distance), array(velocity), array(velocity_sigma)
-            
+
     # interpolation objects for the velicity and its sigma
     velocity_interp = interp1d(distance, velocity, kind="cubic")
     velocity_sigma_interp = interp1d(distance, velocity_sigma, kind="cubic")
@@ -643,7 +639,9 @@ def getRotationCurve(fname):
             v_minus = abs(velocity_interp(x0-d)-Vsys)
             v_plus = abs(velocity_interp(x0+d)-Vsys)
             sig = (velocity_sigma_interp(x0-d) + velocity_sigma_interp(x0+d))/2
-            chi_sq += (v_minus - v_plus)**2 / sig ** 2
+            new_value = (v_minus - v_plus)**2 / sig ** 2
+            if numpy.isfinite(new_value):
+                chi_sq += new_value
         if chi_sq < chi_sq_min:
             chi_sq_min = chi_sq
             optimalCenterLocation = x0
@@ -672,7 +670,6 @@ def checAllValues(gParams, bParams, dParams, hParams):
     if int(gParams["iCorrect"]) != 0:
         try:
             val = float(gParams["incl"])
-            print "in test", val
             if (val<0.0) or (val>90.0):
                 return False, "Inclination", "must be between 0 and 90"
         except ValueError:
@@ -763,4 +760,4 @@ def checAllValues(gParams, bParams, dParams, hParams):
 
 
 def getChiSquared(data, model, sigma):
-    return 
+    return

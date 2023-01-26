@@ -2,21 +2,20 @@
 
 import pylab
 
-import Tkinter as Tk
-import tkFileDialog
-import tkMessageBox
-import tkFont
+import tkinter as Tk
+from tkinter import filedialog as tkFileDialog
+from tkinter import messagebox as tkMessageBox
+from tkinter import font as tkFont
 from math import acos, sqrt, degrees
 
 from Pmw import Balloon
 
 import argparse
 
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 from GRCFlibs.GRCFmathFunctions import *
 from GRCFlibs.GRCFifaceFunctions import *
-
 
 
 def get_inclination():
@@ -36,12 +35,12 @@ def loadVelocityData(fileName):
     if fileName == "" :
         return
     distance, velocity, sigma = getRotationCurve(fileName)
-    global rotCurve 
-    rotCurve = GalaxyRotation(distance, 
-                              velocity, 
-                              sigma, 
-                              float(generalScaleValue.get()), 
-                              mainGraph, 
+    global rotCurve
+    rotCurve = GalaxyRotation(distance,
+                              velocity,
+                              sigma,
+                              float(generalScaleValue.get()),
+                              mainGraph,
                               canvas,
                               fileName)
     rotCurve.plot()
@@ -68,7 +67,7 @@ def getValuesFromAllFields():
     # in other case inclination is just setted to -1 deg
     if correctForInclination.get() != 0:
         incl = get_inclination()
-    else: 
+    else:
         incl = -1.0
     gParams["incl"] = incl
     gParams["iCorrect"] = correctForInclination.get()
@@ -159,7 +158,7 @@ def runComputation():
 def some_parameter_changed(parameter, newValue):
     """ This function calls every time when any parameter
     of galaxy, bulge, disc or halo is changes """
-    if parameter == "viewLegend": 
+    if parameter == "viewLegend":
         rotCurve.viewLegend = newValue
         rotCurve.plot()
         return 0
@@ -230,7 +229,7 @@ def some_parameter_changed(parameter, newValue):
             haloBalloon.bind(haloSecondParamEntry, "Scalelength.")
             haloACCheckbutton.config(state="disabled")
     if parameter == "Msun":
-        for item, value in mSunBands.iteritems():
+        for item, value in mSunBands.items():
             if value == float(newValue):
                 generalBandValue.set(item)
                 return 0
@@ -266,8 +265,8 @@ fileMenu.add_command(label="Load velocity",
 fileMenu.add_command(label="Save parameters",
                      command=lambda: saveParams(master, getValuesFromAllFields()),
                      state="disabled")
-fileMenu.add_command(label="Load parameters", 
-                     command=lambda: setValuesToAllFields(loadParams(master, fName=None)), 
+fileMenu.add_command(label="Load parameters",
+                     command=lambda: setValuesToAllFields(loadParams(master, fName=None)),
                      state="disabled")
 fileMenu.add_command(label="Save velocity",
                      command=lambda: saveVelocity(master, rotCurve),
@@ -277,8 +276,8 @@ menubar.add_cascade(label="File", menu=fileMenu)
 viewMenu = Tk.Menu(menubar, tearoff=0)
 showLegend = Tk.IntVar()
 showLegend.set(1)
-viewMenu.add_checkbutton(label="Show legend", 
-                         variable=showLegend, 
+viewMenu.add_checkbutton(label="Show legend",
+                         variable=showLegend,
                          state="disabled")
 showLegend.trace("w", lambda n, i, m, v=showLegend: some_parameter_changed("viewLegend", v.get()))
 colouredPaint = Tk.IntVar()
@@ -405,7 +404,7 @@ correctForInclinationCB.grid(column=0, row=0, columnspan=3)
 Tk.Label(generalPanel, text="    LD", width=6).grid(column=0, row=1, sticky=Tk.E)
 generalLDValue = Tk.StringVar()
 generalLDValue.set("10.00")
-generalLDValue.trace("w", 
+generalLDValue.trace("w",
                         lambda n, i, m, v=generalLDValue: some_parameter_changed("LD", v.get()))
 generalLDEntry = Tk.Entry(generalPanel, textvariable=generalLDValue, width=5, state="disabled", bg="white")
 generalLDEntry.grid(column=1, row=1, sticky=Tk.W)
@@ -416,7 +415,7 @@ generalBalloon.bind(generalLDEntry, "Luminosity distance of the galaxy [Mpc].")
 Tk.Label(generalPanel, text=" scale", width=6).grid(column=0, row=2, sticky=Tk.E)
 generalScaleValue = Tk.StringVar()
 generalScaleValue.set("0.48")
-generalScaleValue.trace("w", 
+generalScaleValue.trace("w",
                         lambda n, i, m, v=generalScaleValue: some_parameter_changed("scale", v.get()))
 generalScaleEntry = Tk.Entry(generalPanel, textvariable=generalScaleValue, width=5, state="disabled", bg="white")
 generalScaleEntry.grid(column=1, row=2, sticky=Tk.W)
@@ -427,7 +426,7 @@ generalBalloon.bind(generalScaleEntry, "Scale of the galaxy [kpc per arcsec].")
 Tk.Label(generalPanel, text=u"     H\u2080", font=font11, width=6).grid(column=0, row=3, sticky=Tk.E)
 generalHubbleValue = Tk.StringVar()
 generalHubbleValue.set("67.0")
-generalHubbleValue.trace("w", 
+generalHubbleValue.trace("w",
                         lambda n, i, m, v=generalHubbleValue: some_parameter_changed("hubble", v.get()))
 generalHubbleEntry = Tk.Entry(generalPanel, textvariable=generalHubbleValue, width=5, state="disabled", bg="white")
 generalHubbleEntry.grid(column=1, row=3, sticky=Tk.W)
@@ -573,7 +572,7 @@ discBalloon.bind(discAxisRatioEntry, "Disc minor to major axis ratio.")
 # Disc thickness
 Tk.Label(discPanel, text=u"    z\u2080/h ", font=font11).grid(column=0, row=4)
 discThicknessValue = Tk.StringVar()
-discThicknessValue.set("0.20") 
+discThicknessValue.set("0.20")
 discThicknessEntry = Tk.Entry(discPanel, textvariable=discThicknessValue, width=5, state="disabled", bg="white")
 discThicknessEntry.grid(column=1, row=4, sticky=Tk.W)
 discThicknessValue.trace("w", lambda n, i, m, v=discThicknessValue: some_parameter_changed("dThickness", v.get()))
@@ -623,7 +622,7 @@ haloSecondParamLabel = Tk.Label(haloPanel, text=u'V(\u221E)', font=font11, width
 
 # We have to allocate these two entries here, before their 'griding' because
 # we are needed them to bind balloons for proper description
-# of their parameters (balloons have to depend on selected model). 
+# of their parameters (balloons have to depend on selected model).
 haloFirstParamValue = Tk.StringVar()
 haloFirstParamEntry = Tk.Entry(haloPanel, textvariable=haloFirstParamValue, width=5, state="disabled", bg="white")
 haloSecondParamValue = Tk.StringVar()
@@ -637,18 +636,18 @@ haloModelCBox.grid(column=0, row=1, sticky=Tk.W, columnspan=3)
 generalBandValue.trace("w", band_selected)
 
 
-# isotermHaloRadiobutton = Tk.Radiobutton(haloPanel, 
-#                                         text="isoterm", 
-#                                         variable=haloModelValue, 
-#                                         value="isoterm", 
-#                                         state="disabled", 
+# isotermHaloRadiobutton = Tk.Radiobutton(haloPanel,
+#                                         text="isoterm",
+#                                         variable=haloModelValue,
+#                                         value="isoterm",
+#                                         state="disabled",
 #                                         width=5)
 # isotermHaloRadiobutton.grid(column=0, row=1)
 # NFWHaloRadiobutton = Tk.Radiobutton(haloPanel,
 #                                     text="NFW",
 #                                     variable=haloModelValue,
 #                                     width=3,
-#                                     value="NFW", 
+#                                     value="NFW",
 #                                     state="disabled")
 # NFWHaloRadiobutton.grid(column=1, row=1)
 #haloBalloon.bind(isotermHaloRadiobutton, "Halo type: isothermal halo.")
@@ -698,9 +697,9 @@ runButton.grid(column=0, row=0)
 
 mainGraph = pylab.Figure(figsize=(6, 4), dpi=100)
 canvas = FigureCanvasTkAgg(mainGraph, master=master)
-toolbar = NavigationToolbar2TkAgg(canvas, master)
+toolbar = NavigationToolbar2Tk(canvas, master)
 toolbar.update()
-canvas.show()
+canvas.draw()
 canvas.get_tk_widget().pack(side=Tk.TOP, fill=Tk.BOTH, expand=1)
 
 ############################################################

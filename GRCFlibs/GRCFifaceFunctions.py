@@ -1,8 +1,9 @@
 #! /usr/bin/env python
 
 import os
-import Tkinter as Tk
-import tkFileDialog, tkMessageBox
+import tkinter as Tk
+from tkinter import filedialog as tkFileDialog
+from tkinter import messagebox as tkMessageBox
 import shelve
 import time
 
@@ -14,8 +15,10 @@ import pylab
 
 from PIL import Image
 from PIL import ImageTk
+import matplotlib
+matplotlib.use('TkAgg')
 
-from GRCFcommonFunctions import fig2img, fig2data
+from .GRCFcommonFunctions import fig2img, fig2data
 
 haloFirstLabels = {"isoterm": "Rc", "NFW": "C", "Burkert": u"\u03C1"}
 haloSecondLabels = {"isoterm": "V(inf)", "NFW": "V200", "Burkert": "h"}
@@ -26,8 +29,8 @@ haloSecondUpperValues = {"isoterm": 250.0, "NFW": 250.0, "Burkert": 50.0}
 
 def fitByLine(xxx, yyy):
     f = lambda B, x: B[0]*x + B[1]
-    fitting = ODR(RealData(xxx, yyy), 
-                  Model(f), 
+    fitting = ODR(RealData(xxx, yyy),
+                  Model(f),
                   [-1.0, 0])
     fitting.set_job()
     result = fitting.run()
@@ -167,7 +170,7 @@ mSunBands = {"Buser U (= Johnson) Vega": 5.59,
 # 65 	2800 	6.67 	8.23
 # 66 	APM Bj 	5.29 	5.21
 # 67 	FOCA UV 	10.50 	12.39
-# 68 	DEIMOS R 	4.44 	4.62 
+# 68 	DEIMOS R 	4.44 	4.62
 # 69 	Galex FUV 	13.97 	16.42
 # 70 	Galex NUV 	8.45 	10.31
 # 71 	SDSS u z=0.1 	5.83 	6.77
@@ -283,7 +286,7 @@ def saveVelocity(master, rotCurve):
     fout.write("#\n")
     fout.write("#R[arcsec]   R[kpc]   vObs       +/-     vBulge    vDisc      vHalo      vSum\n")
     obs_counter = 0
-    for i in xrange(len(rotCurve.distancesToComputeKpc)):
+    for i in range(len(rotCurve.distancesToComputeKpc)):
         fout.write("%6.1f    " % (rotCurve.distancesToComputeArcSec[i]))
         fout.write("%7.3f   " % (rotCurve.distancesToComputeKpc[i]))
         if rotCurve.distancesToComputeKpc[i] > rotCurve.distanceKpc[0]:
@@ -350,8 +353,8 @@ class BruteForceWindow(object):
         Tk.Label(self.bruteForceFrame, text="M-to-L  from").grid(column=1, row=1)
         self.bulgeMLlowerValue = Tk.StringVar()
         self.bulgeMLlowerEntry = Tk.Spinbox(self.bruteForceFrame,
-                                            textvariable=self.bulgeMLlowerValue, 
-                                            width=5, 
+                                            textvariable=self.bulgeMLlowerValue,
+                                            width=5,
                                             bg="white",
                                             from_=0.0,
                                             to=100,
@@ -370,7 +373,7 @@ class BruteForceWindow(object):
                                             bg="white",
                                             from_=0.0,
                                             to=100,
-                                            increment=0.1, 
+                                            increment=0.1,
                                             state=self.bulgeState)
         self.bulgeMLupperValue.set(8.0)
         self.bulgeMLupperEntry.grid(column=4, row=1)
@@ -409,7 +412,7 @@ class BruteForceWindow(object):
                                            bg="white",
                                            from_=0.0,
                                            to=100,
-                                           increment=0.1, 
+                                           increment=0.1,
                                            state=self.discState)
         self.discMLlowerValue.set(1.0)
         self.discMLlowerEntry.grid(column=2, row=2)
@@ -420,8 +423,8 @@ class BruteForceWindow(object):
         self.discMLupperValue = Tk.StringVar()
         self.discMLupperEntry = Tk.Spinbox(self.bruteForceFrame,
                                            textvariable=self.discMLupperValue,
-                                           width=5, 
-                                           bg="white", 
+                                           width=5,
+                                           bg="white",
                                            from_=0.0,
                                            to=100,
                                            increment=0.1,
@@ -477,8 +480,8 @@ class BruteForceWindow(object):
         self.haloFirstupperValue = Tk.StringVar()
         self.haloFirstupperEntry = Tk.Spinbox(self.bruteForceFrame,
                                               textvariable=self.haloFirstupperValue,
-                                              width=5, 
-                                              bg="white", 
+                                              width=5,
+                                              bg="white",
                                               from_=0.0,
                                               to=100,
                                               increment=0.1,
@@ -517,8 +520,8 @@ class BruteForceWindow(object):
         self.haloSecondupperValue = Tk.StringVar()
         self.haloSecondupperEntry = Tk.Spinbox(self.bruteForceFrame,
                                                textvariable=self.haloSecondupperValue,
-                                               width=5, 
-                                               bg="white", 
+                                               width=5,
+                                               bg="white",
                                                from_=0.0,
                                                to=1000,
                                                increment=1.0,
@@ -579,7 +582,7 @@ class BruteForceWindow(object):
             elif float(self.bulgeMLlowerValue.get())<=0:
                 self.runLabelValue.set("Bulge ML value must be positive")
                 return 1
-                
+
         if self.variateDisc.get():
             if float(self.discMLlowerValue.get()) > float(self.discMLupperValue.get()):
                 self.runLabelValue.set("Disk ML lower limit is higher, than the upper one")
@@ -601,7 +604,7 @@ class BruteForceWindow(object):
             elif float(self.haloSecondlowerValue.get())<=0:
                 self.runLabelValue.set("Check halo second parameter")
                 return 1
-            
+
         fitParams = {}
         fitParams["bulgeVariate"] = self.variateBulge.get()
         fitParams["bulgeMLlower"] = float(self.bulgeMLlowerValue.get())
@@ -678,8 +681,8 @@ class ConstantMLWindow(object):
                  text="Bulge and disc M-to-L  from").grid(column=0, row=1, columnspan=2)
         self.bothMLlowerValue = Tk.StringVar()
         self.bothMLlowerEntry = Tk.Spinbox(self.bruteForceFrame,
-                                            textvariable=self.bothMLlowerValue, 
-                                            width=5, 
+                                            textvariable=self.bothMLlowerValue,
+                                            width=5,
                                             bg="white",
                                             from_=0.0,
                                             to=100,
@@ -736,8 +739,8 @@ class ConstantMLWindow(object):
         self.haloFirstupperValue = Tk.StringVar()
         self.haloFirstupperEntry = Tk.Spinbox(self.bruteForceFrame,
                                               textvariable=self.haloFirstupperValue,
-                                              width=5, 
-                                              bg="white", 
+                                              width=5,
+                                              bg="white",
                                               from_=0.0,
                                               to=100,
                                               increment=0.1,
@@ -774,8 +777,8 @@ class ConstantMLWindow(object):
         self.haloSecondupperValue = Tk.StringVar()
         self.haloSecondupperEntry = Tk.Spinbox(self.bruteForceFrame,
                                                textvariable=self.haloSecondupperValue,
-                                               width=5, 
-                                               bg="white", 
+                                               width=5,
+                                               bg="white",
                                                from_=0.0,
                                                to=1000,
                                                increment=1.0,
@@ -901,8 +904,8 @@ class MaximalDiscWindow(object):
         Tk.Label(self.maximalDiscFrame, text="M-to-L  from").grid(column=1, row=1)
         self.bulgeMLlowerValue = Tk.StringVar()
         self.bulgeMLlowerEntry = Tk.Spinbox(self.maximalDiscFrame,
-                                            textvariable=self.bulgeMLlowerValue, 
-                                            width=5, 
+                                            textvariable=self.bulgeMLlowerValue,
+                                            width=5,
                                             bg="white",
                                             from_=0.0,
                                             to=100,
@@ -921,7 +924,7 @@ class MaximalDiscWindow(object):
                                             bg="white",
                                             from_=0.0,
                                             to=100,
-                                            increment=0.1, 
+                                            increment=0.1,
                                             state=self.bulgeState)
         self.bulgeMLupperValue.set(8.0)
         self.bulgeMLupperEntry.grid(column=4, row=1)
@@ -943,7 +946,7 @@ class MaximalDiscWindow(object):
                                            bg="white",
                                            from_=0.0,
                                            to=100,
-                                           increment=0.1, 
+                                           increment=0.1,
                                            state=self.discState)
         self.discMLlowerValue.set(1.0)
         self.discMLlowerEntry.grid(column=2, row=2)
@@ -954,8 +957,8 @@ class MaximalDiscWindow(object):
         self.discMLupperValue = Tk.StringVar()
         self.discMLupperEntry = Tk.Spinbox(self.maximalDiscFrame,
                                            textvariable=self.discMLupperValue,
-                                           width=5, 
-                                           bg="white", 
+                                           width=5,
+                                           bg="white",
                                            from_=0.0,
                                            to=100,
                                            increment=0.1,
@@ -992,8 +995,8 @@ class MaximalDiscWindow(object):
         self.haloFirstupperValue = Tk.StringVar()
         self.haloFirstupperEntry = Tk.Spinbox(self.maximalDiscFrame,
                                               textvariable=self.haloFirstupperValue,
-                                              width=5, 
-                                              bg="white", 
+                                              width=5,
+                                              bg="white",
                                               from_=0.0,
                                               to=100,
                                               increment=0.1,
@@ -1025,8 +1028,8 @@ class MaximalDiscWindow(object):
         self.haloSecondupperValue = Tk.StringVar()
         self.haloSecondupperEntry = Tk.Spinbox(self.maximalDiscFrame,
                                                textvariable=self.haloSecondupperValue,
-                                               width=5, 
-                                               bg="white", 
+                                               width=5,
+                                               bg="white",
                                                from_=0.0,
                                                to=1000,
                                                increment=1.0,
@@ -1094,7 +1097,7 @@ class MaximalDiscWindow(object):
         self.haloFirstCautionLabel.grid(column=2, row=9, columnspan=2)
         self.haloSecondCautionLabel = Tk.Label(self.maximalDiscFrame)
         self.haloSecondCautionLabel.grid(column=2, row=10, columnspan=2)
-        
+
 
     def sliderMoved(self, value):
         index = int((value - float(self.discMLlowerValue.get())) / 0.1)
@@ -1437,8 +1440,8 @@ class MaximalDiscOptWindow(object):
         self.discMLupperValue = Tk.DoubleVar()
         self.discMLupperEntry = Tk.Spinbox(self.maximalDiscFrame,
                                            textvariable=self.discMLupperValue,
-                                           width=5, 
-                                           bg="white", 
+                                           width=5,
+                                           bg="white",
                                            from_=0.0,
                                            to=100,
                                            increment=0.1)
