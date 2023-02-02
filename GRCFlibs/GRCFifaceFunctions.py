@@ -233,8 +233,7 @@ def saveVelocity(master, rotCurve):
                                               title="Open file to save velocity curves")
     if not fileName:
         return None
-    fout = open(fileName, "w", buffering=0)
-    fout.truncate(0)
+    fout = open(fileName, "w")
     includeBulge = int(rotCurve.bParams["include"])
     includeDisc = int(rotCurve.dParams["include"])
     includeHalo = int(rotCurve.hParams["include"])
@@ -308,7 +307,7 @@ def saveVelocity(master, rotCurve):
             fout.write("%7.2f   " % (rotCurve.haloVelocity[i]))
         else:
             fout.write("------   ")
-        fout.write("%7.2f\n" %  (rotCurve.sumVelocity[i]))
+        fout.write("%7.2f\n" % (rotCurve.sumVelocity[i]))
     fout.close()
 
 
