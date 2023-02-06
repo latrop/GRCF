@@ -105,6 +105,7 @@ class GalaxyRotation(object):
 
     def plot(self):
         self.a.clear()
+        self.a.cla()
         #clf()
         #cla()
         self.a.set_xlabel("Distance [arcsec]")
@@ -163,7 +164,7 @@ class GalaxyRotation(object):
             self.a.legend(loc="best", fancybox=True, ncol=2, prop={'size':10})
         self.a.axis([0, max(self.distanceArcSec)*1.1, 0, maxVelocityAxes])
         self.a2.clear()
-        #self.a2.cla()
+        self.a2.cla()
         self.a2.set_xlabel("Distance [kpc]")
         self.a2.errorbar(self.distanceKpc, self.velocity, self.velocity_sigma,
                          color="k", linestyle="-", label="Data")
